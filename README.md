@@ -1,0 +1,519 @@
+# Vila Mediterrània
+
+Un prototip de construcció lliure, inspirat en Townscaper i en l’arquitectura de la Costa Brava i la Costa Daurada. No és una reproducció de Townscaper ni un mapa d’una localitat real.
+
+## Posar-lo en marxa
+
+1. Descomprimeix tot el ZIP en una carpeta.
+2. Si tens Node.js instal·lat, fes doble clic a `Inicia-Windows.bat` (Windows). A macOS/Linux, executa `node server.mjs` des d’aquesta carpeta.
+3. S’obrirà el navegador. Mantén oberta la finestra del servidor mentre jugues.
+
+Alternativament, obre aquesta carpeta amb VS Code i executa `index.html` amb Live Server, o serveix la carpeta amb qualsevol servidor HTTP estàtic. No s’ha d’obrir `index.html` directament amb doble clic: els navegadors restringeixen els mòduls JavaScript sota `file://`.
+
+No cal executar `npm install`, compilar ni configurar Vite. El joc no utilitza cap framework. Three.js 0.180.0 s’inclou a `vendor/`, amb la seva llicència MIT. Un cop descarregat i amb un servidor local, no necessita Internet, cap compte ni clau d’API. El navegador ha de tenir WebGL 2 disponible.
+
+## Jugar
+
+- **Casa (1):** crea una casa o afegeix-hi un pis (màxim 5). El color i l’acabat seleccionats s’apliquen a tota la casa. A l’alçada màxima, un color/acabat diferent la repinta sense afegir-hi pisos.
+- **Terreny (2):** escull **Terra ferma**, **Terreny amb pendent**, **Platja**, **Carrer empedrat**, **Carrer de terra** o **Carrer asfaltat**. Terra ferma crea terra al mar o eleva una casella existent (nivells 0–4); sobre una platja, primer la converteix en terra ferma. Platja substitueix l’element anterior, abaixa la casella al nivell de la costa i dibuixa sorra inclinada. A la Costa Daurada, el pendent és més suau i s’allarga sota el mar; a la Costa Brava és més pronunciat i curt. Les caselles de platja adjacents comparteixen una malla contínua. La franja submarina s’estén només sobre caselles buides. Canviar de costa adapta automàticament el pendent de les platges. Un altre clic sobre una platja no l’eleva; Esborra la converteix en terra ferma i un segon clic la retira. Construir-hi o plantar-hi substitueix la platja per una base de terra ferma.
+- **Plaça (3):** substitueix l’element per paviment. Uneix caselles per fer carrers. Una plaça a la casella central té una font.
+- **Arbres (4):** tria Pi mediterrani, Margalló, Alzina, Plàtan d’ombra, Olivera, Parra o Avellaner al selector i clica per plantar. Clicant sobre un arbre existent pots canviar-ne l’espècie. Com les altres eines, substitueix l’element anterior. El margalló es representa com una mata baixa de diversos troncs i fulles en ventall; l’alzina amb capçada densa de verd fosc; el plàtan amb capçada ampla i escorça clara amb taques. Totes les espècies projecten ombra amb la llum del joc.
+- **Escales (5):** posa una escala; torna-hi a clicar per girar-la en quatre direccions. Cada tram puja 0,42 unitats, equivalent a un nivell de terreny.
+- **Esborra (E), clic dret o Supr:** assenyala una façana a l’alçada del pis concret que vols treure. El marc ressalta aquest pis. Si queden pisos a sobre, conserven l’alçada i s’hi generen suports. Clica el buit amb Casa per reconstruir-lo. Sobre una teulada se selecciona l’últim pis. Els suports automàtics desapareixen en reconstruir el buit o quan ja no hi ha pisos a sobre. En altres elements es manté l’esborrament de l’element i després del terreny.
+- **Arrossegar:** gira la vista. **Majúscules + arrossegar** o botó central: desplaça la càmera. **Roda, + i −:** zoom. **0:** vista inicial.
+- **Tàctil:** toca per construir; arrossega per girar; dos dits per desplaçar i fer zoom. Per esborrar, tria l’eina Esborra.
+- **Teclat:** amb el llenç enfocat, les fletxes mouen la casella seleccionada en els eixos del terreny, Re Pàg / Av Pàg canvien el pis seleccionat, Retorn construeix i Supr esborra el pis seleccionat. **Ctrl+Z:** desfés. **Ctrl+Y** o **Ctrl+Majúscules+Z:** refés. Historial de fins a 60 canvis durant la sessió.
+
+## Desar i recuperar
+
+Cada canvi es desa al `localStorage` d’aquest navegador i d’aquest origen web. El desament no se sincronitza entre dispositius i pot desaparèixer si es netegen les dades del navegador. El servidor inclòs utilitza el port 3000 o el primer disponible a partir d’aquest: conserva la mateixa adreça per recuperar el desament local.
+
+A **La meva vila → Desa una còpia (.json)** pots exportar la vila. Obre-la amb **Obre una vila…**. El format 35 guarda els edificis del jugador amb els seus dissenys, els ajuntaments, les esglésies, les cases amb pati, la mida de la quadrícula, els mercats, els negocis de planta baixa, els ponts, la costa, totes les construccions, els buits entre pisos cada espècie plantada i les caselles de platja. S’importen també fitxers dels formats 1–34, convertits automàticament; els pins existents continuen sent pins. El desament anterior es conserva separadament al navegador; la càmera, la llum i l’historial de desfer no es guarden al fitxer.
+
+**Fes una fotografia** exporta una imatge PNG de la vista 3D sense els controls.
+
+Els botons de costa canvien els materials del paisatge i el color inicial de les cases noves, conservant la vila construïda. Per generar un relleu propi de l’altra costa, tria-la i crea una vila nova. Hi ha tres punts de partida: poble, illa sense construir i mar obert.
+
+## Fitxers i arquitectura
+
+- `index.html`: interfície i ajuda en català.
+- `style.css`: disseny adaptable a ordinador, tauleta i mòbil.
+- `model.js`: estat, generació del paisatge, regles, validació del JSON i historial.
+- `scene.js`: escena Three.js, geometria procedural instanciada, mar, llum, càmera i controls de punter.
+- `app.js`: interacció de la interfície, importació/exportació i desament local.
+- `vendor/`: Three.js inclòs localment; no hi ha CDN en temps d’execució.
+- `server.mjs`: servidor HTTP local opcional, fet només amb mòduls estàndard de Node.js.
+
+## Abast d’aquesta primera versió
+
+Construcció sobre una quadrícula de 33 × 33, 49 × 49 o 65 × 65 caselles, pisos, terrats, teulades, persianes, balcons, pins, carrers, escales i costa estilitzada. Les façanes oculten finestres i portes quan hi ha terreny o cases veïnes a aquella alçada. El joc és creatiu, sense objectius, economia ni puntuacions.
+
+La costa rocosa utilitza caselles i roques de geometria senzilla; les platges utilitzen una superfície contínua subdividida, amb pendent diferenciat i sorra visible sota l’aigua; no hi ha encara la malla irregular ni totes les transformacions arquitectòniques de Townscaper. Els buits d’un nivell generen arcades obertes sobre pilastres. Diversos nivells buits consecutius generen pilastres altes amb llindes. Els pisos de sobre conserven les seves coordenades i la teulada només baixa quan s’elimina el nivell superior. El comptador compta els pisos ocupats, no els buits. No hi ha càlcul estructural físic, personatges ni simulació de circulació. Les escales són elements visuals per connectar desnivells.
+
+Motor 3D: [Three.js](https://threejs.org/docs/), llicència MIT a `vendor/THREE-LICENSE.txt`.
+
+- `beach.js`: superfície contínua de platja, perfils de pendent per costa i colors de sorra seca, humida i submergida. Els pendents són estilitzats per al joc, no mesures topogràfiques reals.
+
+## Teulada a una aigua
+
+A **Casa → Acabat de la casa**, pots escollir **Teulada a dues aigües**, **Teulada a una aigua** o **Terrat amb barana**. La teulada a una aigua té una sola vessant de teula, amb el costat alt i els laterals tancats amb paret, ràfec i canaló al costat baix. S’aplica en construir o afegir un pis, igual que els altres acabats; a l’alçada màxima, canvia l’acabat sense afegir-ne cap. El tipus de teulada es conserva en desar, importar i desfer/refés.
+
+### Orientació de la teulada a una aigua
+
+Quan tries aquest acabat apareix **Inclinació cap a: Est / Nord / Oest / Sud**. La direcció indica el costat baix de la coberta i es manté fixa respecte de la vila quan gires la càmera. En construir, s’aplica l’orientació seleccionada. Per canviar una casa existent, marca **Només gira la teulada** i clica una casa amb aquest acabat: no s’hi afegeix cap pis ni se’n canvien el color o els buits. Desmarca l’opció per tornar a construir. La paret superior, la coberta, els remats i el canaló giren conjuntament. Les teulades de viles antigues mantenen l’orientació anterior (Est). L’orientació es guarda al JSON i a l’historial de desfer/refés.
+
+
+### Gir de les teulades a dues aigües
+
+A **Casa → Teulada a dues aigües → Una vessant cap a**, tria Est, Nord, Oest o Sud. L’altra vessant mira al costat oposat. Est/Oest comparteixen la carena nord-sud; Nord/Sud comparteixen la carena est-oest. Si hi ha xemeneia, gira amb la coberta. **Només gira la teulada** permet girar cases existents, tant a una com a dues aigües, sense canviar-ne el tipus, els pisos, els buits ni el color. Els terrats no giren. L’orientació es conserva en desar i desfer/refés, dins del format de dades actual.
+
+
+## Ponts entre ribes o terrenys elevats
+
+Tria **Pont (6)** i clica primer una casella de **terra ferma, carrer o plaça** sense cases ni arbres. Clica després l’altre extrem: han d’estar a la mateixa fila o columna, separats entre 2 i 16 caselles. Cal mar o terreny més baix al mig. La previsualització verda indica un traçat vàlid; la vermella s’acompanya del motiu pel qual no es pot construir.
+
+El pont de pedra té baranes laterals i pilastres en els trams llargs. El pas connecta les alçades dels dos extrems, amb pendent si són diferents. Els accessos queden oberts a les places. No es permet travessar cases, arbres, terreny massa alt ni altres ponts. Els ponts poden passar sobre terra baixa o platja; els extrems han de recolzar sobre terra ferma, carrer o plaça.
+
+**Cancel·la el pont**, **Esc** o clic dret durant la selecció cancel·len el primer extrem. Canviar d’eina, importar, començar una vila o desfer/refés també cancel·la la selecció pendent. Amb teclat, mou-te amb les fletxes i confirma cada extrem amb Retorn. Al mòbil toca els dos punts.
+
+Amb **Esborra**, clic dret o Supr sobre el traçat, es retira el pont sencer i es conserva el terreny. Retira primer el pont per modificar els seus extrems o el seu corredor. Els ponts es desen automàticament, s’inclouen al JSON i admeten desfer/refés. El format actual importa també les viles antigues.
+
+
+## Negocis a la planta baixa: bars
+
+1. A **Casa → Acció a la casa**, tria **Negoci a la planta baixa**.
+2. Tria **Bar** i la façana: **Sud, Est, Nord o Oest**. Les direccions són fixes respecte de la vila, independentment de la càmera.
+3. Marca **Amb terrassa** si vols dues taules rodones i quatre cadires. Prepara una casella de **terra ferma, carrer o plaça lliure a la mateixa alçada**, just davant de la façana escollida.
+4. Clica una casa existent. S’hi posa una porta vidrada, una finestra de servei, un rètol **BAR** i un tendal de ratlles verd i crema. No s’hi afegeix cap pis ni es canvien el color o la teulada.
+
+Pots desmarcar **Amb terrassa** per posar només el bar. Si l’espai no és adequat o està ocupat per una altra terrassa, el joc t’indica què cal corregir i conserva la casa anterior. Per canviar l’orientació o la terrassa d’un bar existent, tria la configuració nova i torna a clicar la casa.
+
+Per retirar el negoci, tria **Sense negoci (retira’l)** i clica la casa. Per continuar construint, torna a **Construir pisos i teulades**.
+
+La planta baixa ha d’existir: si té un buit amb arcades, reconstrueix-la abans de posar-hi un bar. Si després esborres aquesta planta o substitueixes la casa, també es retira el negoci. Afegir o treure pisos superiors conserva el bar.
+
+El mobiliari no flota ni travessa altres elements. Si després edites el terreny del davant, hi plantes un arbre, hi construeixes o hi poses un pont, la terrassa s’amaga automàticament quan deixa de ser viable; reapareix quan recuperes les condicions originals. El rètol i el tendal també s’amaguen si la façana queda obstruïda. La petició de terrassa continua desada.
+
+Els bars i la seva orientació es guarden al navegador i al JSON, i funcionen amb desfer/refés. El format 13 importa els formats 1–12: conserva els bars existents i no afegeix negocis a les cases que no en tenien. Els negocis disponibles són **Bar**, **Fruiteria**, **Restaurant** i **Botiga de queviures**.
+
+
+## Fruiteries amb prestatgeries
+
+A **Casa → Negoci a la planta baixa → Fruiteria**, escull la façana i clica una casa existent. La planta baixa ha d’estar construïda. La porta queda al centre, amb una prestatgeria de fusta a cada costat: cadascuna té tres nivells de caixes amb fruita de colors. El rètol diu **FRUITERIA**.
+
+Cal una casella de **terra ferma, carrer o plaça lliure al davant, a la mateixa alçada**, perquè les prestatgeries recolzin sobre terra. L’opció de terrassa amb taules apareix quan tries Bar o Restaurant. Les prestatgeries deixen lliure l’accés central i giren amb la façana. La seva zona no es pot compartir amb una altra fruiteria ni amb la terrassa d’un bar.
+
+Clicant un negoci existent amb Fruiteria el substitueixes, mantenint els pisos, els buits, el color i la teulada. Per retirar-lo, tria **Sense negoci (retira’l)**. Si canvies o ocupes el terreny del davant, les prestatgeries s’amaguen quan no hi ha espai adequat i reapareixen quan el recuperes. La fruiteria es guarda al JSON i al navegador i admet desfer/refés.
+
+
+## Punts cardinals
+
+La brúixola de la part superior dreta mostra **Nord, Sud, Est i Oest**; el nord està ressaltat en vermell. Les direccions segueixen la rotació i la inclinació de la vista i coincideixen amb les orientacions de les teulades i les façanes dels negocis. Les etiquetes es mantenen dretes per facilitar-ne la lectura.
+
+S’actualitza en arrossegar amb el ratolí o el dit, prémer el botó de gir, fer zoom, redimensionar la pantalla o tornar a la vista inicial. La brúixola queda fixa a la pantalla per continuar visible quan desplaces o apropes el mapa, i no intercepta els clics. Com els altres controls, no s’inclou a la fotografia exportada de la vila.
+
+
+## Restaurants
+
+A **Casa → Negoci a la planta baixa → Restaurant**, escull la façana i clica una casa existent. El restaurant té una porta central vidrada, una carta emmarcada al costat de l’entrada, el rètol **RESTAURANT** i un tendal granat i crema.
+
+Amb **Amb terrassa** s’afegeixen dues taules amb estovalles, quatre cadires, plats, coberts i gots. Cal una casella lliure de terra ferma, carrer o plaça al davant, a la mateixa alçada. Pots desmarcar l’opció per obrir només el local. Les terrasses no es poden superposar a altres negocis ni a ponts. Si després ocupes o canvies l’alçada d’aquest espai, el mobiliari s’amaga fins que torni a ser adequat.
+
+Pots transformar un bar o una fruiteria en restaurant, canviar-ne la façana o retirar-lo amb **Sense negoci (retira’l)**. Es conserven els pisos, els buits superiors, el color i la teulada. La planta baixa ha d’existir; esborrar-la també retira el negoci. El restaurant es desa al navegador i al JSON i admet desfer/refés.
+
+
+## Botigues de queviures
+
+A **Casa → Negoci a la planta baixa → Botiga de queviures**, escull la façana i clica una casa existent. La botiga té una porta central vidrada, el rètol **QUEVIURES** i dos aparadors amb prestatges de pots, llaunes, ampolles i pa.
+
+La façana ha d’estar lliure. Els aparadors estan incorporats a la façana i no necessiten una zona de terrassa; l’opció **Amb terrassa** s’amaga per a aquest negoci. Pots transformar-hi un altre negoci, orientar-la en qualsevol dels quatre costats o retirar-la amb **Sense negoci (retira’l)**. Els pisos, els buits superiors, el color i la teulada es conserven.
+
+Cal tenir la planta baixa construïda; esborrar-la també retira el negoci. Si després una construcció obstrueix la façana, l’aparador s’amaga fins que torna a estar lliure. La botiga es desa al navegador i al JSON i funciona amb desfer/refés.
+
+
+## Mercat de la vila · edifici de 2 o 4 cel·les
+
+Tria **Mercat (7)** i escull **Petit · 2 cel·les (1 × 2)** o **Gran · 4 cel·les (2 × 2)**. Escull també l’orientació de l’entrada principal: Sud, Est, Nord o Oest. En el mercat petit, girar l’entrada també gira la disposició 1 × 2 / 2 × 1.
+
+Prepara totes les cel·les amb **terra ferma, carrer o plaça lliure a la mateixa alçada**. Mou el punter per veure el marc complet: verd quan s’hi pot construir i vermell quan no. Clica per col·locar-lo. La cel·la assenyalada és la cantonada de coordenades X/Z menors; guia’t pel marc per veure exactament l’espai ocupat. Al mòbil toca la cantonada; amb teclat, tria-la amb les fletxes i confirma amb Retorn.
+
+El mercat és un edifici únic amb coberta de teula a dues aigües, arcades, pilars, quatre parades interiors i el rètol **MERCAT**. La mida gran té una nau més ampla. No es pot col·locar sobre mar, platja, desnivells, cases, arbres, ponts ni espais exteriors ocupats per altres negocis.
+
+**Esborra**, clic dret o Supr sobre qualsevol de les seves cel·les retira el mercat sencer i conserva el terreny. Retira’l abans de canviar la seva mida, orientació o el terreny de sota. Es pot recuperar amb desfer/refés. Els mercats es guarden automàticament al navegador i al JSON; el format 12 importa les viles anteriors sense afegir-hi mercats.
+
+
+## Escollir o ampliar la quadrícula
+
+A **La meva vila → Comença una vila nova…**, escull **33 × 33**, **49 × 49** o **65 × 65** abans de triar poble, illa o mar obert. La mida determina l’espai disponible per construir. El poble o l’illa inicial mantenen la mida original, amb més mar al voltant.
+
+Per conservar la vila i donar-li més espai, ves a **La meva vila → Amplia la quadrícula…**, tria una mida superior i prem **Amplia i conserva la vila**. Les construccions, les orientacions i les coordenades es conserven exactament. L’ampliació afegeix espai de mar als quatre costats. Es desa automàticament i es pot desfer/refés. No es permet reduir directament una vila existent; per començar de zero amb una mida més petita, crea una vila nova.
+
+El menú indica la mida actual. La quadrícula visible, la selecció amb ratolí o teclat, el zoom, el desplaçament, les platges, els ponts, els mercats i els negocis respecten els nous límits. Pots allunyar més la vista en les mides grans. El format 13 guarda la mida també al JSON. Les viles dels formats 1–12 s’obren a 33 × 33 i després es poden ampliar.
+
+
+La barra inferior d’eines és més baixa i té un fons semitransparent. Les icones i els noms mantenen l’opacitat completa, amb botons de com a mínim 44 píxels d’alçada per facilitar-ne l’ús tàctil.
+
+
+## Cases amb pati · màxim dues plantes
+
+A **Casa → Construir pisos i teulades → Tipus de casa**, tria **Casa amb pati**. El selector **On vols el pati?** demana obligatòriament **Al davant** o **Al darrere** abans de construir. Escull la façana principal (Sud, Est, Nord o Oest) i **1 planta · planta baixa** o **2 plantes · baixa i primer pis**. La façana segueix els punts cardinals encara que giris la vista. El pati del darrere queda al costat oposat de la façana principal.
+
+El conjunt ocupa dues cel·les: una per a la casa i una per al pati. Clica la cel·la de la casa; el marc mostra les dues, verd si hi caben i vermell si hi ha un impediment. Cal terra ferma, carrer o plaça lliure a la mateixa alçada; les cel·les buides de mar es converteixen automàticament en terra a l’alçada de la parcel·la. El pati té paviment de rajoles, murets, testos i un banc. El pati del davant també té una portella orientada al carrer.
+
+En aquest mode, clicar una casa aplica l’alçada escollida i la distribució del pati, així com el color i la teulada seleccionats. Pots afegir el pati a una casa d’una o dues plantes; si és més alta, primer n’has de retirar els pisos sobrants. Si hi ha un negoci, retira’l abans de canviar la distribució. Les cases amb pati continuen limitades a dues plantes quan utilitzes la construcció habitual. Admeten els tres tipus de coberta i el gir de teulada. Pots obrir negocis en una façana lliure que no doni al pati.
+
+El pati queda reservat: no s’hi poden plantar arbres, construir cases, passar ponts ni posar mercats o terrasses. No es pot elevar la base de la casa independentment del pati. Canviar la posició del pati allibera l’anterior i conserva el seu terreny.
+
+**Esborra sobre la casa** retira el pis assenyalat; si treus la planta baixa i queda la superior, apareixen els suports habituals. En retirar l’últim pis també es retira el pati. **Esborra sobre el pati** retira la casa i el pati sencers, conservant les dues bases de terreny. Tots aquests canvis es poden desfer i refer.
+
+La distribució i les dues plantes es guarden al navegador i al JSON (format 14). Les viles anteriors es recuperen amb les construccions intactes.
+
+
+## Església amb campanar
+
+Tria **Església (8)** a la barra d’eines. Escull l’orientació de l’entrada principal: **Sud, Est, Nord o Oest**. La nau i el campanar giren junts. El conjunt ocupa **sis cel·les**, en una disposició **2 × 3** o **3 × 2** segons l’orientació.
+
+Prepara totes les cel·les amb **terra ferma, carrer o plaça lliure a la mateixa alçada**. El marc de selecció mostra tota la parcel·la: verd si s’hi pot construir i vermell si falta terreny o hi ha algun impediment. La cel·la assenyalada és la cantonada de coordenades X/Z menors, igual que amb els mercats. No es pot construir sobre platges, mar, cases, arbres, desnivells, mercats, ponts, patis o terrasses de negocis.
+
+L’edifici té una nau de pedra clara amb teulada a dues aigües, portal d’arc, graons, rosassa, finestres laterals i contraforts. El campanar quadrat té una galeria d’arcs oberts amb una campana de bronze, coberta de teula a quatre vessants i una creu. Els materials de pedra s’adapten a la costa escollida. És un edifici estilitzat per al joc, no una reproducció d’una església concreta.
+
+La nau i el campanar es col·loquen i es retiren com un sol edifici; no s’hi afegeixen pisos. **Esborra**, clic dret o Supr sobre qualsevol de les sis cel·les retira l’església sencera, conservant el terreny. Per canviar la distribució, retira-la i torna-la a col·locar amb l’orientació nova. Es pot desfer i refer.
+
+Les esglésies es guarden automàticament al navegador i al JSON (format 15). Les viles dels formats 1–14 conserven les construccions i s’obren sense afegir-hi esglésies.
+
+
+## Música de fons
+
+Obre **♫** a la part superior del joc. Pots **reproduir o pausar**, passar a la **següent pista** i ajustar el **volum**. Les pistes sonen per ordre de nom, una rere l’altra; després de l’última torna a començar la llista. Una pista que no es pugui reproduir se salta; si fallen totes, el reproductor s’atura.
+
+Desmarca **Música activada** per desactivar-la. Es recorden l’activació, la pausa i el volum en aquest navegador, independentment de la vila oberta. **Pausa** conserva el punt de la pista durant la sessió. En reobrir el joc no es conserva el minut exacte, però sí la decisió de deixar-la pausada o desactivada. **Reprodueix** torna a activar-la. Tancar la finestra dels controls amb × deixa la música en l’estat actual.
+
+### Carpeta del joc descarregat
+
+1. Copia els àudios a la carpeta **music**, inclosa al ZIP. També pots fer-hi subcarpetes.
+2. Inicia el joc amb **Inicia-Windows.bat** o **node server.mjs**.
+3. El servidor detecta els fitxers automàticament; no cal editar cap llista. Si hi afegeixes pistes mentre jugues, prem **♫ → Carpeta del joc** per actualitzar-la.
+
+S’accepten fitxers MP3, OGG, OGA, WAV, M4A, AAC, FLAC, OPUS i WEBM, segons els formats que pugui reproduir el navegador. Pots prefixar els noms amb 01-, 02-… per ordenar-los. El servidor transmet els àudios per fragments sense carregar-los sencers a la memòria.
+
+### Escollir una carpeta del dispositiu
+
+**♫ → Escull una carpeta…** permet reproduir fitxers locals tant al joc en línia com al descarregat. Els àudios no s’envien a cap servidor. Cal tornar a escollir la carpeta quan es recarrega o es reobre la pàgina, perquè el navegador no conserva l’accés als fitxers seleccionats. La decisió de tenir la música desactivada o pausada sí que es conserva.
+
+### Live Server i allotjament estàtic
+
+Amb altres servidors, afegeix els noms relatius dels àudios a **music/playlist.json**, per exemple:
+
+```json
+["01-mar.mp3", "02-vespre.ogg", "ambient/03-passeig.mp3"]
+```
+
+Els fitxers han de ser dins de **music**. Amb el servidor Node inclòs, la llista es genera automàticament i no cal modificar aquest JSON.
+
+El navegador pot exigir una interacció abans de deixar sonar música: prem **Reprodueix** o fes clic al joc. No s’inclouen pistes d’àudio al ZIP; hi has d’afegir les teves.
+
+Fitxers nous: `music.js` (reproductor), `local-server.mjs` (servei de fitxers i detecció d’àudios), `music/playlist.json` i `music/LLEGEIX-ME.txt`. Les preferències musicals no es barregen amb el fitxer JSON de la vila ni amb l’historial de construcció.
+
+
+## Ajuntament de dues plantes amb senyera
+
+Tria **Ajuntament (9)** i escull **Petit · 2 × 1 cel·les** o **Gran · 2 × 2 cel·les**. Les dues mides tenen **planta baixa i primer pis**, amb una façana de dues cel·les d’amplada. Pots orientar la façana i el balcó al **Sud, Est, Nord o Oest**; en la mida petita, el conjunt passa de 2 × 1 a 1 × 2 quan gira.
+
+Prepara totes les cel·les amb **terra ferma, carrer o plaça lliure a la mateixa alçada**. El marc verd mostra la parcel·la disponible; el vermell indica que hi ha un impediment. Com en els mercats i les esglésies, la cel·la assenyalada és la cantonada de coordenades X/Z menors.
+
+L’edifici té entrada central d’arc, finestres simètriques, rètol **AJUNTAMENT** i coberta de teula. Al **pis superior de la façana principal** hi ha un balcó amb barana i un pal vertical. La **senyera catalana** té quatre franges horitzontals vermelles sobre fons groc, visibles pels dos costats, i oneja suaument amb la vora del pal fixa. El balcó, el pal i la bandera giren conjuntament amb l’edifici. La bandera també surt a les fotografies del joc.
+
+Si el sistema té activada la preferència de moviment reduït, la senyera es mostra plegada però estàtica, igual que la resta d’animacions ambientals del joc.
+
+No s’hi poden afegir pisos ni substituir-ne cel·les individualment. **Esborra**, clic dret o Supr sobre qualsevol cel·la retira l’ajuntament sencer i conserva el terreny. Per canviar la mida o la façana, retira’l i torna’l a construir. Totes aquestes accions es poden desfer i refer.
+
+Els ajuntaments es guarden al navegador i al JSON (format 16). Les viles anteriors conserven les cases, els patis, els mercats, les esglésies i la resta de construccions. Les preferències de música es mantenen separades i no canvien.
+
+
+## Editor d’edificis del jugador
+
+Obre **Els meus edificis (B) → Obre l’editor d’edificis** o **La meva vila → Editor d’edificis**. És una pàgina separada (`editor.html`) del mateix joc. La vila es desa abans de sortir-ne. La vista 3D i el joc comparteixen el mateix renderitzador dels dissenys.
+
+### Dissenyar les tres plantes
+
+1. Escriu un nom i escull l’amplada i la fondària, d’**1 a 3 cel·les** cadascuna.
+2. A **Planta baixa**, selecciona una cel·la de la quadrícula. Tria **Murs** o **Arcades obertes amb pilastres**, el color i les obertures de davant, dreta, darrere i esquerra: mur, porta, finestres o balcó.
+3. A **Planta del mig**, configura les cel·les de la mateixa manera. Pots escollir **Sense planta intermèdia** per abaixar aquella part de l’edifici. **Repeticions de la planta intermèdia** permet afegir entre 0 i 3 plantes sobre la baixa.
+4. A **Terrat i teulada**, tria per a cada cel·la **Terrat amb barana**, **Teulada a una aigua** o **Teulada a dues aigües**, el color i l’orientació local de la coberta.
+5. **Aplica a tota aquesta planta** copia la configuració de la cel·la seleccionada a la resta de la planta. La planta baixa sempre ocupa tota la parcel·la rectangular.
+
+La quadrícula mostra el darrere a dalt i la façana principal a baix. Pots arrossegar la vista 3D per girar-la, fer zoom amb la roda o seleccionar una cel·la clicant l’edifici. Les obertures entre dues cel·les amb murs queden ocultes. Els balcons es veuen a les façanes exteriors; les arcades són buits reals amb suports. La coberta s’adapta a l’alçada de cada cel·la. És un editor modular, no un editor de malles 3D lliures.
+
+### Desar al navegador i al disc
+
+**Desa el disseny** el guarda al `localStorage` del navegador. Es poden tenir fins a **100 dissenys**. El selector **Els meus dissenys** permet tornar-los a obrir; **Nou** inicia un disseny i **Desa com a còpia** en crea un de diferent. **Elimina** retira el disseny de la col·lecció després de confirmar-ho. Els canvis pendents s’avisen abans de sortir o canviar de disseny.
+
+**Exporta aquest JSON** baixa el disseny actual, encara que no s’hagi desat al navegador. **Exporta tota la col·lecció** baixa tots els dissenys desats. **Importa JSON…** admet aquests fitxers (màxim 2 MB), valida tota la col·lecció i afegeix còpies amb identificadors nous, sense sobreescriure els dissenys existents. Els fitxers de dissenys tenen el format `vila-buildings`, versió 2 (també es pot importar la versió 1); són diferents dels fitxers de vila.
+
+El desament al navegador depèn del mateix origen (adreça, protocol i port). Per traslladar dissenys entre el joc en línia, el servidor local o un altre dispositiu, exporta’ls i importa’ls amb JSON. Si el navegador no permet desar o no queda espai, el missatge indica que no s’ha pogut completar el desament; encara pots exportar el disseny actual.
+
+### Col·locar-los a la vila
+
+Després de desar, prem **Torna a la vila**. S’obrirà l’eina **Els meus edificis (B)**, que agrupa tota la col·lecció dins d’una sola icona de la barra. Tria un disseny i la direcció de la façana principal: Sud, Est, Nord o Oest. Prepara tota la parcel·la amb **terra ferma, carrer o plaça lliure i anivellada**; el marc verd indica que es pot col·locar. S’admeten fins a 128 edificis del jugador en una vila.
+
+Cada edifici es col·loca com un conjunt. Esborra sobre qualsevol de les seves cel·les retira el conjunt i conserva el terreny. Les accions admeten desfer i refer. Editar o eliminar el disseny de la col·lecció no modifica els edificis ja col·locats: cadascun conserva una còpia completa. Per aplicar-hi un disseny nou, retira l’edifici i torna’l a col·locar.
+
+El JSON de la vila (format 27) inclou aquestes còpies completes, de manera que es pot obrir en un altre navegador sense importar la col·lecció de dissenys. Els dissenys inclosos a la vila no s’afegeixen automàticament al catàleg de l’editor. La importació de viles admet fitxers de fins a 8 MB; la importació de col·leccions de dissenys, fins a 2 MB.
+
+Fitxers nous: `editor.html`, `editor.css`, `editor.js`, `designs.js` (format i col·lecció) i `custom-geometry.js` (geometria compartida). L’editor funciona amb el servidor inclòs, Live Server i l’allotjament del joc. Si no es pot iniciar WebGL 2, la quadrícula i l’exportació continuen disponibles sense la vista 3D.
+
+
+## Noms dels rètols dels negocis — v22
+
+A **Casa → Negoci a la planta baixa**, tria **Canvia només el rètol**, escriu el **Nom del rètol** i clica la casa amb el negoci que vols modificar. Funciona amb bars, fruiteries, restaurants i botigues de queviures. Cada establiment pot tenir un nom diferent. El tipus de negoci, la façana, la terrassa, les prestatgeries i els pisos es conserven.
+
+També pots indicar el nom en crear o configurar el negoci. S’admeten fins a **24 caràcters**, amb lletres, accents, dièresi, ce trencada, punt volat, números, espais, apòstrofs i puntuació senzilla. Per exemple: **Bar Can Martí**, **Fruiteria L’Hort** o **Queviures l’Àvia**. El rètol es dibuixa en majúscules i s’ajusta a l’amplada disponible; els noms curts es veuen més grans.
+
+Deixa el camp buit per recuperar el nom genèric (Bar, Fruiteria, Restaurant o Queviures). Els canvis admeten **Desfés / Refés** i es desen amb la vila al navegador i als fitxers JSON (format 18). Les viles anteriors continuen sent compatibles.
+
+
+## Varietat de portals i finestres — v23
+
+Les cases del joc combinen automàticament el **portal amb arcada clàssic**, portals amb arcada nous i portals **rectangulars d’una o dues fulles**. Poden quedar a l’**esquerra, al centre o a la dreta**, amb una o dues finestres rectangulars o amb arcada al costat. Les dues fulles es distingeixen per la junta central i dos tiradors. La combinació depèn de la posició de la casa i de la façana: es manté en girar la càmera, reconstruir la vista, desfer o tornar a obrir la vila.
+
+A l’**editor**, selecciona una cel·la de la **planta baixa** o de la **planta del mig**. A la façana que vulguis modificar, tria **Portal configurable** i ajusta:
+
+- **Forma del portal:** amb arcada, rectangular d’una fulla o rectangular de dues fulles.
+- **Posició del portal:** esquerra, centre o dreta, mirant la façana des de fora.
+- **Finestres al costat:** rectangulars, amb arcada o sense finestres.
+- **Nombre de finestres:** una o dues. En un portal lateral, es col·loquen al costat oposat; amb el portal al centre, dues finestres el flanquegen i una sola queda a la dreta.
+
+Cada façana, cel·la i planta pot tenir una combinació diferent. També hi ha **Finestres amb arc** per fer façanes sense porta. Es conserven les opcions **Porta d’arc clàssica**, finestres rectangulars, balcó i mur. A les cel·les d’arcades obertes es mantenen els suports, sense portals superposats. Les façanes dels negocis mantenen els seus rètols i aparadors.
+
+Les viles es desen en el format **19** i els dissenys en la versió **2**. Es recuperen les viles i els dissenys anteriors, tant del navegador com del JSON. Les còpies d’edificis ja col·locades continuen sent independents de les modificacions del catàleg. El fitxer `entrances.js` comparteix la geometria dels nous portals entre el joc i l’editor.
+
+
+## Quiosc de premsa — v24
+
+A **Casa → Negoci a la planta baixa**, escull **Quiosc de premsa**, tria la façana (Sud, Est, Nord o Oest) i clica una casa amb la planta baixa construïda. La façana ha d’estar lliure. El quiosc s’integra a l’edifici: té taulell d’atenció, tendal de ratlles, sis diaris exposats a l’esquerra, sis revistes de colors a la dreta i dos diaris plegats sobre el taulell. No necessita una casella de terrassa.
+
+El rètol genèric és **PREMSA**. Pots escriure un altre nom al camp **Nom del rètol**, o fer servir **Canvia només el rètol** en un quiosc existent. La casa conserva els pisos, els buits, els colors i la teulada. **Sense negoci** retira el quiosc i recupera la façana residencial; totes aquestes accions es poden desfer i refer.
+
+El quiosc i el nom es desen amb la vila al navegador i al JSON (format **20**). Les viles anteriors i els dissenys de l’editor continuen sent compatibles.
+
+
+## Floristeria — v25
+
+A **Casa → Negoci a la planta baixa**, escull **Floristeria**, tria una façana lliure (Sud, Est, Nord o Oest) i clica una casa amb la planta baixa construïda. La botiga té una porta central de vidre, dos aparadors amb quatre prestatges i vuit testos de rams, flors roses, grogues, liles i vermelloses, fulles verdes i un tendal verd i crema. Els expositors són poc profunds i no necessiten una casella de terrassa.
+
+El rètol genèric és **FLORISTERIA**. El camp **Nom del rètol** permet posar-hi, per exemple, **Flors de la Plaça**. També pots reanomenar una floristeria existent amb **Canvia només el rètol**. En afegir-la o substituir un altre negoci, es conserven els pisos, els buits, el color i la teulada de la casa. **Sense negoci** recupera la façana residencial.
+
+Admet **Desfés / Refés**, desament al navegador i exportació/importació de la vila amb JSON (format **21**). Les viles anteriors i els dissenys de l’editor continuen sent compatibles.
+
+
+## Farmàcia — v26
+
+A **Casa → Negoci a la planta baixa**, escull **Farmàcia**, tria una façana lliure (Sud, Est, Nord o Oest) i clica una casa amb la planta baixa construïda. Té una **creu verda**, porta de vidre de dues fulles, aparadors amb sis capses i sis flascons sobre prestatges, i acabats blancs i verds. No necessita una casella de terrassa.
+
+El rètol genèric és **FARMÀCIA**. Pots personalitzar-lo al camp **Nom del rètol**, per exemple **Farmàcia de la Plaça**, o canviar-lo més endavant amb **Canvia només el rètol**. El nom s’ajusta a l’espai reservat al costat de la creu.
+
+Es conserven els pisos, els buits, el color i la teulada de la casa. **Sense negoci** retira la farmàcia i recupera la façana residencial. Admet **Desfés / Refés**, desament al navegador i exportació/importació de la vila amb JSON (format **22**). Les viles anteriors i els dissenys de l’editor continuen sent compatibles.
+
+
+## Peixateria — v27
+
+A **Casa → Negoci a la planta baixa**, escull **Peixateria**, tria una façana lliure (Sud, Est, Nord o Oest) i clica una casa amb la planta baixa construïda. Té porta central de vidre, dos aparadors amb **sis peixos sobre gel**, taulells enrajolats i un **tendal blau i blanc**. Els peixos tenen cos platejat, cua, aleta i ulls. No necessita una casella de terrassa.
+
+El rètol genèric és **PEIXATERIA**. Pots personalitzar-lo al camp **Nom del rètol**, per exemple **Peixateria del Port**, o reanomenar-lo després amb **Canvia només el rètol**.
+
+Es conserven els pisos, els buits, el color i la teulada de la casa. **Sense negoci** retira la peixateria i recupera la façana residencial. Admet **Desfés / Refés**, desament al navegador i exportació/importació de la vila amb JSON (format **23**). Les viles anteriors i els dissenys de l’editor continuen sent compatibles.
+
+
+## Guingueta de platja — v28
+
+La **Guingueta (G)** és una construcció independent d’una sola cel·la, disponible a la barra d’eines. **Només es pot col·locar sobre terreny de platja**: pinta primer una cel·la amb **Terreny → Platja**. Funciona a la Costa Brava i a la Costa Daurada, i conserva el pendent de la sorra.
+
+Té plataforma de fusta sobre potes, barra oberta, dos tamborets, ampolles i gots, parets de fusta de tons marins i coberta a dues aigües de color canyís. Tot el conjunt ocupa una sola cel·la. Tria **Barra cap a** (Sud, Est, Nord o Oest), escriu opcionalment un **Nom del rètol** de fins a 24 caràcters i clica la platja. El marc verd indica que s’hi pot construir; el vermell indica que no.
+
+Per canviar el nom o l’orientació, mantén l’eina Guingueta, ajusta els controls i torna a clicar-la. Deixa el nom buit per recuperar **GUINGUETA**. No s’hi poden afegir pisos ni negocis de casa. **Esborra**, clic dret o Supr retira la guingueta sencera i **conserva la platja**. Retira-la abans de transformar el terreny. No pot coincidir amb un pont.
+
+Admet **Desfés / Refés**, desament al navegador i exportació/importació de la vila amb JSON (format **24**). Es conserven les viles anteriors i els dissenys de l’editor. La geometria és a `beach-bar.js`; la guingueta es desa com a element de la seva cel·la de platja.
+
+
+## Fleca — v29
+
+A **Casa → Negoci a la planta baixa**, escull **Fleca**, tria una façana lliure (Sud, Est, Nord o Oest) i clica una casa amb la planta baixa construïda. Té porta central de vidre amb marc de fusta, dos aparadors amb **quatre pans rodons i sis barres de pa**, prestatges i un **tendal ocre i crema**. Els pans tenen talls a la crosta. No necessita una casella de terrassa.
+
+El rètol genèric és **FLECA**. Pots personalitzar-lo al camp **Nom del rètol**, per exemple **Fleca de la Plaça**, o canviar-lo després amb **Canvia només el rètol**.
+
+Es conserven els pisos, els buits, el color i la teulada de la casa. **Sense negoci** retira la fleca i recupera la façana residencial. Admet **Desfés / Refés**, desament al navegador i exportació/importació de la vila amb JSON (format **25**). Les viles anteriors, les guinguetes i els dissenys de l’editor continuen sent compatibles.
+
+
+## Carnisseria — v30
+
+A **Casa → Negoci a la planta baixa**, escull **Carnisseria**, tria una façana lliure (Sud, Est, Nord o Oest) i clica una casa amb la planta baixa construïda. Té porta central de vidre, **peces de carn en safates**, **embotits penjats**, un taulell enrajolat i un **tendal granat i crema**. Els aparadors queden a banda i banda de l’entrada i no necessiten una casella de terrassa.
+
+El rètol genèric és **CARNISSERIA**. Pots personalitzar-lo al camp **Nom del rètol**, per exemple **Carnisseria de la Plaça**, o canviar-lo després amb **Canvia només el rètol**.
+
+Es conserven els pisos, els buits, el color i la teulada de la casa. **Sense negoci** retira la carnisseria i recupera la façana residencial. Admet **Desfés / Refés**, desament al navegador i exportació/importació de la vila amb JSON (format **26**). Les viles anteriors, les guinguetes i els dissenys de l’editor continuen sent compatibles.
+
+
+## Olivera, parra i avellaner — v31
+
+Obre **Arbres (4)** i escull una de les noves opcions a **Arbre o planta**:
+
+- **Olivera:** tronc nuós, branques obertes, fullatge gris verdós i petites olives.
+- **Parra:** emparrat de fusta de quatre potes, capçada de fulles i quatre raïms penjants. La part de sota queda oberta.
+- **Avellaner:** diversos troncs, capçada verda arrodonida i grups d’avellanes.
+
+Clica per plantar l’espècie seleccionada. Clica un arbre existent per substituir-lo; **Esborra** el retira i conserva el terreny. La forma es manté en tornar a obrir la vila. Les noves plantes projecten ombra i s’adapten a l’alçada de la cel·la igual que les espècies anteriors.
+
+El selector conserva el pi, el margalló, l’alzina i el plàtan d’ombra. Les set opcions admeten **Desfés / Refés**, desament al navegador i exportació/importació de la vila amb JSON (format **27**). La geometria de les tres noves espècies és a `mediterranean-trees.js`.
+
+
+## Carrers empedrats, de terra i asfaltats — v32
+
+A **Terreny (2) → Tipus de terreny**, tria **Carrer empedrat**, **Carrer de terra** o **Carrer asfaltat** i clica les cel·les que vols convertir en carrer. L’empedrat té petites pedres de tons variats i juntes alternades; el de terra és ocre amb grava; l’asfaltat és gris fosc amb gra fi. Les cel·les adjacents formen superfícies contínues, també en revolts i cruïlles. No hi apareixen bancs ni fonts automàticament.
+
+Canviar d’acabat conserva l’alçada del terreny. Un segon clic amb el mateix acabat no l’eleva. **Terra ferma** permet elevar un carrer conservant-ne el paviment; **Esborra** retira primer el paviment i deixa terra ferma a la mateixa alçada. Com la plaça i la platja, aquestes eines substitueixen cases o arbres existents; **Desfés** permet recuperar-los.
+
+Els carrers admeten cases, edificis grans, patis i les terrasses dels negocis, amb les mateixes condicions d’alçada i espai lliure que la terra ferma. També poden ser els extrems d’un pont o passar per sota d’un pont prou elevat. Les construccions que reserven diverses cel·les i les guinguetes mantenen la protecció del seu terreny. La guingueta continua requerint platja.
+
+S’inclouen al desament automàtic i a l’exportació/importació JSON (**format 28**), amb recuperació dels desaments anteriors. La geometria dels paviments és a `road-surfaces.js`.
+
+
+## Terreny amb pendent — v33
+
+A **Terreny (2) → Tipus de terreny → Terreny amb pendent**, escull cap on **puja**: Sud, Est, Nord o Oest. Les direccions coincideixen amb la brúixola encara que giris la vista. Pots conservar l’acabat actual o escollir **Terra ferma**, **Carrer empedrat**, **Carrer de terra** o **Carrer asfaltat**.
+
+El pendent ocupa una cel·la i puja exactament un nivell (0,42 unitats del joc) entre els dos costats oposats. La cel·la conserva el seu nivell inferior, que ha de ser entre 0 i 3. Per exemple, per connectar una zona de nivell 0 amb una de nivell 1 situada al nord, aplica un pendent que pugi cap al **Nord** en una cel·la de nivell 0, al costat de la zona alta. Per fer una pujada més llarga, prepara cel·les consecutives als nivells 0, 1, 2… i aplica-hi pendents en la mateixa direcció. **Terra ferma** eleva tot el pendent un nivell, conservant-lo, fins al nivell superior màxim 4.
+
+Pots canviar l’acabat d’un pendent amb les eines habituals de carrer: les pedres, la terra i l’asfalt segueixen la inclinació. Un altre clic amb el mateix pendent i acabat no l’eleva. El pendent és una propietat del terreny: també es conserva quan construeixes una casa, plantes un arbre o hi poses un altre element. Aplicar el pendent a una casa conserva els pisos, els buits, el color i la teulada.
+
+Les cases i altres construccions es mantenen verticals sobre **fonaments horitzontals al nivell superior**. Els arbres arrelen a mitja vessant; la parra amb emparrat disposa d’una base horitzontal per sostenir els pilars. Places, escales i terrasses també disposen de base horitzontal. Els mercats, esglésies, ajuntaments, edificis de l’editor i cases amb pati admeten pendents, amb totes les bases de la parcel·la a la mateixa alçada superior; es poden combinar amb terra plana a aquesta alçada. Es mantenen les proteccions de les construccions que ocupen diverses cel·les. Les guinguetes continuen sent exclusives de la platja.
+
+Els ponts es poden recolzar en un pendent i adapten la seva alçada al costat de connexió. Cal mantenir espai lliure sota el pont. Retira el pont abans de modificar el pendent dels extrems o del traçat.
+
+**Sense pendent · aplana** retira la inclinació i baixa el terreny al nivell inferior, conservant els elements. **Esborra** primer retira l’element o paviment; sobre un pendent de terra ferma, retira només el pendent. Convertir-lo en **Platja** elimina el pendent i abaixa la cel·la al nivell de costa.
+
+Tot admet **Desfés / Refés**, desament automàtic i exportació/importació JSON (**format 29**); els formats 1–28 continuen sent compatibles. La geometria és a `slope-geometry.js`.
+
+
+## Portes i testos sobre desnivells — v34
+
+Les façanes de planta baixa situades en terreny elevat comproven l’alçada del terreny just davant de la porta. Si no hi ha accés a una alçada compatible ni espai per a unes escales automàtiques, **el portal es transforma visualment en una finestra** i es retiren els testos que quedarien suspesos. Es conserva la posició del portal i les finestres laterals. Cada façana es resol per separat: una casa pot conservar la porta al costat del carrer i tenir finestres sobre el desnivell de l’altre costat.
+
+La comprovació té en compte el costat alt o baix dels pendents, la posició de les portes laterals, les escales, les bases dels patis i terrasses i els ponts que arriben realment a l’entrada. Els testos dels balcons, que disposen de suport, es conserven. Les entrades del nivell més baix de costa mantenen el comportament anterior.
+
+El canvi és automàtic i visual: no modifica la vila desada ni els dissenys de l’editor. Si després s’afegeix terreny d’accés, reapareixen la porta original i els testos amb suport. També s’aplica als portals de planta baixa dels edificis del jugador; la previsualització plana de l’editor conserva els elements escollits. Una façana comercial elevada sense accés queda amagada fins que recupera un accés adequat, conservant el negoci desat.
+
+
+## Escales automàtiques a les portes — v35
+
+Quan una porta dona a un carrer o terreny més baix, **es conserva la porta i s’hi afegeix una escala de pedra** per arribar fins a terra. L’escala s’alinea amb el portal, sigui central o lateral, i adapta el nombre de graons al desnivell. També funciona si el carrer és inclinat, empedrat, de terra o asfaltat. Des de la v36 només s’aplica a cases sobre terreny amb pendent, amb un salt màxim d’un nivell i fins a cinc graons.
+
+Les escales apareixen automàticament a les cases i als portals de planta baixa dels edificis del jugador. No ocupen espais amb arbres, cases, mercats, altres edificis, patis, terrasses, ponts o altres escales automàtiques. Si no hi ha prou terreny lliure, o la façana dona al mar o al buit, es manté la finestra. Els testos sense suport continuen amagats.
+
+No cal reconstruir les cases ni tornar a importar els dissenys. Les escales es recalculen en canviar el terreny, en desfer/refés i en obrir la vila; quan el carrer arriba a l’alçada de la porta, desapareixen. Formen part de l’adaptació visual de la façana i no es desen com un element independent. El format JSON continua sent el 29.
+
+
+## Escales curtes només en terreny amb pendent — v36
+
+Les escales automàtiques només apareixen quan **la casa està construïda sobre una cel·la de terreny amb pendent** i cal salvar **com a màxim un nivell** fins al carrer o terreny lliure del davant. Tenen entre dos i cinc graons i no s’allarguen per baixar grans murs de contenció.
+
+Si la casa està sobre terreny pla elevat i la porta no té accés directe, o el salt supera un nivell encara que la casa sigui sobre un pendent, el portal es representa com una **finestra**. Les portes que ja tenen accés a la seva alçada es conserven. La mateixa norma s’aplica als portals dels edificis del jugador.
+
+Les escales llargues de les viles anteriors desapareixen automàticament en obrir-les. No cal reconstruir les cases. Els testos sense suport continuen amagats. El format de desament continua sent el 29.
+
+
+## Far i parc infantil — v37
+
+**Far (F)** afegeix una torre blanca amb franges vermelles, porta orientable, finestres, galeria amb barana i llanterna lluminosa sota una coberta vermella. Ocupa **una cel·la** de terra ferma, carrer o plaça lliure. Prepara el terreny i tria **Entrada cap a** abans de col·locar-lo, per exemple en un promontori o al final d’un moll.
+
+**Parc infantil (P)** té dues mides: **Petit · 2 × 1** i **Gran · 2 × 2**. El petit inclou un gronxador, un tobogan amb escala i un sorral amb petites joguines. El gran té dos gronxadors, tobogan, sorral, balancí i banc. Els dos tenen paviment de colors i una tanca baixa amb obertura d’entrada. Tria Sud, Est, Nord o Oest per girar tot el conjunt. A Est/Oest, el parc petit ocupa 1 × 2 cel·les sobre la quadrícula.
+
+Prepara totes les cel·les amb **terra ferma, carrer o plaça a la mateixa alçada**. També es poden usar pendents amb les bases superiors anivellades: el conjunt recolza sobre fonaments horitzontals. El marc verd indica que hi cap; el vermell mostra que falta terreny o hi ha un obstacle. No es poden superposar a cases, arbres, altres edificis, patis, ponts ni terrasses.
+
+**Esborra**, clic dret o Supr sobre qualsevol cel·la retira el far o parc sencer i conserva el terreny. Retira’l primer si vols canviar-ne la mida, orientació o terreny de sota. Tots dos admeten **Desfés / Refés**, desament automàtic i exportació/importació JSON (**format 30**), amb compatibilitat amb les viles anteriors. La geometria és a `landmark-geometry.js`.
+
+
+## Entrades i negocis als pisos — v38
+
+Quan una façana d’una **planta intermèdia ocupada** toca terra ferma o un carrer a la mateixa alçada, hi apareix una **porta automàtica**. La resta de façanes conserven les finestres i els balcons. No s’aplica a l’última planta ni als buits entre pisos i no genera escales llargues.
+
+A **Casa → Posar o editar un negoci**, tria el negoci, la **planta** i la **façana** (nord, sud, est o oest), i clica la casa. «Segon pis (tercera planta)» correspon a la planta baixa més dos pisos. Cada façana accessible pot tenir el seu propi negoci i rètol; el negoci de la planta baixa es conserva.
+
+Els bars i restaurants poden tenir terrassa i la fruiteria pot tenir prestatgeries al davant, sobre una casella plana i lliure a aquella alçada. Per canviar el rètol o retirar un negoci, selecciona la seva planta i façana. En retirar-lo, torna la porta automàtica.
+
+Si modifiques el terreny i deixa d’arribar a la porta, el negoci queda ocult fins que restaures l’accés. Si esborres la planta del negoci, o es converteix en l’última planta en retirar els pisos superiors, el negoci d’aquella planta es retira. Pots recuperar-lo amb **Desfés**.
+
+Desament automàtic, exportació/importació JSON en **format 31** i Desfés/Refés. Compatible amb viles dels formats 1–30.
+
+
+## Hospital, escola i comissaria — v39
+
+Tres eines noves a la barra:
+
+- **Hospital**: petit de **2 × 2** cel·les, amb dues plantes, o gran de **3 × 2**, amb tres plantes. Façana clara, finestres blaves, entrada coberta, rètol i creu sanitària de color turquesa. El gran també té rètol d’urgències.
+- **Escola**: petita de **2 × 2** o gran de **3 × 2** cel·les. Dues plantes, façana ocre, teulada de teula i pati al davant amb joc de colors i cistella; la gran hi afegeix un banc.
+- **Comissaria**: **2 × 1** cel·les, dues plantes, rètol de policia, franja de quadres blaus i distintiu sobre la façana.
+
+Selecciona l’eina, la mida (hospital o escola) i l’orientació de l’entrada. Prepara totes les cel·les sobre terra ferma, carrer o plaça lliure i a la mateixa alçada. La selecció mostra tota la superfície; en girar els edificis rectangulars, també es gira la superfície que ocupen.
+
+L’esborrador retira l’edifici sencer des de qualsevol de les seves cel·les i conserva el terreny. No es poden superposar amb altres construccions, ponts, patis ni terrasses. Compatibles amb Desfés/Refés, desament automàtic i JSON **format 32**. Es continuen obrint les viles dels formats 1–31.
+
+
+## Barra d’eines agrupada — v40
+
+La barra té una única opció **Edificis** per a **Guingueta, Mercat, Església, Ajuntament, Hospital, Escola, Comissaria, Far i Parc infantil**. Prem **Edificis** i tria el tipus al desplegable del panell d’opcions. A sota apareixen la mida, l’orientació i les altres opcions que corresponguin.
+
+Quan tornes a Edificis es recupera l’últim tipus seleccionat durant la sessió. Els accessos directes existents (G, 7, 8, 9, F i P) també obren el tipus corresponent dins del grup. **Casa** i **Els meus edificis**, per als dissenys de l’editor, mantenen el seu botó propi. Els nous equipaments del catàleg s’afegiran al desplegable sense ampliar la barra.
+
+Es conserven totes les construccions i les viles desades, sense canviar el format JSON 32.
+
+
+## Monuments: muralles — v41
+
+Nova opció **Monuments** a la barra d’eines, separada de Casa i Edificis. Tria una peça al desplegable **Muralles**:
+
+- **Mur de pedra** recte, amb blocs i merlets.
+- **Mur amb torre central**, amb torre quadrada, espitlleres i terrat emmerletat.
+- **Mur en angle de 90°**, per fer una cantonada.
+- **Cantonada amb torre**, amb la torre a la unió dels dos braços.
+- **Mur amb portal**, amb una arcada oberta que travessa el mur.
+
+Cada peça ocupa **una cel·la** i té **quatre orientacions**. Els murs rectes uneixen est-oest a 0°/180° i nord-sud a 90°/270°. Les cantonades uneixen sud-est (0°), nord-est (90°), nord-oest (180°) o sud-oest (270°). Les direccions són les de la brúixola del mapa, encara que giris la càmera. El pas del portal és perpendicular al mur.
+
+Prepara terra ferma, carrer o plaça lliure. Col·loca les peces en cel·les adjacents a la mateixa alçada i orienta els seus extrems perquè es trobin. Les peces arriben fins a la vora de la cel·la; les cantonades permeten tancar recintes. No s’ajusten automàticament a diferències d’alçada entre cel·les.
+
+L’esborrador retira una peça i conserva el terreny i les peces veïnes. Cada peça es guarda amb la seva orientació i funciona amb Desfés/Refés. JSON **format 33**, compatible amb les viles dels formats 1–32. El límit conjunt d’edificis, equipaments i monuments és de 128 peces.
+
+
+## Nova vila: costa 80% terra / 20% mar — v42
+
+A **La meva vila → Comença una vila nova…** tens l’opció **Costa · 80% terra i 20% mar**. Tria primer la mida de la quadrícula (33 × 33, 49 × 49 o 65 × 65).
+
+La terra ocupa aproximadament el **80% de les cel·les**, inclosa la platja, des del límit **oest** fins a una línia de costa suaument irregular. El **20% restant és mar a l’est**. La proporció s’arrodoneix a la cel·la més propera i es calcula dins la quadrícula construïble; el mar de fons continua més enllà del mapa.
+
+Tot el terreny és lliure i pla, sense edificis ni arbres. La Costa Daurada té una franja de platja més ampla i suau; la Costa Brava, una franja més estreta i inclinada. La vista inicial s’allunya per mostrar la quadrícula sencera, amb l’oest a l’esquerra i l’est a la dreta.
+
+Es mantenen les altres opcions de nova vila. La costa es desa al navegador i al JSON com qualsevol altra vila; el format 33 no canvia. Pots recuperar la vila anterior amb **Desfés**.
+
+
+## Pont de pedra amb arcades — v43
+
+A l’eina **Pont**, tria **Pont de pedra amb arcades** al selector **Tipus de pont**. L’opció **Pont actual** conserva el model anterior.
+
+Marca la primera riba i després la segona, en la mateixa fila o columna i separades entre 2 i 16 cel·les. Els extrems han de ser terra ferma, carrer o plaça lliure, però **poden estar a alçades diferents**. El pas i els parapets s’inclinen entre les dues alçades, també quan un extrem és en un pendent.
+
+El pont nou té paviment i parapets de pedra, pilars verticals amb bases amples i **arcades obertes entre els pilars**. Les arcades s’adapten al pendent i a l’espai disponible sota el pas. Cal deixar lliure el traçat; es permet terreny més baix a sota si hi ha prou separació.
+
+Pots canviar el tipus de pont mentre marques els extrems. Es conserva la selecció del tipus per construir el següent pont. L’esborrador retira el pont sencer sense tocar les ribes; funciona amb Desfés/Refés.
+
+El JSON **format 34** desa el tipus del pont. Les viles dels formats 1–33 continuen sent compatibles i els ponts anteriors conserven el model original.
+
+
+## Pradera amb flors — v44
+
+A **Terreny → Pradera amb flors** pots cobrir cel·les amb una superfície verda semblant a la gespa, amb floretes blanques, grogues i rosades disseminades. Les cel·les adjacents formen una superfície contínua; les flors mantenen la seva distribució en desar i tornar a obrir la vila.
+
+La pradera conserva **l’alçada i el pendent** del terreny. També és un acabat disponible dins de **Terreny amb pendent → Acabat del terreny**. Les tiges queden dretes i recolzen sobre la superfície inclinada.
+
+Funciona com a terra ferma per construir-hi i per als extrems dels ponts. Les flors s’amaguen als espais ocupats per edificis, terrasses i ponts. L’eina Terra ferma permet elevar-la; l’esborrador retira l’acabat verd i conserva la base i el pendent.
+
+Compatible amb Desfés/Refés, desament automàtic i exportació/importació. El JSON **format 35** conserva la pradera; s’obren també les viles dels formats 1–34.
