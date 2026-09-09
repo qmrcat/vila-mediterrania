@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ca">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#1c565b"><title>Editor d’edificis · Vila Mediterrània</title><link rel="stylesheet" href="./editor.css"></head>
+<body>
+<header><div><a id="return-game" href="./index.html?tool=custom">← Torna a la vila</a><h1>Editor d’edificis</h1></div><div class="actions"><button id="save" class="primary">Desa el disseny</button><button id="export">Exporta aquest JSON</button><button id="import">Importa JSON…</button></div></header>
+<main class="editor-layout">
+  <aside class="settings">
+    <label for="saved-designs">Els meus dissenys</label><select id="saved-designs"><option value="">Disseny nou</option></select>
+    <div class="actions"><button id="new">Nou</button><button id="copy">Desa com a còpia</button><button id="delete">Elimina</button></div>
+    <button id="export-all" class="wide">Exporta tota la col·lecció</button>
+    <hr><label for="design-name">Nom de l’edifici</label><input id="design-name" maxlength="60" value="El meu edifici">
+    <div class="two-columns"><div><label for="width">Amplada</label><select id="width"><option value="1">1 cel·la</option><option value="2">2 cel·les</option><option value="3">3 cel·les</option></select></div><div><label for="depth">Fondària</label><select id="depth"><option value="1">1 cel·la</option><option value="2">2 cel·les</option><option value="3">3 cel·les</option></select></div></div>
+    <label for="middle-count">Repeticions de la planta intermèdia</label><select id="middle-count"><option value="0">Cap · només planta baixa</option><option value="1" selected>1 planta intermèdia</option><option value="2">2 plantes intermèdies</option><option value="3">3 plantes intermèdies</option></select>
+    <hr><h2 id="cell-title">Planta baixa · cel·la 1</h2>
+    <div id="floor-fields">
+      <label for="cell-style">Construcció de la cel·la</label><select id="cell-style"><option value="solid">Murs</option><option value="arcade">Arcades obertes amb pilastres</option><option value="empty">Sense planta intermèdia</option></select>
+      <label for="wall-color">Color dels murs</label><input id="wall-color" type="color" value="#f5eee0">
+      <div id="face-fields"><p class="note">Combina obertures diferents a cada costat. Tria «Portal configurable» per escollir la forma, la posició i les finestres. Esquerra i dreta es miren des de fora, de cara a cada façana. Només es veuen les obertures exteriors.</p><div id="faces" class="two-columns"></div></div>
+    </div>
+    <div id="roof-fields" hidden><label for="roof-type">Coberta</label><select id="roof-type"><option value="tile">Teulada a dues aigües</option><option value="shed">Teulada a una aigua</option><option value="flat">Terrat amb barana</option></select><label for="roof-color">Color de la coberta</label><input id="roof-color" type="color" value="#bf7957"><label for="roof-turn">Vessant o costat baix cap a</label><select id="roof-turn"><option value="0">Dreta</option><option value="1">Darrere</option><option value="2">Esquerra</option><option value="3">Davant</option></select></div>
+    <button id="apply-layer" class="wide">Aplica a tota aquesta planta</button>
+    <p class="note">La planta baixa ocupa tota la parcel·la. Les cel·les sense planta intermèdia tenen la coberta més baixa. Les arcades deixen buits amb suports.</p>
+  </aside>
+  <section class="workarea" aria-label="Disseny de l’edifici">
+    <div class="preview"><canvas id="preview" tabindex="0" aria-label="Vista 3D del disseny. Arrossega per girar i fes servir la roda per apropar."></canvas><p id="preview-error" role="status" hidden></p><div class="preview-controls"><span>Vista 3D · arrossega per girar</span><button id="rotate">Gira ↻</button><button id="center">Centra</button></div></div>
+    <div class="plan-panel"><div class="tabs" role="group" aria-label="Planta que vols editar"><button data-layer="ground" aria-pressed="true">Planta baixa</button><button data-layer="middle" aria-pressed="false">Planta del mig</button><button data-layer="roof" aria-pressed="false">Terrat i teulada</button></div><p id="plan-hint">Selecciona una cel·la i canvia els seus elements als controls.</p><div class="plan-wrap"><span>Darrere</span><div id="plan" role="group" aria-label="Cel·les de la planta"></div><strong>Façana principal · davant</strong></div></div>
+  </section>
+</main>
+<footer><p id="status" role="status" aria-live="polite">Disseny nou. Desa’l per utilitzar-lo a la vila.</p><span>Els edificis ja col·locats conserven el seu disseny original.</span></footer>
+<input id="import-file" type="file" accept=".json,application/json" hidden>
+<script type="module" src="./editor.js"></script>
+</body></html>

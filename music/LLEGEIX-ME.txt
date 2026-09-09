@@ -1,0 +1,12 @@
+MÚSICA DE FONS
+
+Posa els àudios MP3, OGG, WAV, M4A, AAC, FLAC, OPUS o WEBM en aquesta carpeta.
+Amb Inicia-Windows.bat o node server.mjs es detecten automàticament, també dins de subcarpetes.
+Es reprodueixen per ordre de nom i la llista es repeteix. Pots prefixar 01-, 02-...
+Prem ♫ i Carpeta del joc per actualitzar la llista després d’afegir fitxers.
+
+Amb Live Server o un allotjament estàtic, edita playlist.json amb els noms relatius, per exemple:
+["01-mar.mp3", "02-vespre.ogg", "ambient/03-passeig.mp3"]
+
+També pots utilitzar Escull una carpeta des del joc. Els fitxers no s’envien a cap servidor; cal tornar a escollir-los en reobrir la pàgina.
+No s’inclouen pistes d’àudio.

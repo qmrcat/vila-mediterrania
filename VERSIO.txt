@@ -1,0 +1,3 @@
+Vila Mediterrània — v44 — 2026-09-09
+Nou terreny Pradera amb flors: gespa verda i floretes blanques, grogues i rosades. Conserva alçada i pendent, distribució estable, compatible amb terra ferma i espais reservats.
+Versió completa amb totes les funcions anteriors: pont de pedra amb arcades, costa 80/20, monuments i muralles, edificis, negocis als pisos, editor, música, terrenys i carrers. JSON format 35, compatible amb formats 1–34.

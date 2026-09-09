@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1c565b">
+  <meta name="description" content="Construeix una vila vora el mar, inspirada en la Costa Brava i la Costa Daurada. Un joc creatiu i tranquil.">
+  <title>Vila Mediterrània · Un poble al teu ritme</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <main id="game" aria-label="Constructor de pobles mediterranis">
+    <canvas id="world" tabindex="0" aria-label="Vila en 3D. Clica per construir, arrossega per girar i utilitza la roda per apropar-te. Amb teclat: fletxes per triar casella i retorn per construir."></canvas>
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">≋</span><div><h1>Vila Mediterrània</h1><p>Un poble al teu ritme</p></div></div>
+      <div class="region-switch" role="group" aria-label="Ambientació"><button data-region="brava" aria-pressed="true">Costa Brava</button><button data-region="daurada" aria-pressed="false">Costa Daurada</button></div>
+      <div class="top-actions"><button id="music-open" class="icon-button" aria-label="Obre els controls de música" title="Música" aria-haspopup="dialog">♫</button><button id="help" class="icon-button" aria-label="Com es juga" title="Com es juga (?)">?</button><button id="file-menu" class="primary-button" aria-haspopup="true" aria-expanded="false">La meva vila <span aria-hidden="true">⌄</span></button></div>
+    </header>
+    <aside class="palette panel" aria-label="Opcions de construcció">
+      <div class="eyebrow">EL TEU RACÓ DE MAR</div>
+      <h2 id="tool-heading">Fem créixer el poble</h2>
+      <p id="tool-description">Clica per afegir un pis. Clica un buit entre pisos per reconstruir-lo.</p>
+      <div id="building-options" hidden>
+        <label class="field-label" for="building-type">Edifici</label>
+        <select id="building-type" aria-describedby="tool-description"></select>
+      </div>
+      <div id="monument-options" hidden>
+        <label class="field-label" for="monument-type">Muralles · tipus de peça</label>
+        <select id="monument-type" aria-describedby="tool-description"></select>
+      </div>
+      <div id="house-options">
+        <label class="field-label" for="house-action">Acció a la casa</label>
+        <select id="house-action"><option value="build">Construir pisos i teulades</option><option value="business">Posar o editar un negoci</option></select>
+        <div id="house-build-options">
+        <label class="field-label" for="house-type">Tipus de casa</label>
+        <select id="house-type"><option value="standard">Casa habitual · fins a 5 plantes</option><option value="patio">Casa amb pati · màxim 2 plantes</option></select>
+        <div id="patio-options" hidden>
+          <label class="field-label" for="patio-position">On vols el pati?</label>
+          <select id="patio-position" required aria-describedby="patio-note"><option value="" disabled selected>Escull la posició…</option><option value="front">Al davant de la casa</option><option value="back">Al darrere de la casa</option></select>
+          <label class="field-label" for="patio-direction">Façana principal cap a</label>
+          <select id="patio-direction"><option value="0">Sud</option><option value="1">Est</option><option value="2">Nord</option><option value="3">Oest</option></select>
+          <label class="field-label" for="patio-floors">Alçada de la casa</label>
+          <select id="patio-floors"><option value="1">1 planta · planta baixa</option><option value="2">2 plantes · baixa i primer pis</option></select>
+          <p id="patio-note" class="roof-note" role="status">Escull si vols el pati al davant o al darrere.</p>
+        </div>
+        <div class="label-row"><span>Color de façana</span><span id="color-name">Calç</span></div>
+        <div class="swatches" role="group" aria-label="Color de façana"></div>
+        <label class="field-label" for="roof">Acabat de la casa</label>
+        <select id="roof"><option value="tile">Teulada a dues aigües</option><option value="shed">Teulada a una aigua</option><option value="flat">Terrat amb barana</option></select>
+        <div id="roof-direction-options">
+          <label id="roof-direction-label" class="field-label" for="roof-direction">Inclinació cap a</label>
+          <select id="roof-direction" aria-describedby="roof-direction-note"><option value="0">Est</option><option value="1">Nord</option><option value="2">Oest</option><option value="3">Sud</option></select>
+          <p id="roof-direction-note" class="roof-note">Indica el costat baix. Les direccions són fixes encara que giris la vista.</p>
+          <label class="roof-only-label"><input id="roof-direction-only" type="checkbox"> Només gira la teulada</label>
+          <p class="roof-note">Activa-ho i clica una casa existent per canviar l’orientació sense afegir pisos.</p>
+        </div>
+        </div>
+        <div id="business-options" hidden>
+          <label class="field-label" for="business-type">Negoci</label>
+          <select id="business-type"><option value="bar">Bar</option><option value="greengrocer">Fruiteria</option><option value="restaurant">Restaurant</option><option value="grocery">Botiga de queviures</option><option value="newsstand">Quiosc de premsa</option><option value="florist">Floristeria</option><option value="pharmacy">Farmàcia</option><option value="fishmonger">Peixateria</option><option value="bakery">Fleca</option><option value="butcher">Carnisseria</option><option value="rename">Canvia només el rètol</option><option value="none">Sense negoci (retira’l)</option></select>
+          <div id="business-name-option">
+            <label class="field-label" for="business-name">Nom del rètol</label>
+            <input id="business-name" type="text" maxlength="24" placeholder="Ex.: Bar Can Martí" aria-describedby="business-name-help" autocomplete="off">
+            <p id="business-name-help" class="roof-note">Màxim 24 caràcters. Deixa’l buit per al nom genèric.</p>
+          </div>
+          <label class="field-label" for="business-floor">Planta del negoci</label>
+          <select id="business-floor"><option value="0">Planta baixa</option><option value="1">Primer pis</option><option value="2">Segon pis (tercera planta)</option><option value="3">Tercer pis</option></select>
+          <p class="roof-note">Als pisos, només plantes intermèdies amb terreny a la mateixa alçada davant de la façana. Sense negoci, hi apareix una porta.</p>
+            <label class="field-label" for="business-direction">Façana del negoci cap a</label>
+            <select id="business-direction"><option value="0">Sud</option><option value="1">Est</option><option value="2">Nord</option><option value="3">Oest</option></select>
+          <div id="business-details">
+            <label id="business-terrace-option" class="roof-only-label"><input id="business-terrace" type="checkbox" checked> Amb terrassa</label>
+          </div>
+          <p id="business-note" class="roof-note">Clica una casa existent. La terrassa posa dues taules i quatre cadires a la casella del davant: cal terra ferma o plaça lliure a la mateixa alçada.</p>
+        </div>
+      </div>
+      <div id="tree-options" hidden>
+        <label class="field-label" for="tree-species">Arbre o planta</label>
+        <select id="tree-species" aria-describedby="tree-note"></select>
+        <p id="tree-note" class="tree-note"></p>
+      </div>
+      <div id="terrain-options" hidden>
+        <label class="field-label" for="terrain-type">Tipus de terreny</label>
+        <select id="terrain-type" aria-describedby="terrain-note"><option value="land">Terra ferma</option><option value="meadow">Pradera amb flors</option><option value="slope">Terreny amb pendent</option><option value="beach">Platja</option><option value="cobble">Carrer empedrat</option><option value="dirt">Carrer de terra</option><option value="asphalt">Carrer asfaltat</option></select>
+        <div id="slope-options" hidden>
+          <label class="field-label" for="slope-direction">El pendent puja cap a</label>
+          <select id="slope-direction"><option value="0">Sud</option><option value="1">Est</option><option value="2">Nord</option><option value="3">Oest</option><option value="flat">Sense pendent · aplana</option></select>
+          <label class="field-label" for="slope-finish">Acabat del terreny</label>
+          <select id="slope-finish"><option value="keep">Conserva l’acabat actual</option><option value="land">Terra ferma</option><option value="meadow">Pradera amb flors</option><option value="cobble">Carrer empedrat</option><option value="dirt">Carrer de terra</option><option value="asphalt">Carrer asfaltat</option></select>
+        </div>
+        <p id="terrain-note" class="tree-note"></p>
+      </div>
+      <div id="landmark-options" hidden>
+        <div id="civic-size-options" hidden><label class="field-label" for="civic-size">Mida de l’edifici</label><select id="civic-size"><option value="4">Petit · 2 × 2 cel·les</option><option value="6">Gran · 3 × 2 cel·les</option></select></div>
+        <div id="playground-size-options"><label class="field-label" for="playground-size">Mida del parc infantil</label><select id="playground-size"><option value="2">Petit · 2 × 1 cel·les</option><option value="4">Gran · 2 × 2 cel·les</option></select></div>
+        <div id="landmark-direction-options"><label class="field-label" for="landmark-direction">Entrada cap a</label><select id="landmark-direction"><option value="0">Sud</option><option value="1">Est</option><option value="2">Nord</option><option value="3">Oest</option></select></div>
+        <div id="monument-direction-options" hidden><label class="field-label" for="monument-direction">Orientació de la peça</label><select id="monument-direction"><option value="0">0° · E–O / cantonada S–E</option><option value="1">90° · N–S / cantonada N–E</option><option value="2">180° · E–O / cantonada N–O</option><option value="3">270° · N–S / cantonada S–O</option></select><p class="roof-note">Les lletres indiquen els costats que uneix el mur. El portal travessa el mur perpendicularment.</p></div>
+        <p id="landmark-note" class="tree-note" role="status">Prepara terra lliure a la mateixa alçada.</p>
+      </div>
+      <div id="beachbar-options" hidden>
+        <label class="field-label" for="beachbar-direction">Barra cap a</label><select id="beachbar-direction"><option value="0">Sud</option><option value="1">Est</option><option value="2">Nord</option><option value="3">Oest</option></select>
+        <label class="field-label" for="beachbar-name">Nom del rètol</label><input id="beachbar-name" type="text" maxlength="24" placeholder="Guingueta" aria-describedby="beachbar-help" autocomplete="off">
+        <p id="beachbar-help" class="tree-note">Una cel·la, només a la platja. Màxim 24 caràcters; buit per al rètol genèric. Clica una guingueta existent per aplicar-hi el nom i l’orientació.</p>
+        <p id="beachbar-note" class="tree-note" role="status">Pinta sorra amb Terreny → Platja abans de construir.</p>
+      </div>
+      <div id="custom-options" hidden>
+        <label class="field-label" for="custom-design">Disseny del jugador</label><select id="custom-design"><option value="">Encara no tens dissenys</option></select>
+        <label class="field-label" for="custom-direction">Façana principal cap a</label><select id="custom-direction"><option value="0">Sud</option><option value="1">Est</option><option value="2">Nord</option><option value="3">Oest</option></select>
+        <p id="custom-note" class="tree-note" role="status">Crea un disseny a l’editor o importa-hi una col·lecció JSON.</p>
+        <a class="editor-link" href="./editor.html">Obre l’editor d’edificis ↗</a>
+      </div>
+      <div id="townhall-options" hidden>
+        <label class="field-label" for="townhall-size">Mida de l’ajuntament</label>
+        <select id="townhall-size"><option value="2">Petit · 2 × 1 cel·les</option><option value="4">Gran · 2 × 2 cel·les</option></select>
+        <label class="field-label" for="townhall-direction">Façana i balcó cap a</label>
+        <select id="townhall-direction"><option value="0">Sud</option><option value="1">Est</option><option value="2">Nord</option><option value="3">Oest</option></select>
+        <p id="townhall-note" class="tree-note" role="status">Dues plantes, amb balcó i senyera al pis superior. Prepara terra ferma o plaça lliure a la mateixa alçada.</p>
+      </div>
+      <div id="church-options" hidden>
+        <label class="field-label" for="church-direction">Entrada de l’església cap a</label>
+        <select id="church-direction"><option value="0">Sud</option><option value="1">Est</option><option value="2">Nord</option><option value="3">Oest</option></select>
+        <p id="church-note" class="tree-note" role="status">Prepara sis cel·les de terra ferma o plaça a la mateixa alçada. El marc mostra l’espai de l’església i el campanar.</p>
+      </div>
+      <div id="market-options" hidden>
+        <label class="field-label" for="market-size">Mida del mercat</label>
+        <select id="market-size"><option value="2">Petit · 2 cel·les (1 × 2)</option><option value="4">Gran · 4 cel·les (2 × 2)</option></select>
+        <label class="field-label" for="market-direction">Entrada principal cap a</label>
+        <select id="market-direction"><option value="0">Sud</option><option value="1">Est</option><option value="2">Nord</option><option value="3">Oest</option></select>
+        <p id="market-note" class="tree-note" role="status">Prepara terra ferma o plaça lliure a la mateixa alçada. El marc mostra les cel·les que ocuparà.</p>
+      </div>
+      <div id="bridge-options" hidden>
+        <label class="field-label" for="bridge-type">Tipus de pont</label>
+        <select id="bridge-type"><option value="classic">Pont actual</option><option value="stone">Pont de pedra amb arcades</option></select>
+        <p class="roof-note">Els extrems poden estar a alçades diferents. El pas s’inclina per unir les dues ribes.</p>
+        <p id="bridge-note" class="tree-note" role="status">Marca dos extrems de terra ferma o plaça, alineats i separats entre 2 i 16 caselles.</p>
+        <button id="bridge-cancel" class="quiet-button" disabled>Cancel·la el pont (Esc)</button>
+      </div>
+      <div class="palette-separator"></div>
+      <label class="label-row" for="light"><span>Llum del dia</span><span id="light-name">Migdia</span></label>
+      <input id="light" type="range" min="0" max="100" value="35" aria-label="Llum: de matí a capvespre">
+      <div class="range-ends"><span>Matí</span><span>Capvespre</span></div>
+      <button id="grid" class="quiet-button" aria-pressed="false"><span aria-hidden="true">▦</span> Mostra la quadrícula</button>
+    </aside>
+    <div id="village-menu" class="file-panel panel" hidden>
+      <a href="./editor.html">Editor d’edificis</a>
+      <button id="export">Desa una còpia (.json)</button>
+      <button id="import">Obre una vila…</button>
+      <button id="photo">Fes una fotografia</button>
+      <a id="download-code" href="./vila-mediterrania-v44-pradera-flors.zip" download>Descarrega el joc i el codi</a>
+      <hr>
+      <p id="grid-size-status">Quadrícula actual: 33 × 33</p>
+      <button id="expand-grid">Amplia la quadrícula…</button>
+      <button id="new-village">Comença una vila nova…</button>
+      <p id="save-status">Es desa en aquest navegador.</p>
+    </div>
+    <svg id="compass" class="compass" viewBox="0 0 128 128" role="img" aria-label="Punts cardinals de la vila. El nord és vermell; les direccions segueixen el gir de la vista.">
+      <title>Punts cardinals · segueixen el gir del mapa</title>
+      <defs><marker id="compass-north-arrow" viewBox="0 0 6 6" refX="5" refY="3" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0 6 3 0 6Z"/></marker></defs>
+      <circle class="compass-background" cx="64" cy="64" r="61"/>
+      <circle class="compass-ring" cx="64" cy="64" r="25"/>
+      <line data-compass-arm="north" x1="64" y1="64" x2="64" y2="33" marker-end="url(#compass-north-arrow)"/>
+      <line data-compass-arm="east" x1="64" y1="64" x2="95" y2="64"/>
+      <line data-compass-arm="south" x1="64" y1="64" x2="64" y2="95"/>
+      <line data-compass-arm="west" x1="64" y1="64" x2="33" y2="64"/>
+      <circle class="compass-center" cx="64" cy="64" r="3"/>
+      <text data-cardinal="north" x="64" y="19">Nord</text>
+      <text data-cardinal="east" x="109" y="64">Est</text>
+      <text data-cardinal="south" x="64" y="109">Sud</text>
+      <text data-cardinal="west" x="19" y="64">Oest</text>
+    </svg>
+    <div class="camera-controls panel" role="group" aria-label="Control de la càmera">
+      <button id="zoom-in" aria-label="Apropa" title="Apropa (+)">+</button><button id="zoom-out" aria-label="Allunya" title="Allunya (−)">−</button><span></span><button id="rotate" aria-label="Gira la vista" title="Gira la vista">↻</button><button id="home-view" aria-label="Centra la vila" title="Centra la vila (0)">⌖</button>
+    </div>
+    <div class="island-caption" aria-hidden="true"><span>CATALUNYA · MEDITERRANI</span><span id="coast-caption">Cales, pins i cases de calç</span></div>
+    <div class="bottom-ui">
+      <div class="toolbar panel" role="toolbar" aria-label="Eines de construcció">
+        <button data-tool="house" aria-pressed="true" title="Casa (1)"><span data-icon="house"></span><span>Casa</span><kbd>1</kbd></button>
+        <button data-tool="land" aria-pressed="false" title="Terreny (2)"><span data-icon="land"></span><span>Terreny</span><kbd>2</kbd></button>
+        <button data-tool="plaza" aria-pressed="false" title="Plaça (3)"><span data-icon="plaza"></span><span>Plaça</span><kbd>3</kbd></button>
+        <button data-tool="pine" aria-pressed="false" title="Arbres i plantes mediterranis (4)"><span data-icon="pine"></span><span>Arbres</span><kbd>4</kbd></button>
+        <button data-tool="stairs" aria-pressed="false" title="Escales (5)"><span data-icon="stairs"></span><span>Escales</span><kbd>5</kbd></button>
+        <button data-tool="bridge" aria-pressed="false" title="Pont (6)"><span data-icon="bridge"></span><span>Pont</span><kbd>6</kbd></button>
+        <button data-tool="buildings" aria-pressed="false" title="Edificis: tria el tipus al panell d’opcions" aria-controls="building-options"><span data-icon="buildings"></span><span>Edificis</span></button>
+        <button data-tool="monuments" aria-pressed="false" title="Monuments: muralles" aria-controls="monument-options"><span data-icon="monuments"></span><span>Monuments</span></button>
+        <button data-tool="custom" aria-pressed="false" title="Els meus edificis (B)"><span data-icon="custom"></span><span>Els meus edificis</span><kbd>B</kbd></button>
+        <span class="tool-divider"></span>
+        <button data-tool="erase" aria-pressed="false" title="Esborra (E)"><span data-icon="erase"></span><span>Esborra</span><kbd>E</kbd></button>
+      </div>
+      <p class="controls-hint"><span>Clica per construir</span><b>·</b><span>Arrossega per girar</span><b>·</b><span>Roda per apropar</span></p>
+    </div>
+    <div class="history panel"><button id="undo" aria-label="Desfés" title="Desfés (Ctrl+Z)" disabled>↶</button><button id="redo" aria-label="Refés" title="Refés (Ctrl+Y)" disabled>↷</button></div>
+    <div class="stats"><strong id="house-count">0</strong> cases <span>·</span> <strong id="floor-count">0</strong> pisos</div>
+    <div id="toast" role="status" aria-live="polite"></div>
+    <div id="loading"><span class="loader"></span><p>El mar ja és a prop…</p></div>
+    <div id="failure" class="panel" hidden><h2>No s’ha pogut obrir el joc</h2><p id="failure-message"></p><button onclick="location.reload()">Torna-ho a provar</button></div>
+  </main>
+  <input id="file-input" type="file" accept=".json,application/json" hidden>
+  <input id="music-folder" type="file" webkitdirectory multiple accept="audio/*,.mp3,.ogg,.wav,.m4a,.aac,.flac,.opus,.webm" hidden>
+  <dialog id="music-dialog" aria-labelledby="music-title">
+    <button class="close-dialog" aria-label="Tanca els controls de música">×</button>
+    <h2 id="music-title">Música de fons</h2>
+    <label class="music-enabled"><input id="music-enabled" type="checkbox" checked> Música activada</label>
+    <p id="music-preferences-note" class="music-note">Es recorden l’activació, la pausa i el volum en aquest navegador.</p>
+    <p id="music-track">Cap pista carregada</p>
+    <p id="music-status" role="status" aria-live="polite">Escull una carpeta amb música.</p>
+    <div class="music-actions"><button id="music-play" class="primary-button" disabled>Reprodueix</button><button id="music-next" disabled>Següent pista</button></div>
+    <label class="music-volume-label" for="music-volume">Volum <span id="music-volume-value">30%</span></label>
+    <input id="music-volume" type="range" min="0" max="100" value="30">
+    <div class="music-actions"><button id="music-choose">Escull una carpeta…</button><button id="music-reload">Carpeta del joc</button></div>
+    <p id="music-source" class="music-note">Carpeta music del joc</p>
+    <p class="music-note">Les pistes sonen per ordre de nom i la llista es repeteix. Tancar aquesta finestra deixa la música sonant; desmarca Música activada per desactivar-la.</p>
+  </dialog>
+  <dialog id="help-dialog">
+    <button class="close-dialog" aria-label="Tanca l’ajuda">×</button><div class="eyebrow">SENSE PRESSES. SENSE PUNTUACIONS.</div><h2>Un poble, clic a clic.</h2>
+    <p>Construeix el teu racó del Mediterrani. Comença amb una casa i deixa que la vila creixi.</p>
+    <dl><dt>Els meus edificis (B)</dt><dd>Obre l’editor des d’aquesta eina o des de La meva vila. Dissenya les cel·les de planta baixa, planta intermèdia i coberta, i desa el disseny. En tornar al joc apareixerà al selector. Es col·loca sencer sobre terreny lliure i anivellat. Cada còpia conserva el disseny original i s’inclou al JSON de la vila, encara que després canviïs o eliminis el disseny de la col·lecció.</dd><dt>Ajuntament (9)</dt><dd>Tria 2 × 1 o 2 × 2 cel·les i l’orientació de la façana. Té dues plantes fixes, balcó al pis superior i una senyera que oneja. Cal terra ferma o plaça lliure a la mateixa alçada. Esborra sobre qualsevol cel·la retira l’edifici sencer i conserva el terreny.</dd><dt>Música de fons</dt><dd>Obre ♫ per escollir una carpeta, reproduir, pausar, passar de pista o ajustar el volum. Desmarca Música activada per desactivar-la: es recorda la decisió. Al joc descarregat, posa els àudios a music i executa Inicia-Windows.bat; es detecten automàticament. Les carpetes triades des del navegador s’han de tornar a escollir en reobrir el joc.</dd><dt>Església (8)</dt><dd>Edifici de sis cel·les (2 × 3) amb campanar, campanes i rosassa. Tria l’entrada i prepara terra ferma o plaça lliure a la mateixa alçada. El marc gira amb l’orientació escollida. Esborra sobre qualsevol cel·la retira tot el conjunt i conserva el terreny.</dd><dt>Cases amb pati</dt><dd>A Casa → Construir pisos i teulades, tria Casa amb pati. Has d’escollir pati al davant o al darrere, la façana principal i 1 o 2 plantes (planta baixa inclosa). Ocupa dues cel·les: casa i pati. Clica la casa per aplicar els canvis; el terreny ha d’estar lliure i a la mateixa alçada, o es crea automàticament al mar. Esborra sobre la casa retira el pis assenyalat; sobre el pati retira el conjunt i conserva el terreny. Pots desfer-ho.</dd><dt>Quadrícula</dt><dd>Escull 33 × 33, 49 × 49 o 65 × 65 en crear una vila nova. Per conservar la vila actual i ampliar-la, ves a La meva vila → Amplia la quadrícula. Es pot desfer.</dd><dt>Mercat (7)</dt><dd>Tria 2 o 4 cel·les i l’orientació de l’entrada. El marc mostra tota la superfície: cal terra ferma o plaça lliure a la mateixa alçada. Esborra sobre qualsevol cel·la retira l’edifici sencer.</dd><dt>Queviures</dt><dd>A Casa → Posar o editar un negoci, tria Botiga de queviures i la façana. Clica una casa existent amb la façana lliure. Inclou aparadors de productes i no necessita zona de terrassa.</dd><dt>Restaurants</dt><dd>A Casa → Posar o editar un negoci, tria Restaurant. Amb terrassa posa dues taules parades i quatre cadires sobre terra ferma o plaça al davant, a la mateixa alçada. Pots escollir la façana o posar només el local.</dd><dt>Fruiteries</dt><dd>A Casa → Posar o editar un negoci, tria Fruiteria i la façana. Clica una casa amb terra ferma o plaça al davant, a la mateixa alçada. Té una porta central i prestatgeries amb fruita als dos costats.</dd><dt>Bars</dt><dd>A Casa, tria Posar o editar un negoci i Bar. Escull la façana i clica una casa existent. Amb terrassa afegeix dues taules i quatre cadires a la casella del davant, si és terra ferma o plaça a la mateixa alçada. Sense negoci retira el bar sense tocar els pisos.</dd><dt>Ponts (6)</dt><dd>Marca dos punts de terra ferma o plaça en la mateixa fila o columna. Verd: traçat vàlid; vermell: cal corregir-lo. Esc cancel·la. Esborra o clic dret sobre un pont el retira sencer.</dd><dt>Construeix</dt><dd>Tria una eina i clica al mar o al terreny. Les cases creen la seva base automàticament.</dd><dt>Afegeix pisos</dt><dd>Clica una casa per fer-la créixer, fins a 5 pisos, o 2 plantes si té pati. Les façanes s’adapten a les cases del costat.</dd><dt>Planta arbres</dt><dd>Amb Arbres (4), tria pi mediterrani, margalló, alzina o plàtan d’ombra. Clica per plantar o per canviar l’espècie d’un arbre existent.</dd><dt>Modela la costa</dt><dd>Amb Terreny, escull Terra ferma o Platja. La platja baixa suaument al mar a la Costa Daurada i té més pendent a la Costa Brava. Ajunta caselles per ampliar-la. La platja substitueix l’element anterior i abaixa el terreny al nivell de la costa. Les escales giren amb cada clic.</dd><dt>Esborra</dt><dd>Tria Esborra o fes un clic dret. Clica el pis concret que vols treure: el marc en mostra l’alçada. Si hi ha pisos a sobre, es creen arcades o pilastres. Torna a omplir el buit amb l’eina Casa. Els suports són automàtics.</dd><dt>Mou-te</dt><dd>Arrossega per girar. Majúscules + arrossegar per desplaçar. Roda per apropar. En una pantalla tàctil: arrossega amb un dit o pinça amb dos.</dd><dt>Amb teclat</dt><dd>Fes clic al joc. Fletxes per triar casella; Re Pàg / Av Pàg per triar pis; Retorn per construir; Supr per esborrar el pis seleccionat. Tecles 1–9 i E per canviar d’eina; Ctrl+Z per desfer.</dd><dt>Conserva la vila</dt><dd>Es desa automàticament en aquest navegador. A «La meva vila» pots exportar un fitxer per guardar-la o portar-la a un altre dispositiu.</dd></dl>
+    <p class="fine-print">Prototip original inspirat en la construcció lliure de Townscaper. Paisatges imaginaris inspirats en la costa catalana.</p><button class="primary-button close-help">Som-hi</button>
+  </dialog>
+  <dialog id="new-dialog"><button class="close-dialog" aria-label="Cancel·la">×</button><div class="eyebrow">UN NOU COMENÇAMENT</div><h2>Com vols començar?</h2><p>Pots desar la vila actual abans de substituir-la. També podràs recuperar-la amb Desfés.</p><label class="dialog-label" for="new-grid-size">Mida de la quadrícula</label><select id="new-grid-size"><option value="33">33 × 33 · Estàndard</option><option value="49">49 × 49 · Gran</option><option value="65">65 × 65 · Molt gran</option></select><p class="grid-dialog-note">La costa 80/20 s’adapta a tota la quadrícula. El poble i l’illa inicial mantenen la seva mida.</p><div class="new-options"><button data-preset="village"><strong>Un petit poble</strong><span>Cases, una plaça i un passeig vora el mar.</span></button><button data-preset="island"><strong>Una illa per construir</strong><span>Només terreny. La resta, a les teves mans.</span></button><button data-preset="coast80"><strong>Costa · 80% terra i 20% mar</strong><span>Terra a l’oest, platja i mar a l’est. Tot el terreny lliure per construir.</span></button><button data-preset="empty"><strong>Mar obert</strong><span>Una pàgina en blau, per començar de zero.</span></button></div><button id="save-before-new" class="quiet-button">Desa primer la vila actual</button></dialog>
+  <dialog id="expand-grid-dialog"><button class="close-dialog" aria-label="Cancel·la">×</button><h2>Més espai per a la vila</h2><p id="expand-grid-current"></p><label class="dialog-label" for="expand-grid-size">Nova mida</label><select id="expand-grid-size"><option value="33">33 × 33</option><option value="49">49 × 49</option><option value="65">65 × 65</option></select><p class="grid-dialog-note">S’afegeix mar als quatre costats. Es conserven totes les construccions i les seves posicions. Pots desfer l’ampliació.</p><button id="apply-grid-expansion" class="primary-button">Amplia i conserva la vila</button></dialog>
+  <script type="module" src="./app.js"></script>
+  <script>window.addEventListener('error',function(e){if(e.target&&e.target.tagName==='SCRIPT'){document.getElementById('loading').hidden=true;document.getElementById('failure').hidden=false;document.getElementById('failure-message').textContent='No s’han pogut carregar els fitxers. Si has descarregat el joc, obre Inicia-Windows.bat o utilitza un servidor local.'}},true)</script>
+</body>
+</html>
