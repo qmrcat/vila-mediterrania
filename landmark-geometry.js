@@ -1,3 +1,5 @@
+import {renderServiceBuilding} from './service-buildings.js';
+import {renderCemetery} from './cemetery-geometry.js';
 import {renderWall} from './wall-geometry.js';
 import {Euler,Quaternion,Vector3} from './vendor/three.module.min.js';
 import {renderCivicBuilding} from './civic-geometry.js';
@@ -16,15 +18,18 @@ export function renderLandmarks(world,add,unit){
       // Vertical tilt is around Z; yaw places it in the required horizontal direction.
       part('cylinder',color,(p[0]+q[0])/2,(p[1]+q[1])/2,(p[2]+q[2])/2,r,len,r,-Math.atan2(dz,dx),0,-Math.atan2(Math.hypot(dx,dz),dy));
     };
+    if(l.type==='cemetery'){renderCemetery(l,part,unit);continue;}
     if(LANDMARK_TYPES[l.type]?.category==='monument'){renderWall(l,part,unit);continue;}
-    if(['hospital','school','police'].includes(l.type)){
+    if(['hospital','school','police','fireStation','recycling'].includes(l.type)){
       // Rotate local roof slopes with the building (world yaw precedes local tilt).
       const yaw=new Quaternion().setFromAxisAngle(new Vector3(0,1,0),a),q=new Quaternion(),e=new Euler();
       const civicPart=(shape,color,u,h,v,sx,sy,sz,ry=0,rx=0,rz=0)=>{
         q.setFromEuler(e.set(rx,ry,rz)).premultiply(yaw);e.setFromQuaternion(q);
         add(shape,color,x+c*u+s*v,base+h,z-s*u+c*v,sx,sy,sz,e.y,e.x,e.z);
       };
-      renderCivicBuilding(l,civicPart,unit);continue;
+      if(['fireStation','recycling'].includes(l.type))renderServiceBuilding(l,civicPart,unit);
+      else renderCivicBuilding(l,civicPart,unit);
+      continue;
     }
     if(l.type==='lighthouse'){
       part('cylinder','#c7baa2',0,.07,0,1.16,.14,1.16);

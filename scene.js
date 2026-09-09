@@ -1,3 +1,5 @@
+import {createBarberStripeGeometry} from './barber-pole.js';
+import {SPECIAL_SHOPS,renderSpecialShop} from './special-shops.js';
 import {renderMeadowFlowers,MEADOW_GREEN} from './meadow.js';
 import {createStoneArchGeometry,renderStoneBridge} from './stone-bridge.js';
 import {createWallGateGeometry} from './wall-geometry.js';
@@ -33,10 +35,13 @@ const geometries={
   churchCap:new THREE.ConeGeometry(Math.SQRT1_2,1,4).rotateY(Math.PI/4),
   cylinder:new THREE.CylinderGeometry(.5,.5,1,12),
   cone:new THREE.ConeGeometry(.5,1,8),
+  carrot:new THREE.ConeGeometry(.5,1,8).rotateZ(Math.PI),
   rock:new THREE.DodecahedronGeometry(.5,0),
   sphere:new THREE.SphereGeometry(.5,10,6),
   ring:new THREE.TorusGeometry(.5,.06,5,24),
 };
+geometries.barberPoleRed=createBarberStripeGeometry(0);
+geometries.barberPoleBlue=createBarberStripeGeometry(Math.PI);
 geometries.stoneBridgeArch=createStoneArchGeometry();
 geometries.wallGate=createWallGateGeometry();
 geometries.wallGateTrim=createWallGateGeometry(true);
@@ -687,7 +692,7 @@ export function createVillageGeometry(world){
         const middleAccess=middleEntranceAccessible(world,t,floor,d);
         const upper=t.upperBusinesses?.find(b=>b.floor===floor&&b.direction===d);
         const shop=floor===0?(t.business?.direction===d?t:null):upper?businessOwner(t,upper):null;
-        if(shop&&businessFrontClear(world,shop)&&(floor>0||accessible)){if(shop.business.type==='greengrocer')fruitFacade(shop,d,bottom);else if(shop.business.type==='grocery')groceryFacade(shop,d,bottom);else if(shop.business.type==='butcher')butcherFacade(shop,d,bottom);else if(shop.business.type==='bakery')bakeryFacade(shop,d,bottom);else if(shop.business.type==='fishmonger')fishmongerFacade(shop,d,bottom);else if(shop.business.type==='pharmacy')pharmacyFacade(shop,d,bottom);else if(shop.business.type==='florist')floristFacade(shop,d,bottom);else if(shop.business.type==='newsstand')newsstandFacade(shop,d,bottom);else if(shop.business.type==='restaurant')restaurantFacade(shop,d,bottom);else barFacade(shop,d,bottom);continue;}
+        if(shop&&businessFrontClear(world,shop)&&(floor>0||accessible)){if(Object.hasOwn(SPECIAL_SHOPS,shop.business.type))renderSpecialShop(shop.business,(shape,color,u,h,depth,sx,sy,sz)=>face(shape,color,shop,d,u,bottom+h,depth,sx,sy,sz));else if(shop.business.type==='greengrocer')fruitFacade(shop,d,bottom);else if(shop.business.type==='grocery')groceryFacade(shop,d,bottom);else if(shop.business.type==='butcher')butcherFacade(shop,d,bottom);else if(shop.business.type==='bakery')bakeryFacade(shop,d,bottom);else if(shop.business.type==='fishmonger')fishmongerFacade(shop,d,bottom);else if(shop.business.type==='pharmacy')pharmacyFacade(shop,d,bottom);else if(shop.business.type==='florist')floristFacade(shop,d,bottom);else if(shop.business.type==='newsstand')newsstandFacade(shop,d,bottom);else if(shop.business.type==='restaurant')restaurantFacade(shop,d,bottom);else barFacade(shop,d,bottom);continue;}
         if(floor===0&&!accessible){
           renderRaisedEntrance(entrances[d],(shape,color,u,h,depth,sx,sy,sz)=>face(shape,color,t,d,u,bottom+h,depth,sx,sy,sz),{shutter});
         }else if(floor===0&&t.patio&&d!==t.patio.direction&&d!==patioDirection(t)){

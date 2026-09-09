@@ -1,3 +1,5 @@
-Vila Mediterrània — v44 — 2026-09-09
-Nou terreny Pradera amb flors: gespa verda i floretes blanques, grogues i rosades. Conserva alçada i pendent, distribució estable, compatible amb terra ferma i espais reservats.
-Versió completa amb totes les funcions anteriors: pont de pedra amb arcades, costa 80/20, monuments i muralles, edificis, negocis als pisos, editor, música, terrenys i carrers. JSON format 35, compatible amb formats 1–34.
+Vila Mediterrània — v48 — 2026-09-09
+Estació de bombers i deixalleria, 2 × 2 i 3 × 2, entrada en quatre direccions.
+Joc complet amb editor, cementiri, tots els negocis, monuments, terrenys i ponts anteriors.
+JSON format 39; importació compatible amb formats 1–38.
+Consulta LLEGEIX-ME.md per iniciar el joc.

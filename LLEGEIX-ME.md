@@ -28,7 +28,7 @@ No cal executar `npm install`, compilar ni configurar Vite. El joc no utilitza c
 
 Cada canvi es desa al `localStorage` d’aquest navegador i d’aquest origen web. El desament no se sincronitza entre dispositius i pot desaparèixer si es netegen les dades del navegador. El servidor inclòs utilitza el port 3000 o el primer disponible a partir d’aquest: conserva la mateixa adreça per recuperar el desament local.
 
-A **La meva vila → Desa una còpia (.json)** pots exportar la vila. Obre-la amb **Obre una vila…**. El format 35 guarda els edificis del jugador amb els seus dissenys, els ajuntaments, les esglésies, les cases amb pati, la mida de la quadrícula, els mercats, els negocis de planta baixa, els ponts, la costa, totes les construccions, els buits entre pisos cada espècie plantada i les caselles de platja. S’importen també fitxers dels formats 1–34, convertits automàticament; els pins existents continuen sent pins. El desament anterior es conserva separadament al navegador; la càmera, la llum i l’historial de desfer no es guarden al fitxer.
+A **La meva vila → Desa una còpia (.json)** pots exportar la vila. Obre-la amb **Obre una vila…**. El format 39 guarda els edificis del jugador amb els seus dissenys, els ajuntaments, les esglésies, les cases amb pati, la mida de la quadrícula, els mercats, els negocis de planta baixa, els ponts, la costa, totes les construccions, els buits entre pisos cada espècie plantada i les caselles de platja. S’importen també fitxers dels formats 1–38, convertits automàticament; els pins existents continuen sent pins. El desament anterior es conserva separadament al navegador; la càmera, la llum i l’historial de desfer no es guarden al fitxer.
 
 **Fes una fotografia** exporta una imatge PNG de la vista 3D sense els controls.
 
@@ -517,3 +517,59 @@ La pradera conserva **l’alçada i el pendent** del terreny. També és un acab
 Funciona com a terra ferma per construir-hi i per als extrems dels ponts. Les flors s’amaguen als espais ocupats per edificis, terrasses i ponts. L’eina Terra ferma permet elevar-la; l’esborrador retira l’acabat verd i conserva la base i el pendent.
 
 Compatible amb Desfés/Refés, desament automàtic i exportació/importació. El JSON **format 35** conserva la pradera; s’obren també les viles dels formats 1–34.
+
+
+## Llibreria, pastisseria, ferreteria i perruqueria — v45
+
+Quatre negocis nous a **Casa → Posar o editar un negoci**:
+
+- **Llibreria:** rètol blau, prestatgeries de llibres de colors i llibres exposats amb la coberta a la vista.
+- **Pastisseria:** tendal rosat, pastissos de diversos pisos, tartaletes i dolços als aparadors. La **Fleca** continua disponible com a negoci independent.
+- **Ferreteria:** façana verda, panell amb martells i serra, pots de pintura i capses.
+- **Perruqueria:** façana lila, miralls, cadires amb reposabraços, productes i distintiu de tisores a la porta.
+
+Tria la planta, l’orientació i, si vols, el nom del rètol; clica una casa existent. Funcionen a la planta baixa i a les plantes intermèdies que tinguin terreny a la mateixa alçada davant de la façana. No ocupen una casella de terrassa.
+
+Els rètols es poden canviar amb **Canvia només el rètol**. Els negocis es poden substituir o retirar i funcionen amb Desfés/Refés, desament automàtic i exportació/importació. El JSON **format 36** conserva els quatre nous tipus i continua obrint viles dels formats 1–35.
+
+
+## Barberia, records catalans, verduleria i òptica — v46
+
+A **Casa → Posar o editar un negoci** tens quatre opcions més:
+
+- **Barberia:** aparadors amb miralls i cadires, i un **barber pole** a la façana. És un pal cilíndric blanc amb franges helicoidals vermelles i blaves i remats metàl·lics. La Perruqueria es manté com a negoci independent.
+- **Records (souvenirs):** senyeres amb les quatre barres, figures amb barretina, porrons i peces de ceràmica als aparadors.
+- **Verduleria:** caixes d’enciams, pastanagues, albergínies i porros. La Fruiteria continua disponible.
+- **Òptica:** ulleres de diferents muntures exposades en prestatgeries i distintiu d’ulleres a la porta.
+
+Tria la planta i la façana, escriu un nom de rètol opcional i clica la casa. Es poden posar a la planta baixa o a una planta intermèdia accessible des del terreny de davant. No necessiten cap cel·la de terrassa.
+
+Tots quatre admeten canvi de rètol, substitució i retirada, Desfés/Refés i desament automàtic. El JSON **format 37** conserva els nous tipus; continua obrint les viles dels formats 1–36.
+
+
+## Cementiri — v47
+
+A **Edificis → Cementiri** pots escollir dues mides:
+
+- **Petit · 2 × 1 cel·les:** quatre tombes, làpides, petites flors i dos xiprers.
+- **Gran · 2 × 2 cel·les:** vuit tombes, dos xiprers i un conjunt de vuit nínxols al fons.
+
+Tots dos tenen murs baixos de pedra, portal d’entrada amb rètol i camí central. Tria l’orientació de l’entrada: nord, sud, est o oest. En girar el petit, també gira la superfície que ocupa.
+
+Prepara totes les cel·les amb terra ferma, pradera, carrer o plaça lliure i a la mateixa alçada. La selecció mostra tota la superfície. L’esborrador retira el cementiri sencer des de qualsevol cel·la i conserva el terreny.
+
+Compatible amb Desfés/Refés i desament automàtic. El JSON **format 38** conserva els cementiris i obre les viles dels formats 1–37.
+
+
+## Estació de bombers i deixalleria — v48
+
+A **Edificis** trobaràs **Estació de bombers** i **Deixalleria**. Tots dos tenen dues mides: **2 × 2** i **3 × 2 cel·les**, amb l’entrada orientable cap al nord, sud, est o oest.
+
+- **Estació de bombers:** façana de calç, rètol BOMBERS, cotxeres, torre per assecar mànegues i camió vermell amb escala i llums blaus. La mida gran té dues cotxeres i dos camions.
+- **Deixalleria:** recinte tancat amb entrada central oberta, caseta de control, contenidors de paper, envasos, vidre i resta, i espai per a fusta. La mida gran afegeix orgànica, metall i recollida d’electrodomèstics.
+
+Prepara totes les cel·les lliures amb terra ferma, pradera, carrer o plaça a la mateixa alçada. També admeten terreny elevat o amb pendent quan totes les bases de construcció coincideixen. En girar l’edifici gran, la superfície passa de 3 × 2 a 2 × 3. L’esborrador retira tot l’edifici des de qualsevol cel·la i conserva el terreny.
+
+El desament automàtic, Desfés/Refés i els fitxers JSON conserven els dos edificis. El **format 39** obre també viles dels formats **1–38** i recupera el desament anterior del navegador.
+
+Aquesta distribució inclou el joc complet i l’editor, amb tots els edificis, negocis, monuments, ponts i terrenys anteriors.

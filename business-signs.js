@@ -1,5 +1,5 @@
 /** Shared, DOM-free lettering for business façades. Catalan accents stay visible. */
-export const BUSINESS_NAMES={bar:'Bar',greengrocer:'Fruiteria',restaurant:'Restaurant',grocery:'Queviures',newsstand:'Premsa',florist:'Floristeria',pharmacy:'Farmàcia',fishmonger:'Peixateria',bakery:'Fleca',butcher:'Carnisseria'};
+export const BUSINESS_NAMES={bar:'Bar',greengrocer:'Fruiteria',restaurant:'Restaurant',grocery:'Queviures',newsstand:'Premsa',florist:'Floristeria',pharmacy:'Farmàcia',fishmonger:'Peixateria',bakery:'Fleca',butcher:'Carnisseria',bookshop:'Llibreria',patisserie:'Pastisseria',hardware:'Ferreteria',hairdresser:'Perruqueria',barber:'Barberia',souvenir:'Records',vegetables:'Verduleria',optician:'Òptica'};
 export const MAX_BUSINESS_NAME=24;
 const FONT={
  A:'010/101/111/101/101',B:'110/101/110/101/110',C:'111/100/100/100/111',D:'110/101/101/101/110',E:'111/100/110/100/111',F:'111/100/110/100/100',
