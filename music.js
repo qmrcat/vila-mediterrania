@@ -89,7 +89,10 @@ export function initMusic(){
     const generation=++sourceGeneration;$('music-source').textContent='Carregant la carpeta del joc…';
     try{
       const response=await fetch('./music/playlist.json',{cache:'no-store'});if(!response.ok)throw new Error('playlist');
-      const tracks=manifestTracks(await response.json());if(generation!==sourceGeneration)return;
+      let entries;
+      try{entries=JSON.parse(await response.text());}
+      catch{if(generation!==sourceGeneration)return;$('music-source').textContent='music/playlist.json no és un JSON vàlid: revisa les comes i les cometes, o regenera’l amb node genera-playlist.mjs.';player.setTracks([]);return;}
+      const tracks=manifestTracks(entries);if(generation!==sourceGeneration)return;
       $('music-source').textContent='Carpeta music del joc';player.setTracks(tracks);
     }catch{if(generation!==sourceGeneration)return;$('music-source').textContent='Carpeta del joc no disponible. Pots escollir una carpeta del dispositiu.';player.setTracks([]);}
   }

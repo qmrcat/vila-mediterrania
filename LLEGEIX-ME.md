@@ -200,15 +200,21 @@ S’accepten fitxers MP3, OGG, OGA, WAV, M4A, AAC, FLAC, OPUS i WEBM, segons els
 
 **♫ → Escull una carpeta…** permet reproduir fitxers locals tant al joc en línia com al descarregat. Els àudios no s’envien a cap servidor. Cal tornar a escollir la carpeta quan es recarrega o es reobre la pàgina, perquè el navegador no conserva l’accés als fitxers seleccionats. La decisió de tenir la música desactivada o pausada sí que es conserva.
 
-### Live Server i allotjament estàtic
+### Live Server i allotjament estàtic (Apache, GitHub Pages)
 
-Amb altres servidors, afegeix els noms relatius dels àudios a **music/playlist.json**, per exemple:
+Amb aquests servidors, el joc llegeix la llista del fitxer **music/playlist.json**. La manera més segura d’actualitzar-lo és regenerar-lo amb:
+
+```
+node genera-playlist.mjs
+```
+
+També pots editar-lo a mà amb els noms relatius dels àudios, vigilant les comes (un sol error de sintaxi deixa la música muda i el joc mostra «playlist.json no és un JSON vàlid»):
 
 ```json
 ["01-mar.mp3", "02-vespre.ogg", "ambient/03-passeig.mp3"]
 ```
 
-Els fitxers han de ser dins de **music**. Amb el servidor Node inclòs, la llista es genera automàticament i no cal modificar aquest JSON.
+Els fitxers han de ser dins de **music** i, a GitHub Pages, cal pujar-los al repositori amb el mateix nom exacte (majúscules i accents inclosos). Amb el servidor Node inclòs o amb **Inicia-Vila.exe**, la llista es genera automàticament i aquest JSON s’ignora.
 
 El navegador pot exigir una interacció abans de deixar sonar música: prem **Reprodueix** o fes clic al joc. No s’inclouen pistes d’àudio al ZIP; hi has d’afegir les teves.
 
