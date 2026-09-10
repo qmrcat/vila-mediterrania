@@ -1,4 +1,4 @@
-Vila Mediterrània — v53 — 2026-09-10
-Botó al costat de música per amagar o mostrar la paleta i la barra d’eines; compàs més petit.
-Panells visibles per defecte. Joc complet amb editor, config.js, castells i totes les funcions anteriors.
-JSON format 42. Consulta LLEGEIX-ME.md per iniciar el joc.
+Vila Mediterrània — v56 — 10/09/2026
+Negocis als edificis del jugador i colors independents per planta.
+Inclou totes les funcions anteriors. Format de vila 45, importa formats 1–44.
+Obre Inicia-Windows.bat o executa node server.mjs.

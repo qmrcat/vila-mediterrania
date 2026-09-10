@@ -1,5 +1,14 @@
+import {renderRetailDisplay} from './retail-displays.js';
 import {businessSignName,businessSignPixels} from './business-signs.js';
 export const SPECIAL_SHOPS={
+  commerce:{accent:'#527b78',frame:'#d4c7ae',awning:'#8ca6a0',neutral:true,door:0,description:'Comerç neutre amb porta al centre i un aparador buit a cada costat.'},
+  commerceLeft:{accent:'#527b78',frame:'#d4c7ae',awning:'#8ca6a0',neutral:true,door:-.36,description:'Comerç neutre amb porta a l’esquerra i un aparador ampli a la dreta, mirant des del carrer.'},
+  commerceRight:{accent:'#527b78',frame:'#d4c7ae',awning:'#8ca6a0',neutral:true,door:.36,description:'Comerç neutre amb porta a la dreta i un aparador ampli a l’esquerra, mirant des del carrer.'},
+  toyshop:{accent:'#4c7c91',frame:'#d6c28e',awning:'#d4aa5b',description:'Jogueteria amb ossets, trenet i blocs de construcció de colors als aparadors.'},
+  charcuterie:{accent:'#813f39',frame:'#c6aa80',awning:'#a46a51',description:'Xarcuteria amb fuets penjats, embotits curats i formatges als aparadors.'},
+  clothing:{accent:'#5f788b',frame:'#d5c3ac',awning:'#90a9b4',description:'Botiga de roba amb un maniquí, peces penjades i roba plegada.'},
+  bank:{accent:'#355e78',frame:'#c4ccc5',awning:'#84999f',description:'Banc amb oficina, taulell i caixer automàtic integrat a la façana.'},
+  shoeshop:{accent:'#976941',frame:'#d1b795',awning:'#b99a72',description:'Sabateria amb prestatgeries de sabates de colors i botes.'},
   barber:{accent:'#704d43',frame:'#c4af8a',awning:'#927762',description:'Barberia amb miralls, cadires i pal de franges helicoidals vermelles, blanques i blaves.'},
   souvenir:{accent:'#aa7549',frame:'#d8c19a',awning:'#d0ae68',description:'Botiga de records catalans amb senyeres, barretines, porrons i ceràmica.'},
   vegetables:{accent:'#487c4b',frame:'#b8bc88',awning:'#83a66e',description:'Verduleria amb caixes d’enciams, pastanagues, albergínies i porros als aparadors.'},
@@ -12,23 +21,32 @@ export const SPECIAL_SHOPS={
 
 /** Shallow shop façades, shared by ground floors and accessible upper floors. */
 export function renderSpecialShop(business,face){
-  const style=SPECIAL_SHOPS[business.type];
+  const style=SPECIAL_SHOPS[business.type],door=style.door??0;
   const box=(color,u,h,v,sx,sy,sz)=>face('box',color,u,h,v,sx,sy,sz);
   box(style.frame,0,.30,.654,1.10,.58,.04);
-  box(style.accent,0,.29,.683,.35,.54,.028);
-  box('#94b3b1',0,.35,.706,.26,.35,.019);
-  box('#ecdfb7',.108,.28,.725,.022,.055,.013);
-  box('#eee4d1',0,.026,.74,.39,.052,.18);
+  box(style.accent,door,.29,.683,.35,.54,.028);
+  box('#94b3b1',door,.35,.706,.26,.35,.019);
+  box('#ecdfb7',door+.108,.28,.725,.022,.055,.013);
+  box('#eee4d1',door,.026,.74,.39,.052,.18);
   box(style.accent,0,.765,.684,1.10,.17,.045);
   for(const p of businessSignPixels(businessSignName(business),1.02))box('#fff3dc',p.x,.765+p.y,.713,p.size,p.size,.011);
-  for(let i=0;i<10;i++){
+  if(business.type==='bank')box(style.awning,0,.650,.803,1.12,.055,.28);
+  else for(let i=0;i<10;i++){
     const color=i%2?'#f1e7d5':style.awning,u=(i-4.5)*.112;
     box(color,u,.65,.825,.113,.035,.32);box(color,u,.608,.98,.113,.06,.018);
   }
-  for(const [side,u] of [[0,-.39],[1,.39]]){
-    box('#394f52',u,.35,.685,.31,.46,.028);
-    for(const ox of [-.164,.164])box(style.frame,u+ox,.35,.720,.024,.48,.05);
-    box(style.accent,u,.102,.746,.32,.10,.12);
+  const bays=door===0?[[0,-.39,.31],[1,.39,.31]]:[[0,-Math.sign(door)*.20,.65]];
+  for(const [side,u,width] of bays){
+    box(style.neutral?'#a3bfbc':'#394f52',u,.35,.685,width,.46,.028);
+    for(const ox of [-1,1])box(style.frame,u+ox*(width/2+.009),.35,.720,.024,.48,.05);
+    box(style.accent,u,.102,.746,width+.01,.10,.12);
+    if(style.neutral){
+      // Empty glazing, with subtle reflections and no merchandise.
+      box('#d3e1d7',u-width*.26,.385,.704,.017,.30,.008);
+      box('#bdcfca',u-width*.16,.405,.704,.010,.24,.008);
+      continue;
+    }
+    if(renderRetailDisplay(business.type,side,u,face))continue;
     if(business.type==='bookshop'){
       for(let tier=0;tier<3;tier++){
         const h=.16+tier*.143;box('#b99b70',u,h,.752,.32,.018,.12);

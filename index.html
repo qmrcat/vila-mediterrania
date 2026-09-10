@@ -30,7 +30,16 @@
       </div>
       <div id="house-options">
         <label class="field-label" for="house-action">Acció a la casa</label>
-        <select id="house-action"><option value="build">Construir pisos i teulades</option><option value="business">Posar o editar un negoci</option></select>
+        <select id="house-action"><option value="build">Construir pisos i teulades</option><option value="business">Posar o editar un negoci</option><option value="paint">Pintar una planta</option></select>
+        <div id="house-color-options">
+        <div class="label-row"><span>Color de façana</span><span id="color-name">Calç</span></div>
+        <div class="swatches" role="group" aria-label="Color de façana"></div>
+        </div>
+        <div id="paint-options" hidden>
+          <label class="field-label" for="paint-floor">Planta que vols pintar</label>
+          <select id="paint-floor"><option value="pointed">La planta que assenyalo</option></select>
+          <p class="roof-note">Escull el color i clica una planta. Als edificis del jugador es pinta tot aquell nivell. Els altres pisos conserven el color.</p>
+        </div>
         <div id="house-build-options">
         <label class="field-label" for="house-type">Tipus de casa</label>
         <select id="house-type"><option value="standard">Casa habitual · fins a les plantes configurades</option><option value="patio">Casa amb pati · alçada configurable</option></select>
@@ -43,8 +52,7 @@
           <select id="patio-floors"><option value="1">1 planta · planta baixa</option><option value="2">2 plantes · baixa i primer pis</option></select>
           <p id="patio-note" class="roof-note" role="status">Escull si vols el pati al davant o al darrere.</p>
         </div>
-        <div class="label-row"><span>Color de façana</span><span id="color-name">Calç</span></div>
-        <div class="swatches" role="group" aria-label="Color de façana"></div>
+
         <label class="field-label" for="roof">Acabat de la casa</label>
         <select id="roof"><option value="tile">Teulada a dues aigües</option><option value="shed">Teulada a una aigua</option><option value="flat">Terrat amb barana</option></select>
         <div id="roof-direction-options">
@@ -57,7 +65,7 @@
         </div>
         <div id="business-options" hidden>
           <label class="field-label" for="business-type">Negoci</label>
-          <select id="business-type"><option value="bar">Bar</option><option value="greengrocer">Fruiteria</option><option value="restaurant">Restaurant</option><option value="grocery">Botiga de queviures</option><option value="newsstand">Quiosc de premsa</option><option value="florist">Floristeria</option><option value="pharmacy">Farmàcia</option><option value="fishmonger">Peixateria</option><option value="bakery">Fleca</option><option value="butcher">Carnisseria</option><option value="bookshop">Llibreria</option><option value="patisserie">Pastisseria</option><option value="hardware">Ferreteria</option><option value="hairdresser">Perruqueria</option><option value="barber">Barberia</option><option value="souvenir">Records (souvenirs)</option><option value="vegetables">Verduleria</option><option value="optician">Òptica</option><option value="rename">Canvia només el rètol</option><option value="none">Sense negoci (retira’l)</option></select>
+          <select id="business-type"><option value="bar">Bar</option><option value="greengrocer">Fruiteria</option><option value="restaurant">Restaurant</option><option value="grocery">Botiga de queviures</option><option value="newsstand">Quiosc de premsa</option><option value="florist">Floristeria</option><option value="pharmacy">Farmàcia</option><option value="fishmonger">Peixateria</option><option value="bakery">Fleca</option><option value="butcher">Carnisseria</option><option value="bookshop">Llibreria</option><option value="patisserie">Pastisseria</option><option value="hardware">Ferreteria</option><option value="hairdresser">Perruqueria</option><option value="barber">Barberia</option><option value="souvenir">Records (souvenirs)</option><option value="vegetables">Verduleria</option><option value="optician">Òptica</option><option value="charcuterie">Xarcuteria</option><option value="clothing">Botiga de roba</option><option value="bank">Banc</option><option value="shoeshop">Sabateria</option><option value="commerce">Comerç · porta al centre</option><option value="commerceLeft">Comerç · porta a l’esquerra</option><option value="commerceRight">Comerç · porta a la dreta</option><option value="toyshop">Jogueteria</option><option value="rename">Canvia només el rètol</option><option value="none">Sense negoci (retira’l)</option></select>
           <div id="business-name-option">
             <label class="field-label" for="business-name">Nom del rètol</label>
             <input id="business-name" type="text" maxlength="24" placeholder="Ex.: Bar Can Martí" aria-describedby="business-name-help" autocomplete="off">
@@ -65,7 +73,7 @@
           </div>
           <label class="field-label" for="business-floor">Planta del negoci</label>
           <select id="business-floor"><option value="0">Planta baixa</option><option value="1">Primer pis</option><option value="2">Segon pis (tercera planta)</option><option value="3">Tercer pis</option></select>
-          <p class="roof-note">Als pisos, només plantes intermèdies amb terreny a la mateixa alçada davant de la façana. Sense negoci, hi apareix una porta.</p>
+          <p class="roof-note">Admet cases i edificis del jugador amb murs sòlids a la façana exterior. Als pisos, només plantes intermèdies amb terreny a la mateixa alçada davant de la façana. Sense negoci, hi apareix una porta.</p>
             <label class="field-label" for="business-direction">Façana del negoci cap a</label>
             <select id="business-direction"><option value="0">Sud</option><option value="1">Est</option><option value="2">Nord</option><option value="3">Oest</option></select>
           <div id="business-details">
@@ -149,7 +157,7 @@
       <button id="export">Desa una còpia (.json)</button>
       <button id="import">Obre una vila…</button>
       <button id="photo">Fes una fotografia</button>
-      <a id="download-code" href="./vila-mediterrania-v53-panells.zip" download>Descarrega el joc i el codi</a>
+      <a id="download-code" href="./vila-mediterrania-v56-edificis-colors.zip" download>Descarrega el joc i el codi</a>
       <hr>
       <p id="grid-size-status">Quadrícula actual: 33 × 33</p>
       <button id="expand-grid">Amplia la quadrícula…</button>

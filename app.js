@@ -1,21 +1,21 @@
 import {CONFIG} from './config.js';
 import {SPECIAL_SHOPS} from './special-shops.js';
 import {checkBeachBar,checkLandmark,LANDMARK_TYPES} from './model.js';
-import {loadDesigns,DESIGN_KEY} from './designs.js';
+import {loadDesigns,DESIGN_KEY,customAt,customCells,customFloors} from './designs.js';
 import {initMusic} from './music.js';
 import {updateCompass} from './compass.js';
 import {createWorld,validateWorld,editWorld,History,COLORS,worldLimit,expandWorld,GRID_SIZES,floorCount,TREE_SPECIES,bridgeEndpoint,checkBridge,addBridge,checkMarket,checkPatioHouse,checkChurch,checkTownHall,checkCustomBuilding} from './model.js';
 
 const $=selector=>document.querySelector(selector);
 const $$=selector=>[...document.querySelectorAll(selector)];
-const STORAGE_KEY='vila-mediterrania:v42';
+const STORAGE_KEY='vila-mediterrania:v45';
 // New landmark types join the building selector without widening the toolbar.
 const BUILDING_TOOLS=new Map([
   ['beachbar','Guingueta'],['market','Mercat'],['church','Església'],['townhall','Ajuntament'],
   ...Object.entries(LANDMARK_TYPES).filter(([,definition])=>definition.category!=='monument').map(([id,definition])=>[id,definition.name]),
 ]);
 const MONUMENT_TOOLS=new Map(Object.entries(LANDMARK_TYPES).filter(([,definition])=>definition.category==='monument').map(([id,definition])=>[id,definition.name]));
-const LEGACY_STORAGE_KEYS=['vila-mediterrania:v41','vila-mediterrania:v40','vila-mediterrania:v39','vila-mediterrania:v38','vila-mediterrania:v37','vila-mediterrania:v36','vila-mediterrania:v35','vila-mediterrania:v34','vila-mediterrania:v33','vila-mediterrania:v32','vila-mediterrania:v31','vila-mediterrania:v30','vila-mediterrania:v29','vila-mediterrania:v28','vila-mediterrania:v27','vila-mediterrania:v26','vila-mediterrania:v25','vila-mediterrania:v24','vila-mediterrania:v23','vila-mediterrania:v22','vila-mediterrania:v21','vila-mediterrania:v20','vila-mediterrania:v19','vila-mediterrania:v18','vila-mediterrania:v17','vila-mediterrania:v16','vila-mediterrania:v15','vila-mediterrania:v14','vila-mediterrania:v13','vila-mediterrania:v12','vila-mediterrania:v11','vila-mediterrania:v10','vila-mediterrania:v9','vila-mediterrania:v8','vila-mediterrania:v7','vila-mediterrania:v6','vila-mediterrania:v5','vila-mediterrania:v4','vila-mediterrania:v3','vila-mediterrania:v2','vila-mediterrania:v1'];
+const LEGACY_STORAGE_KEYS=['vila-mediterrania:v44','vila-mediterrania:v43','vila-mediterrania:v42','vila-mediterrania:v41','vila-mediterrania:v40','vila-mediterrania:v39','vila-mediterrania:v38','vila-mediterrania:v37','vila-mediterrania:v36','vila-mediterrania:v35','vila-mediterrania:v34','vila-mediterrania:v33','vila-mediterrania:v32','vila-mediterrania:v31','vila-mediterrania:v30','vila-mediterrania:v29','vila-mediterrania:v28','vila-mediterrania:v27','vila-mediterrania:v26','vila-mediterrania:v25','vila-mediterrania:v24','vila-mediterrania:v23','vila-mediterrania:v22','vila-mediterrania:v21','vila-mediterrania:v20','vila-mediterrania:v19','vila-mediterrania:v18','vila-mediterrania:v17','vila-mediterrania:v16','vila-mediterrania:v15','vila-mediterrania:v14','vila-mediterrania:v13','vila-mediterrania:v12','vila-mediterrania:v11','vila-mediterrania:v10','vila-mediterrania:v9','vila-mediterrania:v8','vila-mediterrania:v7','vila-mediterrania:v6','vila-mediterrania:v5','vila-mediterrania:v4','vila-mediterrania:v3','vila-mediterrania:v2','vila-mediterrania:v1'];
 let bridgeStart=null,designs=[];
 let world,scene,tool='house',treeSpecies='pine',terrainType='land',color=0,roof='tile',roofDirection=0,keyboardCell={x:0,z:0},toastTimer;
 const history=new History();
@@ -170,9 +170,9 @@ function applyEdit(cell,erase=false){
   }
   if(erase&&bridgeStart){cancelBridge();toast('Pont cancel·lat.');return;}
   const before=structuredClone(world);const roofOnly=tool==='house'&&roof!=='flat'&&$('#roof-direction-only').checked;
-  const selectedTool=tool==='house'&&$('#house-action').value==='business'?'business':roofOnly?'roof-direction':patioMode()?'patio-house':tool==='pine'?treeSpecies:tool==='land'?terrainType:tool;
+  const selectedTool=tool==='house'&&$('#house-action').value==='business'?'business':tool==='house'&&$('#house-action').value==='paint'?'paint-floor':roofOnly?'roof-direction':patioMode()?'patio-house':tool==='pine'?treeSpecies:tool==='land'?terrainType:tool;
   if(!erase&&selectedTool==='custom'&&!selectedDesign()){toast('Obre l’editor i desa un disseny abans de col·locar-lo.');return;}
-  const result=editWorld(world,cell.x,cell.z,erase?'erase':selectedTool,{castleSize:Number($('#castle-size').value),cemeterySize:Number($('#cemetery-size').value),civicSize:Number($('#civic-size').value),landmarkDirection:landmarkOptions().direction,playgroundSize:Number($('#playground-size').value),slopeDirection:$('#slope-direction').value==='flat'?null:Number($('#slope-direction').value),slopeFinish:$('#slope-finish').value,...patioOptions(),customDesign:selectedDesign(),customDirection:Number($('#custom-direction').value),color,roof,roofDirection,beachBarDirection:Number($('#beachbar-direction').value),beachBarName:$('#beachbar-name').value,level:cell.level??null,businessFloor:Number($('#business-floor').value),businessType:$('#business-type').value,businessName:$('#business-name').value,businessDirection:Number($('#business-direction').value),businessTerrace:$('#business-terrace').checked,townHallSize:Number($('#townhall-size').value),townHallDirection:Number($('#townhall-direction').value),churchDirection:Number($('#church-direction').value),marketSize:Number($('#market-size').value),marketDirection:Number($('#market-direction').value)});
+  const result=editWorld(world,cell.x,cell.z,erase?'erase':selectedTool,{castleSize:Number($('#castle-size').value),cemeterySize:Number($('#cemetery-size').value),civicSize:Number($('#civic-size').value),landmarkDirection:landmarkOptions().direction,playgroundSize:Number($('#playground-size').value),slopeDirection:$('#slope-direction').value==='flat'?null:Number($('#slope-direction').value),slopeFinish:$('#slope-finish').value,...patioOptions(),customDesign:selectedDesign(),customDirection:Number($('#custom-direction').value),color,roof,roofDirection,beachBarDirection:Number($('#beachbar-direction').value),beachBarName:$('#beachbar-name').value,level:!erase&&selectedTool==='paint-floor'&&$('#paint-floor').value!=='pointed'?Number($('#paint-floor').value):cell.level??null,businessFloor:Number($('#business-floor').value),businessType:$('#business-type').value,businessName:$('#business-name').value,businessDirection:Number($('#business-direction').value),businessTerrace:$('#business-terrace').checked,townHallSize:Number($('#townhall-size').value),townHallDirection:Number($('#townhall-direction').value),churchDirection:Number($('#church-direction').value),marketSize:Number($('#market-size').value),marketDirection:Number($('#market-direction').value)});
   if(result.message)toast(result.message);
   if(result.changed){history.push(before);refresh();scene.setCursor(cell.x,cell.z,erase||tool==='erase',cell.level);keyboardCell={...scene.hovered};}
 }
@@ -207,12 +207,13 @@ function selectTool(next){
 function selectColor(index){color=index;$('#color-name').textContent=COLORS[index].name;for(const b of $$('.swatch'))b.setAttribute('aria-pressed',String(Number(b.dataset.color)===index));}
 function describeHouseAction(){
   describePatio();
-  const businessMode=$('#house-action').value==='business';
-  $('#house-build-options').hidden=businessMode;$('#business-options').hidden=!businessMode;
+  const businessMode=$('#house-action').value==='business',paintMode=$('#house-action').value==='paint';
+  $('#house-build-options').hidden=businessMode||paintMode;$('#business-options').hidden=!businessMode;$('#paint-options').hidden=!paintMode;$('#house-color-options').hidden=businessMode;
   const fruit=$('#business-type').value==='greengrocer',grocery=$('#business-type').value==='grocery',newsstand=$('#business-type').value==='newsstand',florist=$('#business-type').value==='florist',pharmacy=$('#business-type').value==='pharmacy',fishmonger=$('#business-type').value==='fishmonger',bakery=$('#business-type').value==='bakery',butcher=$('#business-type').value==='butcher';$('#business-terrace-option').hidden=!['bar','restaurant'].includes($('#business-type').value);
   const remove=$('#business-type').value==='none',rename=$('#business-type').value==='rename';$('#business-details').hidden=remove||rename;$('#business-name-option').hidden=remove;
   $('#business-note').textContent=SPECIAL_SHOPS[$('#business-type').value]?SPECIAL_SHOPS[$('#business-type').value].description+' Tria la planta i una façana accessible i clica la casa. No necessita casella de terrassa.':rename?'Tria la planta i la façana, escriu el nou nom i clica la casa. Es conserven el tipus, la façana, la terrassa i tots els pisos.':remove?'Tria la planta i la façana i clica una casa per retirar-ne el negoci i la terrassa. Els pisos i la teulada es conserven.':butcher?'Clica una casa existent. La carnisseria té peces de carn en safates, embotits penjats, porta central i tendal granat i crema. Tria una façana lliure; no necessita cap casella de terrassa.':bakery?'Clica una casa existent. La fleca té pans rodons i barres als aparadors, porta central i tendal ocre i crema. Tria una façana lliure; no necessita cap casella de terrassa.':fishmonger?'Clica una casa existent. La peixateria té peix exposat sobre gel, porta central i tendal blau i blanc. Tria una façana lliure; no necessita cap casella de terrassa.':pharmacy?'Clica una casa existent. La farmàcia té una creu verda, porta de vidre i aparadors amb capses i flascons. Tria una façana lliure; no necessita cap casella de terrassa.':florist?'Clica una casa existent. La floristeria té una porta central, aparadors amb rams i flors de colors i un tendal. Tria una façana lliure; no necessita cap casella de terrassa.':newsstand?'Clica una casa existent. El quiosc té diaris i revistes exposats, taulell i tendal. Tria una façana lliure; no necessita cap casella de terrassa.':grocery?'Clica una casa existent. La botiga de queviures té una porta central i aparadors amb pots, llaunes, ampolles i pa. Tria una façana lliure; no necessita espai de terrassa.':fruit?'Clica una casa existent. La fruiteria té prestatgeries de fruita a banda i banda de la porta. Cal terra ferma, carrer o plaça lliure al davant, a la mateixa alçada.':$('#business-type').value==='restaurant'?'Clica una casa existent. El restaurant té rètol, tendal i carta a la façana. Amb terrassa hi afegeixes dues taules parades i quatre cadires; cal terra ferma, carrer o plaça al davant i a la mateixa alçada.':'Clica una casa existent. La terrassa posa dues taules i quatre cadires a la casella del davant: cal terra ferma, carrer o plaça lliure a la mateixa alçada. Les direccions són fixes encara que giris la vista.';
-  if(tool==='house')$('#tool-description').textContent=businessMode?(rename?'Escriu un nom i clica una casa amb negoci per canviar-ne el rètol.':'Clica una casa per aplicar-hi el negoci sense afegir pisos.'):roof!=='flat'&&$('#roof-direction-only').checked?'Clica una casa amb teulada a una o dues aigües per aplicar-hi l’orientació escollida.':patioMode()?`Tria la posició del pati, la façana i d’1 a ${CONFIG.houses.maxPatioFloors} plantes. Clica la casa per construir o aplicar els canvis.`:instructions.house[1];
+  $('#business-note').textContent=$('#business-note').textContent.replace(/una casa existent|una casa|la casa/g,text=>text==='la casa'?'la casa o l’edifici del jugador':'una casa o un edifici del jugador');
+  if(tool==='house')$('#tool-description').textContent=paintMode?'Escull el color i clica la planta que vols pintar, en una casa o un edifici del jugador.':businessMode?(rename?'Escriu un nom i clica una casa amb negoci per canviar-ne el rètol.':'Tria la planta i la façana; clica una casa o un edifici del jugador.'):roof!=='flat'&&$('#roof-direction-only').checked?'Clica una casa amb teulada a una o dues aigües per aplicar-hi l’orientació escollida.':patioMode()?`Tria la posició del pati, la façana i d’1 a ${CONFIG.houses.maxPatioFloors} plantes. Clica la casa per construir o aplicar els canvis.`:instructions.house[1];
 }
 function describeRoof(){
   $('#roof-direction-options').hidden=roof==='flat';
@@ -248,7 +249,8 @@ async function init(){
   $('#house-type option[value="standard"]').textContent=`Casa habitual · fins a ${CONFIG.houses.maxFloors} plantes`;
   $('#house-type option[value="patio"]').textContent=`Casa amb pati · màxim ${CONFIG.houses.maxPatioFloors} plantes`;
   $('#patio-floors').replaceChildren(...Array.from({length:CONFIG.houses.maxPatioFloors},(_,i)=>new Option(`${i+1} ${i===0?'planta':'plantes'}`,i+1)));
-  $('#business-floor').replaceChildren(...Array.from({length:Math.max(1,CONFIG.houses.maxFloors-1)},(_,i)=>new Option(i===0?'Planta baixa':`Planta ${i+1} · accés des de terreny elevat`,i)));
+  $('#business-floor').replaceChildren(...Array.from({length:Math.max(3,CONFIG.houses.maxFloors-1)},(_,i)=>new Option(i===0?'Planta baixa':`Planta ${i+1} · accés des de terreny elevat`,i)));
+  $('#paint-floor').append(...Array.from({length:Math.max(4,CONFIG.houses.maxFloors)},(_,i)=>new Option(i===0?'Planta baixa':`Planta ${i+1}`,i)));
   for(const id of ['new-grid-size','expand-grid-size'])$('#'+id).replaceChildren(...GRID_SIZES.map(size=>new Option(`${size} × ${size}`,size)));
   $('#new-grid-size').value=String(CONFIG.grid.defaultSize);
   $('#bridge-note').textContent=instructions.bridge[1];
@@ -361,7 +363,12 @@ async function init(){
     }
     if(e.key==='PageUp'||e.key==='PageDown'){
       e.preventDefault();const t=world.tiles.find(t=>t.x===keyboardCell.x&&t.z===keyboardCell.z);
-      if(t?.kind==='house'){
+      const custom=customAt(world,keyboardCell.x,keyboardCell.z);
+      if(custom){
+        const index=customCells(custom).findIndex(p=>p.x===keyboardCell.x&&p.z===keyboardCell.z),floors=customFloors(custom.design,index);
+        const level=Math.max(0,Math.min(floors-1,(keyboardCell.level??floors-1)+(e.key==='PageUp'?1:-1)));
+        scene.setCursor(keyboardCell.x,keyboardCell.z,tool==='erase',level);keyboardCell={...scene.hovered};toast(`Planta ${level+1} de ${floors}`);
+      }else if(t?.kind==='house'){
         const level=Math.max(0,Math.min(t.floors-1,(keyboardCell.level??t.floors-1)+(e.key==='PageUp'?1:-1)));
         scene.setCursor(t.x,t.z,tool==='erase',level);keyboardCell={...scene.hovered};
         toast(`Pis ${level+1} de ${t.floors}${t.levels[level]?'':' · buit amb suports'}`);

@@ -110,7 +110,11 @@ export function createPickingGeometry(world,pickingMaterial){
   }
   for(const b of world.customBuildings??[]){
     const ground=world.tiles.find(t=>t.x===b.x&&t.z===b.z);
-    for(let i=0;i<b.design.ground.length;i++)push(customCell(b,i),null,terrainY(ground),customFloors(b.design,i)*FLOOR+.62);
+    for(let i=0;i<b.design.ground.length;i++){
+      const p=customCell(b,i),floors=customFloors(b.design,i);
+      for(let level=0;level<floors;level++)push(p,level,terrainY(ground)+level*FLOOR,FLOOR);
+      push(p,floors-1,terrainY(ground)+floors*FLOOR,.62);
+    }
   }
   for(const t of world.tiles.filter(t=>t.patio))push(patioCell(t),null,terrainY(t),.42);
   for(const [id,owner] of diningTerraces(world)){
@@ -584,6 +588,7 @@ export function createVillageGeometry(world){
       }
     }
   }
+  function renderBusinessFacade(shop,bottom){const d=shop.business.direction;if(Object.hasOwn(SPECIAL_SHOPS,shop.business.type))renderSpecialShop(shop.business,(shape,color,u,h,depth,sx,sy,sz)=>face(shape,color,shop,d,u,bottom+h,depth,sx,sy,sz));else if(shop.business.type==='greengrocer')fruitFacade(shop,d,bottom);else if(shop.business.type==='grocery')groceryFacade(shop,d,bottom);else if(shop.business.type==='butcher')butcherFacade(shop,d,bottom);else if(shop.business.type==='bakery')bakeryFacade(shop,d,bottom);else if(shop.business.type==='fishmonger')fishmongerFacade(shop,d,bottom);else if(shop.business.type==='pharmacy')pharmacyFacade(shop,d,bottom);else if(shop.business.type==='florist')floristFacade(shop,d,bottom);else if(shop.business.type==='newsstand')newsstandFacade(shop,d,bottom);else if(shop.business.type==='restaurant')restaurantFacade(shop,d,bottom);else barFacade(shop,d,bottom);}
   for(const owner of terraces.values())barTerrace(owner);
   for(const t of world.tiles){
     if(t.kind==='beach')continue;
@@ -656,13 +661,13 @@ export function createVillageGeometry(world){
       box('#f3ece0',x-.24,y+.025,z+.22,.26,.025,.65,n);
     }
     if(t.kind!=='house')continue;
-    const wall=COLORS[t.color].hex,shutter=t.color===3?'#e7e4d3':(n>.62?'#577e6c':'#447e87');
+    const wall=COLORS[t.floorColors?.at(-1)??t.color].hex,shutter=t.color===3?'#e7e4d3':(n>.62?'#577e6c':'#447e87');
     const total=t.floors*FLOOR,top=y+total,entrances=Array.from({length:4},(_,d)=>residentialEntrance(t.x,t.z,d));
     // Continuous empty levels share tall supports and have no intervening slabs.
     for(let level=0;level<t.floors;level++){
       if(t.levels[level])continue;
       const first=level;while(level+1<t.floors&&!t.levels[level+1])level++;
-      const count=level-first+1,bottom=y+first*FLOOR,height=count*FLOOR;
+      const count=level-first+1,bottom=y+first*FLOOR,height=count*FLOOR,wall=COLORS[t.floorColors?.[first]??t.color].hex;
       for(const dx of [-.535,.535])for(const dz of [-.535,.535]){
         box(wall,x+dx,bottom+height/2,z+dz,.185,height,.185);
         box('#e5dac3',x+dx,bottom+.045,z+dz,.23,.09,.23);
@@ -677,14 +682,14 @@ export function createVillageGeometry(world){
     }
     for(let floor=0;floor<t.floors;floor++){
       if(!t.levels[floor])continue;
-      const bottom=y+floor*FLOOR;
+      const bottom=y+floor*FLOOR,wall=COLORS[t.floorColors?.[floor]??t.color].hex;
       box(wall,x,bottom+FLOOR/2,z,1.255,FLOOR,1.255);
       for(let d=0;d<4;d++){
         const next=neighbours[d];
         if(solidAtHeight(next,bottom+.22)&&solidAtHeight(next,bottom+.7))continue;
         face('box','#ede5d3',t,d,0,bottom+.035,.641,1.29,.07,.055);
         const doorU=entrances[d]?entranceLayout(entrances[d]).door:0;
-        const accessU=t.business?.direction===d?(t.business.type==='bar'?-.31:0):doorU;
+        const accessU=t.business?.direction===d?(SPECIAL_SHOPS[t.business.type]?.door??(t.business.type==='bar'?-.31:0)):doorU;
         const supported=entranceSupported(t,d,accessU);
         const hasDoor=!t.patio||d===t.patio.direction||d===patioDirection(t);
         const steps=floor===0&&hasDoor&&!supported?entranceSteps(t,d,accessU,entrances[d]?.door==='double'?.54:.46):null;
@@ -693,7 +698,7 @@ export function createVillageGeometry(world){
         const middleAccess=middleEntranceAccessible(world,t,floor,d);
         const upper=t.upperBusinesses?.find(b=>b.floor===floor&&b.direction===d);
         const shop=floor===0?(t.business?.direction===d?t:null):upper?businessOwner(t,upper):null;
-        if(shop&&businessFrontClear(world,shop)&&(floor>0||accessible)){if(Object.hasOwn(SPECIAL_SHOPS,shop.business.type))renderSpecialShop(shop.business,(shape,color,u,h,depth,sx,sy,sz)=>face(shape,color,shop,d,u,bottom+h,depth,sx,sy,sz));else if(shop.business.type==='greengrocer')fruitFacade(shop,d,bottom);else if(shop.business.type==='grocery')groceryFacade(shop,d,bottom);else if(shop.business.type==='butcher')butcherFacade(shop,d,bottom);else if(shop.business.type==='bakery')bakeryFacade(shop,d,bottom);else if(shop.business.type==='fishmonger')fishmongerFacade(shop,d,bottom);else if(shop.business.type==='pharmacy')pharmacyFacade(shop,d,bottom);else if(shop.business.type==='florist')floristFacade(shop,d,bottom);else if(shop.business.type==='newsstand')newsstandFacade(shop,d,bottom);else if(shop.business.type==='restaurant')restaurantFacade(shop,d,bottom);else barFacade(shop,d,bottom);continue;}
+        if(shop&&businessFrontClear(world,shop)&&(floor>0||accessible)){renderBusinessFacade(shop,bottom);continue;}
         // Record only openings actually drawn on this exposed residential face.
         const festiveOpening=(u,top,depth=.724,mount='window')=>{
           if(!world.diada)return;
@@ -988,7 +993,7 @@ export function createVillageGeometry(world){
   }
   renderLandmarks(world,add,UNIT,flags);
   renderBeachBars(world,add,UNIT);
-  renderCustomBuildings(world,add,UNIT,FLOOR,entranceSteps);
+  renderCustomBuildings(world,add,UNIT,FLOOR,entranceSteps,renderBusinessFacade);
   for(const placement of chooseFestiveFlags(festiveCandidates)){
     const flag=createFestiveFlag(placement),{x,z,direction,u,top,depth}=placement,a=direction*Math.PI/2;
     flag.position.set(x*UNIT+Math.cos(a)*u+Math.sin(a)*depth,top,z*UNIT-Math.sin(a)*u+Math.cos(a)*depth);
@@ -1178,6 +1183,13 @@ export class VillageScene{
     const custom=this.customOptions&&!erase?{x,z,...this.customOptions}:customAt(this.world,x,z);
     if(custom){
       const {width,depth}=customDimensions(custom),base=this.tileMap.get(key(custom.x,custom.z)),valid=!this.customOptions||erase||checkCustomBuilding(this.world,custom).valid;
+      if(!this.customOptions&&!erase){
+        const index=customCells(custom).findIndex(p=>p.x===x&&p.z===z),floors=customFloors(custom.design,index);
+        const selected=Number.isInteger(level)?Math.max(0,Math.min(floors-1,level)):floors-1;
+        this.hovered={x,z,level:selected};this.cursor.scale.set(width,FLOOR/.025,depth);
+        this.cursor.position.set((custom.x+(width-1)/2)*UNIT,terrainY(base)+(selected+.5)*FLOOR,(custom.z+(depth-1)/2)*UNIT);
+        this.cursor.children[0].material.opacity=.13;this.cursor.children[0].material.color.set('#faffdf');this.cursor.visible=true;return;
+      }
       this.hovered={x,z,level:null};this.cursor.scale.set(width,1,depth);this.cursor.position.set((custom.x+(width-1)/2)*UNIT,(base?terrainY(base):0)+.12,(custom.z+(depth-1)/2)*UNIT);
       this.cursor.children[0].material.opacity=.30;this.cursor.children[0].material.color.set(erase||!valid?'#ff8d73':'#9de6bd');this.cursor.visible=true;return;
     }

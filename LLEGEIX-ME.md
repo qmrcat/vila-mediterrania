@@ -28,7 +28,7 @@ No cal executar `npm install`, compilar ni configurar Vite. El joc no utilitza c
 
 Cada canvi es desa al `localStorage` d’aquest navegador i d’aquest origen web. El desament no se sincronitza entre dispositius i pot desaparèixer si es netegen les dades del navegador. El servidor inclòs utilitza el port 3000 o el primer disponible a partir d’aquest: conserva la mateixa adreça per recuperar el desament local.
 
-A **La meva vila → Desa una còpia (.json)** pots exportar la vila. Obre-la amb **Obre una vila…**. El format 42 guarda els edificis del jugador amb els seus dissenys, els ajuntaments, les esglésies, les cases amb pati, la mida de la quadrícula, els mercats, els negocis de planta baixa, els ponts, la costa, totes les construccions, els buits entre pisos cada espècie plantada i les caselles de platja. S’importen també fitxers dels formats 1–41, convertits automàticament; els pins existents continuen sent pins. El desament anterior es conserva separadament al navegador; la càmera, la llum i l’historial de desfer no es guarden al fitxer.
+A **La meva vila → Desa una còpia (.json)** pots exportar la vila. Obre-la amb **Obre una vila…**. El format 45 guarda els edificis del jugador amb els seus dissenys, els ajuntaments, les esglésies, les cases amb pati, la mida de la quadrícula, els mercats, els negocis de planta baixa, els ponts, la costa, totes les construccions, els buits entre pisos cada espècie plantada i les caselles de platja. S’importen també fitxers dels formats 1–44, convertits automàticament; els pins existents continuen sent pins. El desament anterior es conserva separadament al navegador; la càmera, la llum i l’historial de desfer no es guarden al fitxer.
 
 **Fes una fotografia** exporta una imatge PNG de la vista 3D sense els controls.
 
@@ -640,3 +640,45 @@ Els dos panells es mostren **per defecte en obrir o recarregar el joc**. Aquesta
 El compàs és més petit —112 píxels en la vista habitual d’ordinador i 88 en la vista habitual de mòbil— i manté els punts cardinals sincronitzats amb la rotació del mapa. A les pantalles estretes, els controls superiors es reparteixen en files per evitar que se superposin.
 
 El ZIP continua incloent el joc complet, l’editor, config.js i totes les construccions. El format de les viles es manté en **42**.
+
+
+## Xarcuteria, roba, banc i sabateria — v54
+
+A **Casa → Posar o editar un negoci** trobaràs quatre opcions noves:
+
+- **Xarcuteria:** fuets i embotits curats penjats, peces d’embotit i formatges als aparadors, amb tendal en tons càlids.
+- **Botiga de roba:** maniquí amb vestit, peces de roba penjades i roba plegada a les prestatgeries.
+- **Banc:** façana blava, porta central, finestra d’oficina amb escriptori i ordinador, i caixer automàtic amb pantalla, teclat i ranures al costat dret.
+- **Sabateria:** prestatgeries amb sabates de diferents colors i botes.
+
+Tria el negoci, la planta i l’orientació de la façana, i clica una casa. Aquests quatre negocis **no necessiten terrassa ni una cel·la addicional**. Es poden posar a la planta baixa o en una planta intermèdia amb terreny elevat accessible a la mateixa alçada. Les façanes tapades no mostren l’aparador.
+
+Pots posar-hi un nom propi, canviar el tipus de negoci o retirar-lo conservant els pisos, el color i la teulada. També funcionen Desfés/Refés i el desament automàtic. El **JSON format 43** conserva els quatre negocis i obre les viles dels formats **1–42** segons els límits configurats.
+
+Aquest ZIP és el joc complet, amb editor, config.js, castells, pals de bandera, botó per mostrar o amagar els panells i totes les funcions anteriors.
+
+
+## Comerços neutres i jogueteria — v55
+
+A **Casa → Posar o editar un negoci** hi ha tres comerços neutres: porta al centre amb dos aparadors, porta a l’esquerra amb un aparador ampli a la dreta, i porta a la dreta amb un aparador ampli a l’esquerra. Esquerra i dreta es miren des del carrer. Tots tres tenen els aparadors buits i el rètol **Comerç**, editable.
+
+La **Jogueteria** té ossets, un trenet i blocs de construcció de colors. Els quatre negocis permeten orientar la façana als quatre costats, desfer i refer, canviar el rètol i posar-los als pisos intermedis amb accés des del terreny. Les escales curtes en desnivells s’alineen amb la porta escollida.
+
+El **JSON format 44** conserva aquestes variants i importa els formats **1–43** segons els límits configurats.
+
+
+## Negocis als edificis del jugador i colors per planta — v56
+
+### Negocis als edificis dissenyats
+
+Selecciona **Casa → Posar o editar un negoci**, tria el negoci, la planta i l’orientació de la façana, i clica la cel·la de l’edifici del jugador. Admet tots els negocis, els rètols personalitzats i les terrasses de bars i restaurants. La fruiteria manté les prestatgeries exteriors. Cal una façana exterior amb murs sòlids; les arcades obertes i les parets interiors no admeten negocis.
+
+A més de la planta baixa, pots ocupar plantes intermèdies si hi ha terreny a la mateixa alçada davant de la façana. Cada combinació de cel·la, planta i orientació pot tenir un negoci independent. Per canviar el rètol o retirar-lo, escull la mateixa planta i façana. Els canvis afecten l’edifici col·locat, no la plantilla desada al catàleg.
+
+### Colors per planta
+
+A **Casa → Pintar una planta**, escull un color i assenyala la planta que vols pintar. També pots seleccionar explícitament la planta al desplegable. Funciona en cases habituals, cases amb pati i edificis del jugador; en aquests últims pinta tot el nivell de l’edifici, encara que ocupi diverses cel·les. Les altres plantes conserven el seu color.
+
+En construir una casa, els pisos nous utilitzen el color seleccionat i conserven els colors dels pisos anteriors. Pintar no afegeix pisos ni canvia teulades o negocis. Re Pàg i Av Pàg seleccionen plantes amb el teclat, també als edificis del jugador.
+
+Els colors i els negocis es conserven amb **Desfés/Refés**, el desament automàtic i l’exportació/importació de la vila. El **format 45** importa els formats **1–44**.
