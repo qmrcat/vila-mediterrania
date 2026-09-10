@@ -1,5 +1,4 @@
-Vila Mediterrània — v51 — 2026-09-10
-Pals amb senyera, estelada i bandera negra catalana. Una cel·la, quatre orientacions i banderes que onegen.
-Joc complet amb editor, config.js i totes les funcionalitats anteriors.
-JSON format 41; importació de formats 1–40 segons els límits configurats.
-Consulta LLEGEIX-ME.md per iniciar el joc i CONFIGURACIO.md per canviar els límits.
+Vila Mediterrània — v53 — 2026-09-10
+Botó al costat de música per amagar o mostrar la paleta i la barra d’eines; compàs més petit.
+Panells visibles per defecte. Joc complet amb editor, config.js, castells i totes les funcions anteriors.
+JSON format 42. Consulta LLEGEIX-ME.md per iniciar el joc.

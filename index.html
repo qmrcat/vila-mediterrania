@@ -14,9 +14,9 @@
     <header class="topbar">
       <div class="brand"><span class="brand-mark" aria-hidden="true">≋</span><div><h1>Vila Mediterrània</h1><p>Un poble al teu ritme</p></div></div>
       <div class="region-switch" role="group" aria-label="Ambientació"><button data-region="brava" aria-pressed="true">Costa Brava</button><button data-region="daurada" aria-pressed="false">Costa Daurada</button></div>
-      <div class="top-actions"><button id="music-open" class="icon-button" aria-label="Obre els controls de música" title="Música" aria-haspopup="dialog">♫</button><button id="help" class="icon-button" aria-label="Com es juga" title="Com es juga (?)">?</button><button id="file-menu" class="primary-button" aria-haspopup="true" aria-expanded="false">La meva vila <span aria-hidden="true">⌄</span></button></div>
+      <div class="top-actions"><button id="music-open" class="icon-button" aria-label="Obre els controls de música" title="Música" aria-haspopup="dialog">♫</button><button id="interface-toggle" class="icon-button" aria-pressed="true" aria-controls="construction-palette construction-tools" aria-label="Amaga la paleta i la barra d’eines" title="Amaga la paleta i la barra d’eines"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 4v16M8 16h13"/></svg></button><button id="help" class="icon-button" aria-label="Com es juga" title="Com es juga (?)">?</button><button id="file-menu" class="primary-button" aria-haspopup="true" aria-expanded="false">La meva vila <span aria-hidden="true">⌄</span></button></div>
     </header>
-    <aside class="palette panel" aria-label="Opcions de construcció">
+    <aside id="construction-palette" class="palette panel" aria-label="Opcions de construcció">
       <div class="eyebrow">EL TEU RACÓ DE MAR</div>
       <h2 id="tool-heading">Fem créixer el poble</h2>
       <p id="tool-description">Clica per afegir un pis. Clica un buit entre pisos per reconstruir-lo.</p>
@@ -25,7 +25,7 @@
         <select id="building-type" aria-describedby="tool-description"></select>
       </div>
       <div id="monument-options" hidden>
-        <label class="field-label" for="monument-type">Muralles · tipus de peça</label>
+        <label class="field-label" for="monument-type">Monument</label>
         <select id="monument-type" aria-describedby="tool-description"></select>
       </div>
       <div id="house-options">
@@ -91,6 +91,7 @@
         <p id="terrain-note" class="tree-note"></p>
       </div>
       <div id="landmark-options" hidden>
+        <div id="castle-size-options" hidden><label class="field-label" for="castle-size">Mida del castell</label><select id="castle-size"><option value="4">Petit · 2 × 2 cel·les</option><option value="9">Gran · 3 × 3 cel·les</option></select></div>
         <div id="cemetery-size-options" hidden><label class="field-label" for="cemetery-size">Mida del cementiri</label><select id="cemetery-size"><option value="2">Petit · 2 × 1 cel·les</option><option value="4">Gran · 2 × 2 cel·les</option></select></div>
         <div id="civic-size-options" hidden><label class="field-label" for="civic-size">Mida de l’edifici</label><select id="civic-size"><option value="4">Petit · 2 × 2 cel·les</option><option value="6">Gran · 3 × 2 cel·les</option></select></div>
         <div id="playground-size-options"><label class="field-label" for="playground-size">Mida del parc infantil</label><select id="playground-size"><option value="2">Petit · 2 × 1 cel·les</option><option value="4">Gran · 2 × 2 cel·les</option></select></div>
@@ -148,7 +149,7 @@
       <button id="export">Desa una còpia (.json)</button>
       <button id="import">Obre una vila…</button>
       <button id="photo">Fes una fotografia</button>
-      <a id="download-code" href="./vila-mediterrania-v51-pals-bandera.zip" download>Descarrega el joc i el codi</a>
+      <a id="download-code" href="./vila-mediterrania-v53-panells.zip" download>Descarrega el joc i el codi</a>
       <hr>
       <p id="grid-size-status">Quadrícula actual: 33 × 33</p>
       <button id="expand-grid">Amplia la quadrícula…</button>
@@ -174,7 +175,7 @@
       <button id="zoom-in" aria-label="Apropa" title="Apropa (+)">+</button><button id="zoom-out" aria-label="Allunya" title="Allunya (−)">−</button><span></span><button id="rotate" aria-label="Gira la vista" title="Gira la vista">↻</button><button id="home-view" aria-label="Centra la vila" title="Centra la vila (0)">⌖</button>
     </div>
     <div class="island-caption" aria-hidden="true"><span>CATALUNYA · MEDITERRANI</span><span id="coast-caption">Cales, pins i cases de calç</span></div>
-    <div class="bottom-ui">
+    <div id="construction-tools" class="bottom-ui">
       <div class="toolbar panel" role="toolbar" aria-label="Eines de construcció">
         <button data-tool="house" aria-pressed="true" title="Casa (1)"><span data-icon="house"></span><span>Casa</span><kbd>1</kbd></button>
         <button data-tool="land" aria-pressed="false" title="Terreny (2)"><span data-icon="land"></span><span>Terreny</span><kbd>2</kbd></button>

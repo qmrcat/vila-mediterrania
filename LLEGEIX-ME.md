@@ -28,7 +28,7 @@ No cal executar `npm install`, compilar ni configurar Vite. El joc no utilitza c
 
 Cada canvi es desa al `localStorage` d’aquest navegador i d’aquest origen web. El desament no se sincronitza entre dispositius i pot desaparèixer si es netegen les dades del navegador. El servidor inclòs utilitza el port 3000 o el primer disponible a partir d’aquest: conserva la mateixa adreça per recuperar el desament local.
 
-A **La meva vila → Desa una còpia (.json)** pots exportar la vila. Obre-la amb **Obre una vila…**. El format 41 guarda els edificis del jugador amb els seus dissenys, els ajuntaments, les esglésies, les cases amb pati, la mida de la quadrícula, els mercats, els negocis de planta baixa, els ponts, la costa, totes les construccions, els buits entre pisos cada espècie plantada i les caselles de platja. S’importen també fitxers dels formats 1–40, convertits automàticament; els pins existents continuen sent pins. El desament anterior es conserva separadament al navegador; la càmera, la llum i l’historial de desfer no es guarden al fitxer.
+A **La meva vila → Desa una còpia (.json)** pots exportar la vila. Obre-la amb **Obre una vila…**. El format 42 guarda els edificis del jugador amb els seus dissenys, els ajuntaments, les esglésies, les cases amb pati, la mida de la quadrícula, els mercats, els negocis de planta baixa, els ponts, la costa, totes les construccions, els buits entre pisos cada espècie plantada i les caselles de platja. S’importen també fitxers dels formats 1–41, convertits automàticament; els pins existents continuen sent pins. El desament anterior es conserva separadament al navegador; la càmera, la llum i l’historial de desfer no es guarden al fitxer.
 
 **Fes una fotografia** exporta una imatge PNG de la vista 3D sense els controls.
 
@@ -616,3 +616,27 @@ Són elements permanents: **el botó Banderes de la Diada no els amaga**, i els 
 Pots desfer, refer o esborrar el conjunt conservant el terreny. Es desen al navegador i al **JSON format 41**, que també obre els formats **1–40** quan compleixen els límits configurats. Si tens activada la reducció de moviment al sistema, les banderes es mantenen quietes.
 
 Aquest ZIP conté el joc complet, l’editor i config.js amb totes les funcionalitats anteriors.
+
+
+## Castell medieval català — v52
+
+A **Monuments → Castell medieval català** pots escollir **Petit · 2 × 2 cel·les** o **Gran · 3 × 3 cel·les**. Tria **Entrada cap a** per orientar el portal al nord, sud, est o oest.
+
+Tots dos castells tenen murs de pedra amb carreus, merlets, quatre torres cantoneres amb espitlleres, una torre de l’homenatge més alta, portal amb arc i pati interior descobert. El castell gran té un pati més ampli amb un pou i un banc de pedra. Una senyera oneja sobre la torre de l’homenatge; es manté encara que desactivis les banderes de la Diada.
+
+Prepara les quatre o nou cel·les de terra ferma, pradera, carrer o plaça, lliures i a la mateixa alçada. També es pot construir sobre terreny elevat i pendents amb totes les bases coincidents. La selecció ressalta el conjunt sencer. Esborrar des de qualsevol cel·la retira el castell i conserva el terreny.
+
+Compatible amb **Desfés/Refés**, desament automàtic i **JSON format 42**, amb importació dels formats **1–41** segons els límits de config.js. Les muralles individuals continuen disponibles dins de Monuments.
+
+Aquest ZIP inclou el joc complet, l’editor, config.js i totes les funcions anteriors.
+
+
+## Mostrar o amagar els panells — v53
+
+Al costat del botó de música **♫** hi ha un botó amb la icona de panells. Prem-lo per **amagar la paleta i la barra d’eines**; torna’l a prémer per mostrar-les. El botó continua accessible quan els panells estan amagats. Les opcions de construcció seleccionades es conserven.
+
+Els dos panells es mostren **per defecte en obrir o recarregar el joc**. Aquesta visibilitat és de la sessió i no modifica el JSON de la vila ni ocupa passos de Desfés.
+
+El compàs és més petit —112 píxels en la vista habitual d’ordinador i 88 en la vista habitual de mòbil— i manté els punts cardinals sincronitzats amb la rotació del mapa. A les pantalles estretes, els controls superiors es reparteixen en files per evitar que se superposin.
+
+El ZIP continua incloent el joc complet, l’editor, config.js i totes les construccions. El format de les viles es manté en **42**.

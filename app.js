@@ -8,24 +8,25 @@ import {createWorld,validateWorld,editWorld,History,COLORS,worldLimit,expandWorl
 
 const $=selector=>document.querySelector(selector);
 const $$=selector=>[...document.querySelectorAll(selector)];
-const STORAGE_KEY='vila-mediterrania:v41';
+const STORAGE_KEY='vila-mediterrania:v42';
 // New landmark types join the building selector without widening the toolbar.
 const BUILDING_TOOLS=new Map([
   ['beachbar','Guingueta'],['market','Mercat'],['church','Església'],['townhall','Ajuntament'],
   ...Object.entries(LANDMARK_TYPES).filter(([,definition])=>definition.category!=='monument').map(([id,definition])=>[id,definition.name]),
 ]);
 const MONUMENT_TOOLS=new Map(Object.entries(LANDMARK_TYPES).filter(([,definition])=>definition.category==='monument').map(([id,definition])=>[id,definition.name]));
-const LEGACY_STORAGE_KEYS=['vila-mediterrania:v40','vila-mediterrania:v39','vila-mediterrania:v38','vila-mediterrania:v37','vila-mediterrania:v36','vila-mediterrania:v35','vila-mediterrania:v34','vila-mediterrania:v33','vila-mediterrania:v32','vila-mediterrania:v31','vila-mediterrania:v30','vila-mediterrania:v29','vila-mediterrania:v28','vila-mediterrania:v27','vila-mediterrania:v26','vila-mediterrania:v25','vila-mediterrania:v24','vila-mediterrania:v23','vila-mediterrania:v22','vila-mediterrania:v21','vila-mediterrania:v20','vila-mediterrania:v19','vila-mediterrania:v18','vila-mediterrania:v17','vila-mediterrania:v16','vila-mediterrania:v15','vila-mediterrania:v14','vila-mediterrania:v13','vila-mediterrania:v12','vila-mediterrania:v11','vila-mediterrania:v10','vila-mediterrania:v9','vila-mediterrania:v8','vila-mediterrania:v7','vila-mediterrania:v6','vila-mediterrania:v5','vila-mediterrania:v4','vila-mediterrania:v3','vila-mediterrania:v2','vila-mediterrania:v1'];
+const LEGACY_STORAGE_KEYS=['vila-mediterrania:v41','vila-mediterrania:v40','vila-mediterrania:v39','vila-mediterrania:v38','vila-mediterrania:v37','vila-mediterrania:v36','vila-mediterrania:v35','vila-mediterrania:v34','vila-mediterrania:v33','vila-mediterrania:v32','vila-mediterrania:v31','vila-mediterrania:v30','vila-mediterrania:v29','vila-mediterrania:v28','vila-mediterrania:v27','vila-mediterrania:v26','vila-mediterrania:v25','vila-mediterrania:v24','vila-mediterrania:v23','vila-mediterrania:v22','vila-mediterrania:v21','vila-mediterrania:v20','vila-mediterrania:v19','vila-mediterrania:v18','vila-mediterrania:v17','vila-mediterrania:v16','vila-mediterrania:v15','vila-mediterrania:v14','vila-mediterrania:v13','vila-mediterrania:v12','vila-mediterrania:v11','vila-mediterrania:v10','vila-mediterrania:v9','vila-mediterrania:v8','vila-mediterrania:v7','vila-mediterrania:v6','vila-mediterrania:v5','vila-mediterrania:v4','vila-mediterrania:v3','vila-mediterrania:v2','vila-mediterrania:v1'];
 let bridgeStart=null,designs=[];
 let world,scene,tool='house',treeSpecies='pine',terrainType='land',color=0,roof='tile',roofDirection=0,keyboardCell={x:0,z:0},toastTimer;
 const history=new History();
 if(['localhost','127.0.0.1','[::1]'].includes(location.hostname))$('#download-code').hidden=true;
 const instructions={
+  castle:['Un castell medieval català','Tria 2 × 2 o 3 × 3 cel·les i l’orientació del portal. Prepara tota la superfície lliure a la mateixa alçada.'],
   ...Object.fromEntries(Object.entries(LANDMARK_TYPES).filter(([,d])=>d.flag).map(([id,d])=>[id,[d.name,'Un pal amb bandera que oneja, sobre una cel·la de terra ferma. Tria cap on mira la bandera i clica per col·locar-lo.']])),
   fireStation:['L’estació de bombers','Tria 2 × 2 o 3 × 2 cel·les i l’orientació de les cotxeres. Prepara terra ferma lliure a la mateixa alçada.'],
   recycling:['La deixalleria municipal','Tria 2 × 2 o 3 × 2 cel·les i l’entrada del recinte, amb caseta i contenidors de recollida selectiva.'],
   cemetery:['El cementiri de la vila','Tria la mida i l’orientació de l’entrada. Murs de pedra, làpides i xiprers en un recinte amb camí central.'],
-  ...Object.fromEntries([...MONUMENT_TOOLS].map(([id,name])=>[id,[name,'Cada peça ocupa una cel·la. Tria l’orientació i uneix els extrems de les peces sobre terreny a la mateixa alçada.']])),
+  ...Object.fromEntries([...MONUMENT_TOOLS].filter(([id])=>id!=='castle').map(([id,name])=>[id,[name,'Cada peça ocupa una cel·la. Tria l’orientació i uneix els extrems de les peces sobre terreny a la mateixa alçada.']])),
   hospital:['L’hospital de la vila','Tria un hospital de 2 × 2 o 3 × 2 cel·les i l’orientació de l’entrada.'],
   school:['L’escola del poble','Tria una escola de 2 × 2 o 3 × 2 cel·les, amb pati al davant.'],
   police:['La comissaria','Un edifici de 2 × 1 cel·les amb entrada i rètol de policia.'],
@@ -91,12 +92,13 @@ function previewBridge(cell){
   if(tool!=='bridge'||!bridgeStart)return;
   scene.setBridgePreview(bridgeStart,cell,$('#bridge-type').value);$('#bridge-note').textContent=checkBridge(world,bridgeStart,cell,$('#bridge-type').value).message;
 }
-function landmarkOptions(){return {type:tool,size:LANDMARK_TYPES[tool]?.sizes.length===1?LANDMARK_TYPES[tool].sizes[0]:Number($(tool==='cemetery'?'#cemetery-size':tool==='playground'?'#playground-size':'#civic-size').value),direction:Number($(MONUMENT_TOOLS.has(tool)?'#monument-direction':'#landmark-direction').value)};}
+function landmarkOptions(){return {type:tool,size:LANDMARK_TYPES[tool]?.sizes.length===1?LANDMARK_TYPES[tool].sizes[0]:Number($(tool==='castle'?'#castle-size':tool==='cemetery'?'#cemetery-size':tool==='playground'?'#playground-size':'#civic-size').value),direction:Number($(MONUMENT_TOOLS.has(tool)&&tool!=='castle'?'#monument-direction':'#landmark-direction').value)};}
 function previewLandmark(cell){if(Object.hasOwn(LANDMARK_TYPES,tool)&&cell)$('#landmark-note').textContent=checkLandmark(world,{...landmarkOptions(),x:cell.x,z:cell.z}).message;}
 function describeLandmark(){
   $('label[for="landmark-direction"]').textContent=LANDMARK_TYPES[tool]?.flag?'La bandera mira cap a':'Entrada cap a';
-  $('#landmark-direction-options').hidden=MONUMENT_TOOLS.has(tool);
-  $('#monument-direction-options').hidden=!MONUMENT_TOOLS.has(tool);
+  $('#landmark-direction-options').hidden=MONUMENT_TOOLS.has(tool)&&tool!=='castle';
+  $('#monument-direction-options').hidden=!MONUMENT_TOOLS.has(tool)||tool==='castle';
+  $('#castle-size-options').hidden=tool!=='castle';
   $('#cemetery-size-options').hidden=tool!=='cemetery';
   $('#playground-size-options').hidden=tool!=='playground';
   $('#civic-size-options').hidden=!['hospital','school','fireStation','recycling'].includes(tool);
@@ -170,7 +172,7 @@ function applyEdit(cell,erase=false){
   const before=structuredClone(world);const roofOnly=tool==='house'&&roof!=='flat'&&$('#roof-direction-only').checked;
   const selectedTool=tool==='house'&&$('#house-action').value==='business'?'business':roofOnly?'roof-direction':patioMode()?'patio-house':tool==='pine'?treeSpecies:tool==='land'?terrainType:tool;
   if(!erase&&selectedTool==='custom'&&!selectedDesign()){toast('Obre l’editor i desa un disseny abans de col·locar-lo.');return;}
-  const result=editWorld(world,cell.x,cell.z,erase?'erase':selectedTool,{cemeterySize:Number($('#cemetery-size').value),civicSize:Number($('#civic-size').value),landmarkDirection:landmarkOptions().direction,playgroundSize:Number($('#playground-size').value),slopeDirection:$('#slope-direction').value==='flat'?null:Number($('#slope-direction').value),slopeFinish:$('#slope-finish').value,...patioOptions(),customDesign:selectedDesign(),customDirection:Number($('#custom-direction').value),color,roof,roofDirection,beachBarDirection:Number($('#beachbar-direction').value),beachBarName:$('#beachbar-name').value,level:cell.level??null,businessFloor:Number($('#business-floor').value),businessType:$('#business-type').value,businessName:$('#business-name').value,businessDirection:Number($('#business-direction').value),businessTerrace:$('#business-terrace').checked,townHallSize:Number($('#townhall-size').value),townHallDirection:Number($('#townhall-direction').value),churchDirection:Number($('#church-direction').value),marketSize:Number($('#market-size').value),marketDirection:Number($('#market-direction').value)});
+  const result=editWorld(world,cell.x,cell.z,erase?'erase':selectedTool,{castleSize:Number($('#castle-size').value),cemeterySize:Number($('#cemetery-size').value),civicSize:Number($('#civic-size').value),landmarkDirection:landmarkOptions().direction,playgroundSize:Number($('#playground-size').value),slopeDirection:$('#slope-direction').value==='flat'?null:Number($('#slope-direction').value),slopeFinish:$('#slope-finish').value,...patioOptions(),customDesign:selectedDesign(),customDirection:Number($('#custom-direction').value),color,roof,roofDirection,beachBarDirection:Number($('#beachbar-direction').value),beachBarName:$('#beachbar-name').value,level:cell.level??null,businessFloor:Number($('#business-floor').value),businessType:$('#business-type').value,businessName:$('#business-name').value,businessDirection:Number($('#business-direction').value),businessTerrace:$('#business-terrace').checked,townHallSize:Number($('#townhall-size').value),townHallDirection:Number($('#townhall-direction').value),churchDirection:Number($('#church-direction').value),marketSize:Number($('#market-size').value),marketDirection:Number($('#market-direction').value)});
   if(result.message)toast(result.message);
   if(result.changed){history.push(before);refresh();scene.setCursor(cell.x,cell.z,erase||tool==='erase',cell.level);keyboardCell={...scene.hovered};}
 }
@@ -277,6 +279,14 @@ async function init(){
   window.addEventListener('storage',e=>{if(e.key===DESIGN_KEY)refreshDesigns();});
   window.addEventListener('focus',refreshDesigns);
   initMusic();
+  // Visibility is a view setting for this session; both panels start visible.
+  $('#interface-toggle').addEventListener('click',()=>{
+    const visible=$('#construction-palette').hidden;
+    $('#construction-palette').hidden=!visible;
+    $('#construction-tools').hidden=!visible;
+    const button=$('#interface-toggle'),label=visible?'Amaga la paleta i la barra d’eines':'Mostra la paleta i la barra d’eines';
+    button.setAttribute('aria-pressed',String(visible));button.setAttribute('aria-label',label);button.title=label;
+  });
   refresh(false);scene.setLight(Number($('#light').value));$('#loading').hidden=true;
   if(storageWarning)toast(storageWarning);
   for(const b of $$('[data-tool]'))b.addEventListener('click',()=>selectTool(b.dataset.tool));
@@ -290,7 +300,7 @@ async function init(){
   $('#roof').addEventListener('change',e=>{roof=e.target.value;describeRoof();});
   $('#roof-direction').addEventListener('change',e=>{roofDirection=Number(e.target.value);});
   $('#roof-direction-only').addEventListener('change',describeHouseAction);
-  for(const id of ['playground-size','cemetery-size','civic-size','landmark-direction','monument-direction'])$('#'+id).addEventListener('change',describeLandmark);
+  for(const id of ['castle-size','playground-size','cemetery-size','civic-size','landmark-direction','monument-direction'])$('#'+id).addEventListener('change',describeLandmark);
   for(const id of ['townhall-size','townhall-direction'])$('#'+id).addEventListener('change',describeTownHall);
   $('#beachbar-direction').addEventListener('change',describeBeachBar);
   $('#beachbar-name').addEventListener('input',describeBeachBar);

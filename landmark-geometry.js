@@ -1,3 +1,5 @@
+import {renderCastle} from './castle-geometry.js';
+import {createSenyera} from './senyera.js';
 import {createPoleFlag,renderFlagpole,POLE_FLAG_ORIGIN} from './flagpoles.js';
 import {renderServiceBuilding} from './service-buildings.js';
 import {renderCemetery} from './cemetery-geometry.js';
@@ -24,6 +26,11 @@ export function renderLandmarks(world,add,unit,flags=[]){
       const flag=createPoleFlag(LANDMARK_TYPES[l.type].flag),p=POLE_FLAG_ORIGIN;
       flag.position.set(x+c*p.u+s*p.z,base+p.y,z-s*p.u+c*p.z);flag.rotation.y=a;
       flag.userData.landmark={...l};flags.push(flag);continue;
+    }
+    if(l.type==='castle'){
+      const p=renderCastle(l,part,unit),flag=createSenyera();
+      flag.position.set(x+c*p.u+s*p.v,base+p.y,z-s*p.u+c*p.v);flag.rotation.y=a;
+      flag.userData.castle=true;flags.push(flag);continue;
     }
     if(l.type==='cemetery'){renderCemetery(l,part,unit);continue;}
     if(LANDMARK_TYPES[l.type]?.category==='monument'){renderWall(l,part,unit);continue;}
