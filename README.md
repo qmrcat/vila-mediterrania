@@ -28,7 +28,7 @@ No cal executar `npm install`, compilar ni configurar Vite. El joc no utilitza c
 
 Cada canvi es desa al `localStorage` d’aquest navegador i d’aquest origen web. El desament no se sincronitza entre dispositius i pot desaparèixer si es netegen les dades del navegador. El servidor inclòs utilitza el port 3000 o el primer disponible a partir d’aquest: conserva la mateixa adreça per recuperar el desament local.
 
-A **La meva vila → Desa una còpia (.json)** pots exportar la vila. Obre-la amb **Obre una vila…**. El format 50 guarda els edificis del jugador amb els seus dissenys, els ajuntaments, les esglésies, les cases amb pati, la mida de la quadrícula, els mercats, els negocis de planta baixa, els ponts, la costa, totes les construccions, els buits entre pisos cada espècie plantada i les caselles de platja. S’importen també fitxers dels formats 1–49, convertits automàticament; els pins existents continuen sent pins. El desament anterior es conserva separadament al navegador; la càmera, la llum i l’historial de desfer no es guarden al fitxer.
+A **La meva vila → Desa una còpia (.json)** pots exportar la vila. Obre-la amb **Obre una vila…**. El format 52 guarda els edificis del jugador amb els seus dissenys, els ajuntaments, les esglésies, les cases amb pati, la mida de la quadrícula, els mercats, els negocis de planta baixa, els ponts, la costa, totes les construccions, els buits entre pisos cada espècie plantada i les caselles de platja. S’importen també fitxers dels formats 1–51, convertits automàticament; els pins existents continuen sent pins. El desament anterior es conserva separadament al navegador; la càmera, la llum i l’historial de desfer no es guarden al fitxer.
 
 **Fes una fotografia** exporta una imatge PNG de la vista 3D sense els controls.
 
@@ -747,3 +747,30 @@ Escull l’espècie i clica per plantar-la o substituir un arbre existent. S’a
 ## Moreres més altes — v63
 
 Les moreres tenen el tronc més llarg i la capçada més elevada i plana, mantenint l’amplada per fer ombra i el límit d’un pis. El canvi també s’aplica automàticament a les moreres que ja tens plantades. Es manté el format de vila 50.
+
+
+## Pintar terrenys sense clics repetits — v64
+
+Amb **Terreny** seleccionat, mantén **Alt** i arrossega el ratolí amb el **botó esquerre premut**. Es pinta el tipus de terreny escollit al llarg de la passada, incloent-hi les caselles intermèdies si mous el ratolí de pressa. Cada casella es modifica una sola vegada per passada: tornar-hi a passar no torna a elevar-la. Per pujar un altre nivell, inicia una passada nova.
+
+Funciona amb terra ferma, platja, pradera, terreny rocós, pendents (amb la direcció i l’acabat seleccionats) i carrers empedrats, de terra i asfaltats. S’apliquen les mateixes regles i proteccions que amb un clic. Deixar anar Alt o el botó atura la passada. **Desfés/Refés** actua sobre tota la passada. El desament és automàtic. Majúscules + arrossegar continua desplaçant la vista. Es manté el format de vila 50.
+
+
+## Parlament i casernes militars — v65
+
+Dins d’**Edificis** hi ha tres opcions noves:
+
+- **Parlament:** 3 × 2 cel·les, amb dues plantes de pedra, entrada porticada, balcó i senyera que oneja a la façana.
+- **Caserna militar amb senyera:** 3 × 3 cel·les, amb allotjaments de dues plantes, ales laterals, pati obert, tanca i garita. La senyera oneja al costat de l’entrada.
+- **Caserna militar amb estelada:** el mateix recinte amb estelada a l’entrada.
+
+Tria l’orientació de l’entrada i prepara tota la base sobre terra ferma lliure a la mateixa alçada. Les banderes d’aquests edificis són permanents, independents del botó de banderes de les cases. Pots canviar el rètol amb **Edificis → Canviar un rètol existent**. Esborrar qualsevol cel·la retira tot l’edifici i conserva el terreny. Desfés/Refés i els desaments conserven la versió de bandera escollida. El **format 51** importa els formats **1–50**.
+
+
+## Parlament de 4 × 4 i edifici institucional — v66
+
+**Edificis → Parlament** ara ocupa **4 × 4 cel·les**. La planta baixa té una porxada amb set arcades obertes de banda a banda de la façana. Al damunt hi ha un balcó de la mateixa amplada, amb barana frontal i lateral, porta central i el pal de la senyera al centre.
+
+El model anterior de **3 × 2** continua disponible a **Edificis → Edifici institucional**, amb rètol editable per dedicar-lo a altres institucions. En recuperar una vila anterior, els parlaments petits es conserven en el mateix lloc com a edificis institucionals: mantenen la mida, l’orientació, la bandera i el rètol. No s’amplien damunt de les construccions veïnes. Per col·locar el Parlament nou, prepara 16 cel·les lliures a la mateixa alçada.
+
+Tots dos admeten les quatre orientacions, rètols editables, Desfés/Refés i desament automàtic. El **format 52** importa els formats **1–51**.

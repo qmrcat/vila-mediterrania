@@ -1,4 +1,5 @@
 import {CONFIG} from './config.js';
+import {TerrainStroke} from './terrain-stroke.js';
 import {SPECIAL_SHOPS} from './special-shops.js';
 import {checkBeachBar,checkLandmark,LANDMARK_TYPES} from './model.js';
 import {loadDesigns,DESIGN_KEY,customAt,customCells,customFloors} from './designs.js';
@@ -8,7 +9,7 @@ import {createWorld,validateWorld,editWorld,History,COLORS,worldLimit,expandWorl
 
 const $=selector=>document.querySelector(selector);
 const $$=selector=>[...document.querySelectorAll(selector)];
-const STORAGE_KEY='vila-mediterrania:v50';
+const STORAGE_KEY='vila-mediterrania:v52';
 // New landmark types join the building selector without widening the toolbar.
 const BUILDING_TOOLS=new Map([
   ['beachbar','Guingueta'],['market','Mercat'],['church','Església'],['townhall','Ajuntament'],
@@ -16,12 +17,17 @@ const BUILDING_TOOLS=new Map([
   ['building-sign','Canviar un rètol existent'],
 ]);
 const MONUMENT_TOOLS=new Map(Object.entries(LANDMARK_TYPES).filter(([,definition])=>definition.category==='monument').map(([id,definition])=>[id,definition.name]));
-const LEGACY_STORAGE_KEYS=['vila-mediterrania:v49','vila-mediterrania:v48','vila-mediterrania:v47','vila-mediterrania:v46','vila-mediterrania:v45','vila-mediterrania:v44','vila-mediterrania:v43','vila-mediterrania:v42','vila-mediterrania:v41','vila-mediterrania:v40','vila-mediterrania:v39','vila-mediterrania:v38','vila-mediterrania:v37','vila-mediterrania:v36','vila-mediterrania:v35','vila-mediterrania:v34','vila-mediterrania:v33','vila-mediterrania:v32','vila-mediterrania:v31','vila-mediterrania:v30','vila-mediterrania:v29','vila-mediterrania:v28','vila-mediterrania:v27','vila-mediterrania:v26','vila-mediterrania:v25','vila-mediterrania:v24','vila-mediterrania:v23','vila-mediterrania:v22','vila-mediterrania:v21','vila-mediterrania:v20','vila-mediterrania:v19','vila-mediterrania:v18','vila-mediterrania:v17','vila-mediterrania:v16','vila-mediterrania:v15','vila-mediterrania:v14','vila-mediterrania:v13','vila-mediterrania:v12','vila-mediterrania:v11','vila-mediterrania:v10','vila-mediterrania:v9','vila-mediterrania:v8','vila-mediterrania:v7','vila-mediterrania:v6','vila-mediterrania:v5','vila-mediterrania:v4','vila-mediterrania:v3','vila-mediterrania:v2','vila-mediterrania:v1'];
+const LEGACY_STORAGE_KEYS=['vila-mediterrania:v51','vila-mediterrania:v50','vila-mediterrania:v49','vila-mediterrania:v48','vila-mediterrania:v47','vila-mediterrania:v46','vila-mediterrania:v45','vila-mediterrania:v44','vila-mediterrania:v43','vila-mediterrania:v42','vila-mediterrania:v41','vila-mediterrania:v40','vila-mediterrania:v39','vila-mediterrania:v38','vila-mediterrania:v37','vila-mediterrania:v36','vila-mediterrania:v35','vila-mediterrania:v34','vila-mediterrania:v33','vila-mediterrania:v32','vila-mediterrania:v31','vila-mediterrania:v30','vila-mediterrania:v29','vila-mediterrania:v28','vila-mediterrania:v27','vila-mediterrania:v26','vila-mediterrania:v25','vila-mediterrania:v24','vila-mediterrania:v23','vila-mediterrania:v22','vila-mediterrania:v21','vila-mediterrania:v20','vila-mediterrania:v19','vila-mediterrania:v18','vila-mediterrania:v17','vila-mediterrania:v16','vila-mediterrania:v15','vila-mediterrania:v14','vila-mediterrania:v13','vila-mediterrania:v12','vila-mediterrania:v11','vila-mediterrania:v10','vila-mediterrania:v9','vila-mediterrania:v8','vila-mediterrania:v7','vila-mediterrania:v6','vila-mediterrania:v5','vila-mediterrania:v4','vila-mediterrania:v3','vila-mediterrania:v2','vila-mediterrania:v1'];
 let bridgeStart=null,designs=[];
+let terrainStroke=null;
 let world,scene,tool='house',treeSpecies='pine',terrainType='land',color=0,roof='tile',roofDirection=0,keyboardCell={x:0,z:0},toastTimer;
 const history=new History();
 if(['localhost','127.0.0.1','[::1]'].includes(location.hostname))$('#download-code').hidden=true;
 const instructions={
+  parliament:['El Parlament','Palau de 4 × 4 cel·les, amb porxada de banda a banda, balcó de la mateixa amplada al damunt i el pal de la senyera al centre. Prepara tota la base lliure a la mateixa alçada.'],
+  institution:['Edifici institucional','Model de 3 × 2 cel·les, amb dues plantes, pòrtic central, balcó i senyera. Canvia el rètol per dedicar-lo a una altra institució.'],
+  barracksSenyera:['Caserna militar amb senyera','Recinte de 3 × 3 cel·les, amb allotjaments, pati obert i garita. La senyera oneja al costat de l’entrada. Tria l’orientació i prepara la base a la mateixa alçada.'],
+  barracksEstelada:['Caserna militar amb estelada','Recinte de 3 × 3 cel·les, amb allotjaments, pati obert i garita. L’estelada oneja al costat de l’entrada. Tria l’orientació i prepara la base a la mateixa alçada.'],
   'building-sign':['Canviar el rètol d’un edifici','Escriu el nom i clica qualsevol cel·la de l’edifici. Deixa el camp buit per recuperar el rètol original.'],
   museum:['El museu de la vila','Ocupa 2 × 2 cel·les, amb entrada porticada, galeries i peces exposades al davant. Prepara tota la base a la mateixa alçada i escull l’entrada.'],
   monastery:['Un monestir català','Conjunt de 3 × 3 cel·les inspirat en Poblet, amb església, campanar i claustre obert amb jardí i pou. Prepara tota la base lliure a la mateixa alçada.'],
@@ -185,6 +191,7 @@ function applyEdit(cell,erase=false){
   if(result.changed){history.push(before);refresh();scene.setCursor(cell.x,cell.z,erase||tool==='erase',cell.level);keyboardCell={...scene.hovered};}
 }
 function selectTool(next){
+  scene?.endTerrainStroke();
   cancelBridge();
   tool=next==='buildings'?$('#building-type').value:next==='monuments'?$('#monument-type').value:next;
   const buildingMode=BUILDING_TOOLS.has(tool),monumentMode=MONUMENT_TOOLS.has(tool);
@@ -284,7 +291,15 @@ async function init(){
     world=createWorld();storageWarning='No s’ha pogut llegir el desament del navegador.';
   }
   const {VillageScene}=await import('./scene.js');
-  scene=new VillageScene($('#world'),{onClick:applyEdit,onHover:p=>{keyboardCell=p;previewBridge(p);previewMarket(p);previewPatio(p);previewChurch(p);previewTownHall(p);previewCustom(p);previewBeachBar(p);previewLandmark(p);},onError:failure,onCameraChange:({theta,phi})=>updateCompass($('#compass'),theta,phi)});
+  scene=new VillageScene($('#world'),{onClick:applyEdit,
+    onTerrainStrokeStart:()=>{
+      if(tool!=='land'||$$('dialog').some(d=>d.open))return false;
+      terrainStroke=new TerrainStroke(world,terrainType,{color,roof,slopeDirection:$('#slope-direction').value==='flat'?null:Number($('#slope-direction').value),slopeFinish:$('#slope-finish').value},history);
+      return true;
+    },
+    onTerrainStrokeMove:p=>{if(terrainStroke?.visit(p))refresh();},
+    onTerrainStrokeEnd:()=>{terrainStroke=null;},
+    onHover:p=>{keyboardCell=p;previewBridge(p);previewMarket(p);previewPatio(p);previewChurch(p);previewTownHall(p);previewCustom(p);previewBeachBar(p);previewLandmark(p);},onError:failure,onCameraChange:({theta,phi})=>updateCompass($('#compass'),theta,phi)});
   refreshDesigns();
   for(const id of ['custom-design','custom-direction'])$('#'+id).addEventListener('change',describeCustom);
   for(const link of $$('a[href="./editor.html"]'))link.addEventListener('click',persist);

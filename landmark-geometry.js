@@ -1,4 +1,5 @@
 import {CULTURAL_TYPES,renderCulturalBuilding} from './cultural-geometry.js';
+import {INSTITUTIONAL_TYPES,renderInstitution} from './institutional-geometry.js';
 import {LODGING_TYPES,renderLodging} from './lodging-geometry.js';
 import {isFlagpole,poleGroundY} from './flagpole-ground.js';
 import {renderCastle} from './castle-geometry.js';
@@ -37,14 +38,19 @@ export function renderLandmarks(world,add,unit,flags=[]){
     }
     if(l.type==='cemetery'){renderCemetery(l,part,unit);continue;}
     if(LANDMARK_TYPES[l.type]?.category==='monument'){renderWall(l,part,unit);continue;}
-    if(CULTURAL_TYPES.includes(l.type)||LODGING_TYPES.includes(l.type)||['hospital','school','police','fireStation','recycling'].includes(l.type)){
+    if(INSTITUTIONAL_TYPES.includes(l.type)||CULTURAL_TYPES.includes(l.type)||LODGING_TYPES.includes(l.type)||['hospital','school','police','fireStation','recycling'].includes(l.type)){
       // Rotate local roof slopes with the building (world yaw precedes local tilt).
       const yaw=new Quaternion().setFromAxisAngle(new Vector3(0,1,0),a),q=new Quaternion(),e=new Euler();
       const civicPart=(shape,color,u,h,v,sx,sy,sz,ry=0,rx=0,rz=0)=>{
         q.setFromEuler(e.set(rx,ry,rz)).premultiply(yaw);e.setFromQuaternion(q);
         add(shape,color,x+c*u+s*v,base+h,z-s*u+c*v,sx,sy,sz,e.y,e.x,e.z);
       };
-      if(CULTURAL_TYPES.includes(l.type))renderCulturalBuilding(l,civicPart,unit);
+      if(INSTITUTIONAL_TYPES.includes(l.type)){
+        const p=renderInstitution(l,civicPart,unit),flag=createPoleFlag(p.type);
+        flag.scale.setScalar(p.scale);flag.position.set(x+c*p.u+s*p.v,base+p.y,z-s*p.u+c*p.v);flag.rotation.y=a;
+        flag.userData.landmark={...l};flags.push(flag);
+      }
+      else if(CULTURAL_TYPES.includes(l.type))renderCulturalBuilding(l,civicPart,unit);
       else if(LODGING_TYPES.includes(l.type))renderLodging(l,civicPart,unit);
       else if(['fireStation','recycling'].includes(l.type))renderServiceBuilding(l,civicPart,unit);
       else renderCivicBuilding(l,civicPart,unit);

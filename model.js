@@ -55,7 +55,7 @@ export const DIRECTIONS = [[0,1],[1,0],[0,-1],[-1,0]];
 export const floorCount = tile => tile.levels.filter(Boolean).length;
 export function createWorld(region='brava',preset='village',gridSize=CONFIG.grid.defaultSize) {
   if(!GRID_SIZES.includes(gridSize))throw new Error('Mida de quadrícula no vàlida.');
-  const world={version:50,diada:CONFIG.flags.enabledByDefault,gridSize,region,tiles:[],bridges:[],markets:[],churches:[],townHalls:[],customBuildings:[],landmarks:[]};
+  const world={version:52,diada:CONFIG.flags.enabledByDefault,gridSize,region,tiles:[],bridges:[],markets:[],churches:[],townHalls:[],customBuildings:[],landmarks:[]};
   if(preset==='empty') return world;
   if(preset==='coast80'){
     const limit=worldLimit(world),target=Math.round(gridSize*gridSize*.80);
@@ -102,7 +102,7 @@ export function validateWorld(input) {
   const gridSize=input?.version<13?33:input?.gridSize;
   if(!GRID_SIZES.includes(gridSize))throw new Error('Mida de quadrícula no vàlida.');
   const limit=(gridSize-1)/2;
-  if(!input||![1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50].includes(input.version)||!['brava','daurada'].includes(input.region)||!Array.isArray(input.tiles)||input.tiles.length>gridSize**2) throw new Error('Aquest fitxer no és una vila compatible (formats 1–50).');
+  if(!input||![1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52].includes(input.version)||!['brava','daurada'].includes(input.region)||!Array.isArray(input.tiles)||input.tiles.length>gridSize**2) throw new Error('Aquest fitxer no és una vila compatible (formats 1–52).');
   const diada=input.version<40?false:input.diada;
   if(typeof diada!=='boolean')throw new Error('L’opció de banderes de la Diada no és vàlida.');
   const seen=new Set();
@@ -129,7 +129,7 @@ export function validateWorld(input) {
     if(patio!=null&&(t.kind!=='house'||t.floors>MAX_PATIO_FLOORS||!['front','back'].includes(patio.position)||!Number.isInteger(patio.direction)||patio.direction<0||patio.direction>3))throw new Error(`La casa amb pati ha de tenir d’1 a ${MAX_PATIO_FLOORS} plantes i una posició i orientació vàlides.`);
     return {...(t.floorColors?{floorColors:[...t.floorColors]}:{}),...(upperBusinesses.length?{upperBusinesses}:{}),...(slopeDirection!==undefined?{slopeDirection}:{}),...(beachBarData?{beachBar:beachBarData}:{}),...(patio!=null?{patio:{position:patio.position,direction:patio.direction}}:{}),business:business===null?null:{type:business.type,direction:business.direction,terrace:business.terrace,...(business.name!==undefined&&normalizeBusinessName(business.name)?{name:normalizeBusinessName(business.name)}:{})},x:t.x,z:t.z,elevation:t.elevation,kind:t.kind,floors:t.floors,levels:[...levels],color:t.color,roof:t.roof,roofDirection,rotation:t.rotation};
   });
-  const world={version:50,diada,gridSize,region:input.region,tiles,bridges:[],markets:[],churches:[],townHalls:[],customBuildings:[],landmarks:[]};
+  const world={version:52,diada,gridSize,region:input.region,tiles,bridges:[],markets:[],churches:[],townHalls:[],customBuildings:[],landmarks:[]};
   const bridges=input.version<7?[]:input.bridges;
   if(!Array.isArray(bridges)||bridges.length>CONFIG.limits.objectsPerCategory)throw new Error('La llista de ponts no és vàlida.');
   for(const b of bridges){
@@ -167,7 +167,9 @@ export function validateWorld(input) {
   }
   const landmarks=input.version<30?[]:input.landmarks;
   if(!Array.isArray(landmarks)||landmarks.length>CONFIG.limits.objectsPerCategory)throw new Error('La llista d’edificis i equipaments no és vàlida.');
-  for(const l of landmarks){
+  for(const saved of landmarks){
+    // Preserve old compact parliaments in place instead of expanding into neighbours.
+    const l=input.version<52&&saved?.type==='parliament'&&saved.size===6?{...saved,type:'institution',signName:saved.signName===undefined?'PARLAMENT':saved.signName}:saved;
     const result=checkLandmark(world,l);if(!result.valid)throw new Error('Far o parc infantil no vàlid: '+result.message);
     if(l.signName!==undefined&&!SIGNED_LANDMARKS.includes(l.type))throw new Error('Aquest edifici no té cap rètol editable.');
     world.landmarks.push({type:l.type,x:l.x,z:l.z,size:l.size,direction:l.direction,...normalizeBuildingSign(l.signName)});
@@ -496,6 +498,10 @@ export function checkCustomBuilding(world,b){
 
 /** Fixed footprint amenities, removable as a whole while preserving their terrain. */
 export const LANDMARK_TYPES={
+  parliament:{name:'Parlament',sizes:[16],height:3.70},
+  institution:{name:'Edifici institucional',sizes:[6],height:2.80},
+  barracksSenyera:{name:'Caserna militar amb senyera',sizes:[9],height:2.76},
+  barracksEstelada:{name:'Caserna militar amb estelada',sizes:[9],height:2.76},
   museum:{name:'Museu',sizes:[4],height:2.56},
   monastery:{name:'Monestir',sizes:[9],height:3.13},
   hotel3:{name:'Hotel de 3 estrelles',sizes:[4],height:2.86},
@@ -521,7 +527,7 @@ export const LANDMARK_TYPES={
   police:{name:'Comissaria',sizes:[2],height:2.12},
 };
 export function landmarkDimensions(l){
-  const width=l.size===1?1:[6,9].includes(l.size)?3:2,depth=l.size/width;
+  const width=l.size===16?4:l.size===1?1:[6,9].includes(l.size)?3:2,depth=l.size/width;
   return l.direction%2?{width:depth,depth:width}:{width,depth};
 }
 export function landmarkCells(l){const {width,depth}=landmarkDimensions(l);return Array.from({length:width*depth},(_,i)=>({x:l.x+i%width,z:l.z+Math.floor(i/width)}));}

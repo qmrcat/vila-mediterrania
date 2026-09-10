@@ -1019,8 +1019,9 @@ export function createVillageGeometry(world){
 }
 
 export class VillageScene{
-  constructor(canvas,{onClick,onHover,onError,onCameraChange=()=>{}}){
+  constructor(canvas,{onClick,onHover,onError,onCameraChange=()=>{},onTerrainStrokeStart=()=>false,onTerrainStrokeMove=()=>{},onTerrainStrokeEnd=()=>{}}){
     this.canvas=canvas;this.onClick=onClick;this.onHover=onHover;this.onError=onError;this.onCameraChange=onCameraChange;
+    this.onTerrainStrokeStart=onTerrainStrokeStart;this.onTerrainStrokeMove=onTerrainStrokeMove;this.onTerrainStrokeEnd=onTerrainStrokeEnd;
     this.renderer=new THREE.WebGLRenderer({canvas,antialias:true,preserveDrawingBuffer:true,alpha:false,powerPreference:'high-performance'});
     this.renderer.setPixelRatio(Math.min(globalThis.devicePixelRatio||1,2));
     this.renderer.shadowMap.enabled=true;this.renderer.shadowMap.type=THREE.PCFSoftShadowMap;
@@ -1249,14 +1250,24 @@ export class VillageScene{
   }
   installPointerControls(){
     const signal=this.abort.signal,canvas=this.canvas;this.pointers=new Map();let gesture=null;
+    this.endTerrainStroke=()=>{if(gesture?.paint){gesture.paint=false;this.onTerrainStrokeEnd();}};
+    const paintAt=e=>{
+      const r=canvas.getBoundingClientRect();
+      const inside=e.clientX>=r.left&&e.clientX<r.right&&e.clientY>=r.top&&e.clientY<r.bottom;
+      this.onTerrainStrokeMove(inside?this.pick(e.clientX,e.clientY):null);
+    };
     const pinchInfo=()=>{const p=[...this.pointers.values()];if(p.length<2)return null;return {distance:Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y),x:(p[0].x+p[1].x)/2,y:(p[0].y+p[1].y)/2};};
     const pan=(dx,dy)=>{const f=this.scale/Math.max(this.height,1);this.target.x-=dx*Math.cos(this.theta)*f;this.target.z+=dx*Math.sin(this.theta)*f;this.target.x-=dy*Math.sin(this.theta)*f;this.target.z-=dy*Math.cos(this.theta)*f;this.target.x=THREE.MathUtils.clamp(this.target.x,-worldLimit(this.world)*UNIT-3,worldLimit(this.world)*UNIT+3);this.target.z=THREE.MathUtils.clamp(this.target.z,-worldLimit(this.world)*UNIT-3,worldLimit(this.world)*UNIT+3);};
     canvas.addEventListener('contextmenu',e=>e.preventDefault(),{signal});
     canvas.addEventListener('pointerdown',e=>{
       if(![0,1,2].includes(e.button))return;canvas.focus({preventScroll:true});canvas.setPointerCapture(e.pointerId);
       this.pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
-      if(this.pointers.size===1)gesture={x:e.clientX,y:e.clientY,startX:e.clientX,startY:e.clientY,moved:false,button:e.button,multi:false};
-      else {gesture.multi=true;gesture.moved=true;gesture.pinch=pinchInfo();}
+      if(this.pointers.size===1){
+        gesture={x:e.clientX,y:e.clientY,startX:e.clientX,startY:e.clientY,moved:false,button:e.button,multi:false};
+        if(e.button===0&&e.altKey&&!e.ctrlKey&&!e.metaKey&&e.pointerType!=='touch'&&this.onTerrainStrokeStart()){
+          e.preventDefault();gesture.paint=true;gesture.paintGesture=true;gesture.moved=true;paintAt(e);
+        }
+      }else {this.endTerrainStroke();gesture.multi=true;gesture.moved=true;gesture.pinch=pinchInfo();}
     },{signal});
     canvas.addEventListener('pointermove',e=>{
       const point=this.pick(e.clientX,e.clientY);if(point){this.onHover(point);this.setCursor(point.x,point.z,this.eraseCursor,point.level);}else this.cursor.visible=false;
@@ -1266,6 +1277,12 @@ export class VillageScene{
         const p=pinchInfo(),old=gesture.pinch;if(p&&old){if(p.distance>0)this.zoom(old.distance/p.distance);pan(p.x-old.x,p.y-old.y);this.updateCamera();}gesture.pinch=p;return;
       }
       if(gesture.multi)return;
+      if(gesture.paintGesture){
+        e.preventDefault();
+        if(!e.altKey||!(e.buttons&1))this.endTerrainStroke();
+        if(gesture.paint)paintAt(e);
+        return;
+      }
       if(Math.hypot(e.clientX-gesture.startX,e.clientY-gesture.startY)>6)gesture.moved=true;
       if(gesture.moved){const dx=e.clientX-gesture.x,dy=e.clientY-gesture.y;
         if(e.shiftKey||gesture.button===1||gesture.button===2)pan(dx,dy);
@@ -1276,12 +1293,16 @@ export class VillageScene{
     },{signal});
     const finish=(e,cancelled=false)=>{
       if(!this.pointers.has(e.pointerId))return;
+      if(gesture?.paint){if(!cancelled&&e.altKey)paintAt(e);this.endTerrainStroke();}
       if(!cancelled&&gesture&&!gesture.moved&&!gesture.multi&&gesture.button!==1){const p=this.pick(e.clientX,e.clientY);if(p)this.onClick(p,gesture.button===2);}
       this.pointers.delete(e.pointerId);if(!this.pointers.size)gesture=null;
     };
     canvas.addEventListener('pointerup',e=>finish(e),{signal});canvas.addEventListener('pointercancel',e=>finish(e,true),{signal});canvas.addEventListener('lostpointercapture',e=>finish(e,true),{signal});
     canvas.addEventListener('pointerleave',()=>{if(!this.pointers.size)this.cursor.visible=false;},{signal});
-    canvas.addEventListener('wheel',e=>{e.preventDefault();this.zoom(Math.exp(THREE.MathUtils.clamp(e.deltaY,-150,150)*.0015));},{passive:false,signal});
+    canvas.addEventListener('wheel',e=>{e.preventDefault();this.endTerrainStroke();this.zoom(Math.exp(THREE.MathUtils.clamp(e.deltaY,-150,150)*.0015));},{passive:false,signal});
+    window.addEventListener('keyup',e=>{if(e.key==='Alt')this.endTerrainStroke();},{signal});
+    window.addEventListener('keydown',e=>{if(e.key!=='Alt')this.endTerrainStroke();},{capture:true,signal});
+    window.addEventListener('blur',()=>{this.endTerrainStroke();this.pointers.clear();gesture=null;},{signal});
   }
   frame(time){
     this.animation=requestAnimationFrame(t=>this.frame(t));
@@ -1296,5 +1317,5 @@ export class VillageScene{
     const blob=await new Promise(resolve=>this.canvas.toBlob(resolve,'image/png'));
     this.cursor.visible=visible;this.bridgePreview.visible=previewVisible;this.grid.visible=grid;if(!blob)throw new Error('No s’ha pogut crear la fotografia.');return blob;
   }
-  dispose(){this.bridgePreview.children.forEach(m=>{m.geometry.dispose();m.material.dispose();});cancelAnimationFrame(this.animation);this.abort.abort();this.resizeObserver.disconnect();this.renderer.dispose();}
+  dispose(){this.endTerrainStroke();this.bridgePreview.children.forEach(m=>{m.geometry.dispose();m.material.dispose();});cancelAnimationFrame(this.animation);this.abort.abort();this.resizeObserver.disconnect();this.renderer.dispose();}
 }
