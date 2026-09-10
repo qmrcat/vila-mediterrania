@@ -661,7 +661,7 @@ export function createVillageGeometry(world){
     if(t.kind==='palm')palm(x,treeY,z,n);
     if(t.kind==='oak')oak(x,treeY,z,n);
     if(t.kind==='plane')plane(x,treeY,z,n);
-    if(['olive','vine','hazel'].includes(t.kind))renderMediterraneanTree(t.kind,x,treeY,z,n,add,branch);
+    if(['olive','vine','hazel','mulberry','ash','mimosa','cypress'].includes(t.kind))renderMediterraneanTree(t.kind,x,treeY,z,n,add,branch);
     if(t.kind==='land'&&!flagPole&&sand&&n>.91&&!spaces.has(key(t.x,t.z))){
       add('cylinder','#8c7757',x,y+.44,z,.035,.87,.035);
       add('cone','#e5aa68',x,y+.92,z,.95,.28,.95,n*3);

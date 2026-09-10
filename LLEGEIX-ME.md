@@ -28,7 +28,7 @@ No cal executar `npm install`, compilar ni configurar Vite. El joc no utilitza c
 
 Cada canvi es desa al `localStorage` d’aquest navegador i d’aquest origen web. El desament no se sincronitza entre dispositius i pot desaparèixer si es netegen les dades del navegador. El servidor inclòs utilitza el port 3000 o el primer disponible a partir d’aquest: conserva la mateixa adreça per recuperar el desament local.
 
-A **La meva vila → Desa una còpia (.json)** pots exportar la vila. Obre-la amb **Obre una vila…**. El format 49 guarda els edificis del jugador amb els seus dissenys, els ajuntaments, les esglésies, les cases amb pati, la mida de la quadrícula, els mercats, els negocis de planta baixa, els ponts, la costa, totes les construccions, els buits entre pisos cada espècie plantada i les caselles de platja. S’importen també fitxers dels formats 1–48, convertits automàticament; els pins existents continuen sent pins. El desament anterior es conserva separadament al navegador; la càmera, la llum i l’historial de desfer no es guarden al fitxer.
+A **La meva vila → Desa una còpia (.json)** pots exportar la vila. Obre-la amb **Obre una vila…**. El format 50 guarda els edificis del jugador amb els seus dissenys, els ajuntaments, les esglésies, les cases amb pati, la mida de la quadrícula, els mercats, els negocis de planta baixa, els ponts, la costa, totes les construccions, els buits entre pisos cada espècie plantada i les caselles de platja. S’importen també fitxers dels formats 1–49, convertits automàticament; els pins existents continuen sent pins. El desament anterior es conserva separadament al navegador; la càmera, la llum i l’historial de desfer no es guarden al fitxer.
 
 **Fes una fotografia** exporta una imatge PNG de la vista 3D sense els controls.
 
@@ -731,3 +731,19 @@ Ves a **Edificis → Canviar un rètol existent**, escriu el nom (màxim 24 car�
 Funciona amb els hotels, hostals, pensions, museus, monestirs, hospitals, escoles, comissaries, estacions de bombers, deixalleries, cementiris, mercats, ajuntaments i guinguetes. Cada edifici conserva el seu nom independentment dels altres. Canvia el rètol principal; les estrelles dels hotels i les indicacions secundàries, com URGÈNCIES o les etiquetes dels contenidors, es mantenen. Els elements sense rètol no es modifiquen.
 
 Els noms es conserven amb Desfés/Refés, desament automàtic i exportació/importació de la vila. El **format 49** importa els formats **1–48**.
+
+
+## Morera, freixe, mimosa i xiprer — v62
+
+Dins d’**Arbres** hi ha quatre espècies noves:
+
+- **Morera (Morus alba):** baixa i de capçada ampla, sense superar l’alçada d’un pis (0,86 unitats del joc des del terreny).
+- **Freixe (Fraxinus):** tronc esvelt, branques obertes i capçada verda.
+- **Mimosa (Acacia baileyana):** fullatge gris verdós i grups de flors grogues.
+- **Xiprer (Cupressus sempervirens):** alt, estret i acabat en punta, de verd fosc.
+
+Escull l’espècie i clica per plantar-la o substituir un arbre existent. S’adapten a l’alçada real dels terrenys elevats i dels pendents. Es conserven amb Desfés/Refés, el desament automàtic i l’exportació/importació. El **format 50** importa els formats **1–49**.
+
+## Moreres més altes — v63
+
+Les moreres tenen el tronc més llarg i la capçada més elevada i plana, mantenint l’amplada per fer ombra i el límit d’un pis. El canvi també s’aplica automàticament a les moreres que ja tens plantades. Es manté el format de vila 50.

@@ -1,5 +1,7 @@
+import {renderNewMediterraneanTree} from './new-mediterranean-trees.js';
 /** Coordinate-seeded tree details use the same instanced geometry as the village. */
 export function renderMediterraneanTree(kind,x,y,z,seed,add,branch){
+  if(['mulberry','ash','mimosa','cypress'].includes(kind)){renderNewMediterraneanTree(kind,x,y,z,seed,add,branch);return;}
   if(kind==='olive'){
     const bark='#8a7e69',a=seed*6.28,dx=Math.cos(a)*.12,dz=Math.sin(a)*.12;
     branch(bark,[x,y,z],[x+dx,y+.49,z+dz],.27);
