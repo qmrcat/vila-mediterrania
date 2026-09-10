@@ -27,7 +27,7 @@ export function renderCemetery(l,part,unit){
   }
   box(iron,0,.80,hd-.065,.58,.034,.032);
   box(iron,0,.877,hd-.066,.47,.13,.025);
-  for(const p of businessSignPixels('CEMENTIRI',.43,.086))box('#e7dcc0',p.x,.877+p.y,hd-.044,p.size,p.size,.008);
+  for(const p of businessSignPixels(l.signName??'CEMENTIRI',.43,.086))box('#e7dcc0',p.x,.877+p.y,hd-.044,p.size,p.size,.008);
   function grave(x,z,index){
     box('#aaa594',x,.107,z,.23,.035,.39);
     box('#e0ddcd',x,.13,z,.19,.022,.35);

@@ -1,3 +1,4 @@
+import {SIGNED_LANDMARKS,normalizeBuildingSign} from './building-signs.js';
 import {CONFIG} from './config.js';
 import {normalizeBusinessName,BUSINESS_NAMES} from './business-signs.js';
 import {validateDesign,customCells,customCell,customFloors,customAt} from './designs.js';
@@ -12,7 +13,7 @@ export function expandWorld(world,gridSize){
 }
 export const ROAD_TYPES = ['cobble','dirt','asphalt'];
 export const isRoad = kind => ROAD_TYPES.includes(kind);
-export const isFirmGround = kind => kind==='land'||kind==='meadow'||kind==='plaza'||isRoad(kind);
+export const isFirmGround = kind => kind==='land'||kind==='meadow'||kind==='rocky'||kind==='plaza'||isRoad(kind);
 export const MAX_FLOORS = CONFIG.houses.maxFloors;
 export const MAX_TERRAIN_LEVEL = CONFIG.terrain.maxElevation;
 export const MAX_PATIO_FLOORS = CONFIG.houses.maxPatioFloors;
@@ -50,7 +51,7 @@ export const DIRECTIONS = [[0,1],[1,0],[0,-1],[-1,0]];
 export const floorCount = tile => tile.levels.filter(Boolean).length;
 export function createWorld(region='brava',preset='village',gridSize=CONFIG.grid.defaultSize) {
   if(!GRID_SIZES.includes(gridSize))throw new Error('Mida de quadrícula no vàlida.');
-  const world={version:45,diada:CONFIG.flags.enabledByDefault,gridSize,region,tiles:[],bridges:[],markets:[],churches:[],townHalls:[],customBuildings:[],landmarks:[]};
+  const world={version:49,diada:CONFIG.flags.enabledByDefault,gridSize,region,tiles:[],bridges:[],markets:[],churches:[],townHalls:[],customBuildings:[],landmarks:[]};
   if(preset==='empty') return world;
   if(preset==='coast80'){
     const limit=worldLimit(world),target=Math.round(gridSize*gridSize*.80);
@@ -97,14 +98,14 @@ export function validateWorld(input) {
   const gridSize=input?.version<13?33:input?.gridSize;
   if(!GRID_SIZES.includes(gridSize))throw new Error('Mida de quadrícula no vàlida.');
   const limit=(gridSize-1)/2;
-  if(!input||![1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45].includes(input.version)||!['brava','daurada'].includes(input.region)||!Array.isArray(input.tiles)||input.tiles.length>gridSize**2) throw new Error('Aquest fitxer no és una vila compatible (formats 1–45).');
+  if(!input||![1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49].includes(input.version)||!['brava','daurada'].includes(input.region)||!Array.isArray(input.tiles)||input.tiles.length>gridSize**2) throw new Error('Aquest fitxer no és una vila compatible (formats 1–49).');
   const diada=input.version<40?false:input.diada;
   if(typeof diada!=='boolean')throw new Error('L’opció de banderes de la Diada no és vàlida.');
   const seen=new Set();
   const tiles=input.tiles.map(t=>{
     if(t?.floors>MAX_FLOORS)throw new Error(`La vila té una casa de ${t.floors} plantes; config.js permet ${MAX_FLOORS} (houses.maxFloors).`);
     if(t?.elevation>MAX_TERRAIN_LEVEL)throw new Error(`La vila té terreny de nivell ${t.elevation}; config.js permet ${MAX_TERRAIN_LEVEL} (terrain.maxElevation).`);
-    if(!t||!Number.isInteger(t.x)||!Number.isInteger(t.z)||Math.abs(t.x)>limit||Math.abs(t.z)>limit||!Number.isInteger(t.elevation)||t.elevation<0||t.elevation>MAX_TERRAIN_LEVEL||(!['land','meadow','beach','house','plaza','stairs'].includes(t.kind)&&!isTree(t.kind)&&!isRoad(t.kind))||!Number.isInteger(t.floors)||t.floors<0||t.floors>MAX_FLOORS||!Number.isInteger(t.color)||t.color<0||t.color>=COLORS.length||!['tile','shed','flat'].includes(t.roof)||!Number.isInteger(t.rotation)||t.rotation<0||t.rotation>3||(t.kind==='house'&&t.floors<1)||(t.kind!=='house'&&t.floors!==0)) throw new Error('El fitxer conté una casella amb dades no vàlides.');
+    if(!t||!Number.isInteger(t.x)||!Number.isInteger(t.z)||Math.abs(t.x)>limit||Math.abs(t.z)>limit||!Number.isInteger(t.elevation)||t.elevation<0||t.elevation>MAX_TERRAIN_LEVEL||(!['land','meadow','rocky','beach','house','plaza','stairs'].includes(t.kind)&&!isTree(t.kind)&&!isRoad(t.kind))||!Number.isInteger(t.floors)||t.floors<0||t.floors>MAX_FLOORS||!Number.isInteger(t.color)||t.color<0||t.color>=COLORS.length||!['tile','shed','flat'].includes(t.roof)||!Number.isInteger(t.rotation)||t.rotation<0||t.rotation>3||(t.kind==='house'&&t.floors<1)||(t.kind!=='house'&&t.floors!==0)) throw new Error('El fitxer conté una casella amb dades no vàlides.');
     const k=key(t.x,t.z);if(seen.has(k))throw new Error('El fitxer conté caselles repetides.');seen.add(k);
     if(t.kind==='beach'&&t.elevation!==0)throw new Error('Les platges han d’estar al nivell de la costa.');
     const slopeDirection=input.version<29?undefined:t.slopeDirection;
@@ -124,7 +125,7 @@ export function validateWorld(input) {
     if(patio!=null&&(t.kind!=='house'||t.floors>MAX_PATIO_FLOORS||!['front','back'].includes(patio.position)||!Number.isInteger(patio.direction)||patio.direction<0||patio.direction>3))throw new Error(`La casa amb pati ha de tenir d’1 a ${MAX_PATIO_FLOORS} plantes i una posició i orientació vàlides.`);
     return {...(t.floorColors?{floorColors:[...t.floorColors]}:{}),...(upperBusinesses.length?{upperBusinesses}:{}),...(slopeDirection!==undefined?{slopeDirection}:{}),...(beachBarData?{beachBar:beachBarData}:{}),...(patio!=null?{patio:{position:patio.position,direction:patio.direction}}:{}),business:business===null?null:{type:business.type,direction:business.direction,terrace:business.terrace,...(business.name!==undefined&&normalizeBusinessName(business.name)?{name:normalizeBusinessName(business.name)}:{})},x:t.x,z:t.z,elevation:t.elevation,kind:t.kind,floors:t.floors,levels:[...levels],color:t.color,roof:t.roof,roofDirection,rotation:t.rotation};
   });
-  const world={version:45,diada,gridSize,region:input.region,tiles,bridges:[],markets:[],churches:[],townHalls:[],customBuildings:[],landmarks:[]};
+  const world={version:49,diada,gridSize,region:input.region,tiles,bridges:[],markets:[],churches:[],townHalls:[],customBuildings:[],landmarks:[]};
   const bridges=input.version<7?[]:input.bridges;
   if(!Array.isArray(bridges)||bridges.length>CONFIG.limits.objectsPerCategory)throw new Error('La llista de ponts no és vàlida.');
   for(const b of bridges){
@@ -137,7 +138,7 @@ export function validateWorld(input) {
   for(const m of markets){
     const result=checkMarket(world,m);
     if(!result.valid)throw new Error('Mercat no vàlid: '+result.message);
-    world.markets.push({x:m.x,z:m.z,size:m.size,direction:m.direction});
+    world.markets.push({x:m.x,z:m.z,size:m.size,direction:m.direction,...normalizeBuildingSign(m.signName)});
   }
   const churches=input.version<15?[]:input.churches;
   if(!Array.isArray(churches)||churches.length>CONFIG.limits.objectsPerCategory)throw new Error('La llista d’esglésies no és vàlida.');
@@ -151,7 +152,7 @@ export function validateWorld(input) {
   for(const h of townHalls){
     const result=checkTownHall(world,h);
     if(!result.valid)throw new Error('Ajuntament no vàlid: '+result.message);
-    world.townHalls.push({x:h.x,z:h.z,size:h.size,direction:h.direction});
+    world.townHalls.push({x:h.x,z:h.z,size:h.size,direction:h.direction,...normalizeBuildingSign(h.signName)});
   }
   const customs=input.version<17?[]:input.customBuildings;
   if(!Array.isArray(customs)||customs.length>CONFIG.limits.objectsPerCategory)throw new Error('La llista d’edificis del jugador no és vàlida.');
@@ -164,7 +165,8 @@ export function validateWorld(input) {
   if(!Array.isArray(landmarks)||landmarks.length>CONFIG.limits.objectsPerCategory)throw new Error('La llista d’edificis i equipaments no és vàlida.');
   for(const l of landmarks){
     const result=checkLandmark(world,l);if(!result.valid)throw new Error('Far o parc infantil no vàlid: '+result.message);
-    world.landmarks.push({type:l.type,x:l.x,z:l.z,size:l.size,direction:l.direction});
+    if(l.signName!==undefined&&!SIGNED_LANDMARKS.includes(l.type))throw new Error('Aquest edifici no té cap rètol editable.');
+    world.landmarks.push({type:l.type,x:l.x,z:l.z,size:l.size,direction:l.direction,...normalizeBuildingSign(l.signName)});
   }
   // Restore custom decorations only after all footprints have been validated.
   for(let i=0;i<customs.length;i++){
@@ -260,7 +262,7 @@ export function checkBridge(world,a,b,type='classic'){
     if(i===0||i===n)continue;
     const t=tile(c);
     if(t?.beachBar)return {valid:false,message:'El traçat passa per una guingueta.'};
-    if(t&&((!['land','meadow','beach'].includes(t.kind)&&!isRoad(t.kind))||(t.kind!=='beach'&&terrainY(t)+.22>Math.min(bridgeHeight(world,bridge,(i-.5)/n),bridgeHeight(world,bridge,(i+.5)/n)))))return {valid:false,message:'El pont necessita espai lliure: hi ha terreny massa alt o un element al mig.'};
+    if(t&&((!['land','meadow','rocky','beach'].includes(t.kind)&&!isRoad(t.kind))||(t.kind!=='beach'&&terrainY(t)+.22>Math.min(bridgeHeight(world,bridge,(i-.5)/n),bridgeHeight(world,bridge,(i+.5)/n)))))return {valid:false,message:'El pont necessita espai lliure: hi ha terreny massa alt o un element al mig.'};
   }
   if((world.bridges??[]).length>=CONFIG.limits.objectsPerCategory)return {valid:false,message:`Has arribat al màxim de ${CONFIG.limits.objectsPerCategory} ponts.`};
   return {valid:true,message:`${type==='stone'?'Pont de pedra amb arcades':'Pont'} de ${n} caselles. Clica per unir els dos extrems.`};
@@ -490,6 +492,12 @@ export function checkCustomBuilding(world,b){
 
 /** Fixed footprint amenities, removable as a whole while preserving their terrain. */
 export const LANDMARK_TYPES={
+  museum:{name:'Museu',sizes:[4],height:2.56},
+  monastery:{name:'Monestir',sizes:[9],height:3.13},
+  hotel3:{name:'Hotel de 3 estrelles',sizes:[4],height:2.86},
+  hotel5:{name:'Hotel de 5 estrelles',sizes:[9],height:3.42},
+  hostal:{name:'Hostal',sizes:[2],height:2.24},
+  pension:{name:'Pensió',sizes:[1],height:2.24},
   castle:{name:'Castell medieval català',sizes:[4,9],height:3.45,category:'monument'},
   flagSenyera:{name:'Pal amb senyera',sizes:[1],height:2.82,flag:'senyera'},
   flagEstelada:{name:'Pal amb estelada',sizes:[1],height:2.82,flag:'estelada'},
@@ -531,8 +539,20 @@ export function checkLandmark(world,l){
   return {valid:true,message:`${LANDMARK_TYPES[l.type].name}: espai lliure de ${width} × ${depth} cel·les. Clica per construir.`};
 }
 
-export function editWorld(world,x,z,tool,{landmarkDirection=0,civicSize=4,castleSize=4,cemeterySize=2,playgroundSize=2,slopeDirection=0,slopeFinish='keep',color=0,roof='tile',roofDirection=0,level=null,beachBarDirection=0,beachBarName=undefined,businessFloor=0,businessType='bar',businessName=undefined,businessDirection=0,businessTerrace=true,marketSize=2,marketDirection=0,patioPosition=null,patioDirection=0,patioFloors=1,churchDirection=0,townHallSize=2,townHallDirection=0,customDesign=null,customDirection=0}={}) {
+export function editBuildingSign(world,x,z,name){
+  let signName;try{signName=normalizeBuildingSign(name).signName;}catch(error){return {changed:false,message:error.message};}
+  const landmark=landmarkAt(world,x,z),beach=world.tiles.find(t=>t.x===x&&t.z===z)?.beachBar;
+  const target=landmark&&SIGNED_LANDMARKS.includes(landmark.type)?landmark:marketAt(world,x,z)??townHallAt(world,x,z)??beach;
+  if(!target)return {changed:false,message:'Clica un edifici que tingui rètol, com un hotel, museu, monestir, escola, mercat o ajuntament.'};
+  const field=target===beach?'name':'signName';
+  if((target[field]??'')===(signName??''))return {changed:false,message:'El rètol ja té aquest nom.'};
+  if(signName)target[field]=signName;else delete target[field];
+  return {changed:true,message:signName?`Rètol canviat: ${signName}.`:'Rètol original restaurat.'};
+}
+
+export function editWorld(world,x,z,tool,{buildingName='',landmarkDirection=0,civicSize=4,castleSize=4,cemeterySize=2,playgroundSize=2,slopeDirection=0,slopeFinish='keep',color=0,roof='tile',roofDirection=0,level=null,beachBarDirection=0,beachBarName=undefined,businessFloor=0,businessType='bar',businessName=undefined,businessDirection=0,businessTerrace=true,marketSize=2,marketDirection=0,patioPosition=null,patioDirection=0,patioFloors=1,churchDirection=0,townHallSize=2,townHallDirection=0,customDesign=null,customDirection=0}={}) {
   if(!Number.isInteger(x)||!Number.isInteger(z)||Math.abs(x)>worldLimit(world)||Math.abs(z)>worldLimit(world))return {changed:false,message:'Has arribat al límit de la zona de construcció.'};
+  if(tool==='building-sign')return editBuildingSign(world,x,z,buildingName);
   let t=world.tiles.find(t=>t.x===x&&t.z===z);
   const landmark=landmarkAt(world,x,z);
   if(landmark){
@@ -651,7 +671,7 @@ export function editWorld(world,x,z,tool,{landmarkDirection=0,civicSize=4,castle
   }
   if(tool==='slope'){
     if(slopeDirection!==null&&(!Number.isInteger(slopeDirection)||slopeDirection<0||slopeDirection>3))return {changed:false,message:'Tria cap on puja el pendent.'};
-    if(!['keep','land','meadow',...ROAD_TYPES].includes(slopeFinish))return {changed:false,message:'Tria un acabat vàlid.'};
+    if(!['keep','land','meadow','rocky',...ROAD_TYPES].includes(slopeFinish))return {changed:false,message:'Tria un acabat vàlid.'};
     if(t?.patio)return {changed:false,message:'Retira primer la casa amb pati per modificar-ne el terreny.'};
     if(slopeDirection!==null&&t?.elevation>=MAX_TERRAIN_LEVEL)return {changed:false,message:`El pendent necessita un nivell superior lliure. Comença entre els nivells 0 i ${MAX_TERRAIN_LEVEL-1}.`};
     if(slopeDirection===null&&!hasSlope(t))return {changed:false,message:'Aquest terreny ja és pla.'};
@@ -662,7 +682,7 @@ export function editWorld(world,x,z,tool,{landmarkDirection=0,civicSize=4,castle
     if(isFirmGround(t.kind)&&slopeFinish!=='keep')t.kind=slopeFinish;
     return {changed:JSON.stringify(t)!==before,message:slopeDirection===null?'Terreny aplanat al nivell inferior.':'Pendent aplicat. Pots pavimentar-hi, plantar-hi o construir-hi.'};
   }
-  if(!['house','land','meadow','beach','plaza','stairs'].includes(tool)&&!isTree(tool)&&!isRoad(tool))return {changed:false};
+  if(!['house','land','meadow','rocky','beach','plaza','stairs'].includes(tool)&&!isTree(tool)&&!isRoad(tool))return {changed:false};
   if(!t){t={x,z,elevation:0,kind:'land',floors:0,levels:[],color,roof,roofDirection:0,rotation:0,business:null};world.tiles.push(t);if(tool==='land')return {changed:true};}
   if(tool==='beach'){
     if(t.kind==='beach')return {changed:false};

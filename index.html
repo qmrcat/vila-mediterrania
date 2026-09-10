@@ -24,6 +24,11 @@
         <label class="field-label" for="building-type">Edifici</label>
         <select id="building-type" aria-describedby="tool-description"></select>
       </div>
+      <div id="building-sign-options" hidden>
+        <label class="field-label" for="building-sign-name">Nom del rètol</label>
+        <input id="building-sign-name" type="text" maxlength="24" placeholder="Ex.: Museu de la Mar" autocomplete="off" aria-describedby="building-sign-help">
+        <p id="building-sign-help" class="roof-note">Màxim 24 caràcters. Deixa’l buit per restaurar el nom original. Clica l’edifici per aplicar-lo.</p>
+      </div>
       <div id="monument-options" hidden>
         <label class="field-label" for="monument-type">Monument</label>
         <select id="monument-type" aria-describedby="tool-description"></select>
@@ -89,12 +94,12 @@
       </div>
       <div id="terrain-options" hidden>
         <label class="field-label" for="terrain-type">Tipus de terreny</label>
-        <select id="terrain-type" aria-describedby="terrain-note"><option value="land">Terra ferma</option><option value="meadow">Pradera amb flors</option><option value="slope">Terreny amb pendent</option><option value="beach">Platja</option><option value="cobble">Carrer empedrat</option><option value="dirt">Carrer de terra</option><option value="asphalt">Carrer asfaltat</option></select>
+        <select id="terrain-type" aria-describedby="terrain-note"><option value="land">Terra ferma</option><option value="meadow">Pradera amb flors</option><option value="rocky">Terreny rocós</option><option value="slope">Terreny amb pendent</option><option value="beach">Platja</option><option value="cobble">Carrer empedrat</option><option value="dirt">Carrer de terra</option><option value="asphalt">Carrer asfaltat</option></select>
         <div id="slope-options" hidden>
           <label class="field-label" for="slope-direction">El pendent puja cap a</label>
           <select id="slope-direction"><option value="0">Sud</option><option value="1">Est</option><option value="2">Nord</option><option value="3">Oest</option><option value="flat">Sense pendent · aplana</option></select>
           <label class="field-label" for="slope-finish">Acabat del terreny</label>
-          <select id="slope-finish"><option value="keep">Conserva l’acabat actual</option><option value="land">Terra ferma</option><option value="meadow">Pradera amb flors</option><option value="cobble">Carrer empedrat</option><option value="dirt">Carrer de terra</option><option value="asphalt">Carrer asfaltat</option></select>
+          <select id="slope-finish"><option value="keep">Conserva l’acabat actual</option><option value="land">Terra ferma</option><option value="meadow">Pradera amb flors</option><option value="rocky">Terreny rocós</option><option value="cobble">Carrer empedrat</option><option value="dirt">Carrer de terra</option><option value="asphalt">Carrer asfaltat</option></select>
         </div>
         <p id="terrain-note" class="tree-note"></p>
       </div>
@@ -157,7 +162,7 @@
       <button id="export">Desa una còpia (.json)</button>
       <button id="import">Obre una vila…</button>
       <button id="photo">Fes una fotografia</button>
-      <a id="download-code" href="./vila-mediterrania-v56-edificis-colors.zip" download>Descarrega el joc i el codi</a>
+      <a id="download-code" href="./vila-mediterrania-v61-retols-edificis.zip" download>Descarrega el joc i el codi</a>
       <hr>
       <p id="grid-size-status">Quadrícula actual: 33 × 33</p>
       <button id="expand-grid">Amplia la quadrícula…</button>

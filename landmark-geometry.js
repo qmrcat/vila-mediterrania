@@ -1,3 +1,6 @@
+import {CULTURAL_TYPES,renderCulturalBuilding} from './cultural-geometry.js';
+import {LODGING_TYPES,renderLodging} from './lodging-geometry.js';
+import {isFlagpole,poleGroundY} from './flagpole-ground.js';
 import {renderCastle} from './castle-geometry.js';
 import {createSenyera} from './senyera.js';
 import {createPoleFlag,renderFlagpole,POLE_FLAG_ORIGIN} from './flagpoles.js';
@@ -11,7 +14,7 @@ import {LANDMARK_TYPES,landmarkDimensions,terrainY} from './model.js';
 /** Instanced playground equipment and a Mediterranean lighthouse. */
 export function renderLandmarks(world,add,unit,flags=[]){
   for(const l of world.landmarks??[]){
-    const {width,depth}=landmarkDimensions(l),base=terrainY(world.tiles.find(t=>t.x===l.x&&t.z===l.z));
+    const {width,depth}=landmarkDimensions(l),ground=world.tiles.find(t=>t.x===l.x&&t.z===l.z),base=isFlagpole(l)?poleGroundY(ground,l,unit):terrainY(ground);
     const x=(l.x+(width-1)/2)*unit,z=(l.z+(depth-1)/2)*unit,a=l.direction*Math.PI/2,c=Math.cos(a),s=Math.sin(a);
     const part=(shape,color,u,h,v,sx,sy,sz,ry=0,rx=0,rz=0)=>add(shape,color,x+c*u+s*v,base+h,z-s*u+c*v,sx,sy,sz,a+ry,rx,rz);
     const box=(color,u,h,v,sx,sy,sz,rx=0,rz=0)=>part('box',color,u,h,v,sx,sy,sz,0,rx,rz);
@@ -34,14 +37,16 @@ export function renderLandmarks(world,add,unit,flags=[]){
     }
     if(l.type==='cemetery'){renderCemetery(l,part,unit);continue;}
     if(LANDMARK_TYPES[l.type]?.category==='monument'){renderWall(l,part,unit);continue;}
-    if(['hospital','school','police','fireStation','recycling'].includes(l.type)){
+    if(CULTURAL_TYPES.includes(l.type)||LODGING_TYPES.includes(l.type)||['hospital','school','police','fireStation','recycling'].includes(l.type)){
       // Rotate local roof slopes with the building (world yaw precedes local tilt).
       const yaw=new Quaternion().setFromAxisAngle(new Vector3(0,1,0),a),q=new Quaternion(),e=new Euler();
       const civicPart=(shape,color,u,h,v,sx,sy,sz,ry=0,rx=0,rz=0)=>{
         q.setFromEuler(e.set(rx,ry,rz)).premultiply(yaw);e.setFromQuaternion(q);
         add(shape,color,x+c*u+s*v,base+h,z-s*u+c*v,sx,sy,sz,e.y,e.x,e.z);
       };
-      if(['fireStation','recycling'].includes(l.type))renderServiceBuilding(l,civicPart,unit);
+      if(CULTURAL_TYPES.includes(l.type))renderCulturalBuilding(l,civicPart,unit);
+      else if(LODGING_TYPES.includes(l.type))renderLodging(l,civicPart,unit);
+      else if(['fireStation','recycling'].includes(l.type))renderServiceBuilding(l,civicPart,unit);
       else renderCivicBuilding(l,civicPart,unit);
       continue;
     }

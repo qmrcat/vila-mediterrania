@@ -1,4 +1,5 @@
 import * as THREE from './vendor/three.module.min.js';
+import {POLE_OFFSET} from './flagpole-ground.js';
 import {waveSenyera} from './senyera.js';
 
 const GOLD=[248,204,50],RED=[207,48,56],BLUE=[36,98,167],WHITE=[255,255,255],BLACK=[0,0,0];
@@ -58,8 +59,9 @@ export function createPoleFlag(type){
 
 export const POLE_FLAG_ORIGIN={u:-.353,y:2,z:0};
 export function renderFlagpole(part){
-  const u=-.38;
-  part('cylinder','#c8bda5',u,.05,0,.38,.10,.38);
+  const u=POLE_OFFSET;
+  // Bury the lower part of the footing so it meets both sides of a slope.
+  part('cylinder','#c8bda5',u,.005,0,.38,.19,.38);
   part('cylinder','#e6decb',u,.14,0,.26,.12,.26);
   part('cylinder','#9aa7a3',u,1.43,0,.043,2.56,.043);
   part('sphere','#d5b775',u,2.75,0,.075,.075,.075);

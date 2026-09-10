@@ -8,19 +8,27 @@ import {createWorld,validateWorld,editWorld,History,COLORS,worldLimit,expandWorl
 
 const $=selector=>document.querySelector(selector);
 const $$=selector=>[...document.querySelectorAll(selector)];
-const STORAGE_KEY='vila-mediterrania:v45';
+const STORAGE_KEY='vila-mediterrania:v49';
 // New landmark types join the building selector without widening the toolbar.
 const BUILDING_TOOLS=new Map([
   ['beachbar','Guingueta'],['market','Mercat'],['church','Església'],['townhall','Ajuntament'],
   ...Object.entries(LANDMARK_TYPES).filter(([,definition])=>definition.category!=='monument').map(([id,definition])=>[id,definition.name]),
+  ['building-sign','Canviar un rètol existent'],
 ]);
 const MONUMENT_TOOLS=new Map(Object.entries(LANDMARK_TYPES).filter(([,definition])=>definition.category==='monument').map(([id,definition])=>[id,definition.name]));
-const LEGACY_STORAGE_KEYS=['vila-mediterrania:v44','vila-mediterrania:v43','vila-mediterrania:v42','vila-mediterrania:v41','vila-mediterrania:v40','vila-mediterrania:v39','vila-mediterrania:v38','vila-mediterrania:v37','vila-mediterrania:v36','vila-mediterrania:v35','vila-mediterrania:v34','vila-mediterrania:v33','vila-mediterrania:v32','vila-mediterrania:v31','vila-mediterrania:v30','vila-mediterrania:v29','vila-mediterrania:v28','vila-mediterrania:v27','vila-mediterrania:v26','vila-mediterrania:v25','vila-mediterrania:v24','vila-mediterrania:v23','vila-mediterrania:v22','vila-mediterrania:v21','vila-mediterrania:v20','vila-mediterrania:v19','vila-mediterrania:v18','vila-mediterrania:v17','vila-mediterrania:v16','vila-mediterrania:v15','vila-mediterrania:v14','vila-mediterrania:v13','vila-mediterrania:v12','vila-mediterrania:v11','vila-mediterrania:v10','vila-mediterrania:v9','vila-mediterrania:v8','vila-mediterrania:v7','vila-mediterrania:v6','vila-mediterrania:v5','vila-mediterrania:v4','vila-mediterrania:v3','vila-mediterrania:v2','vila-mediterrania:v1'];
+const LEGACY_STORAGE_KEYS=['vila-mediterrania:v48','vila-mediterrania:v47','vila-mediterrania:v46','vila-mediterrania:v45','vila-mediterrania:v44','vila-mediterrania:v43','vila-mediterrania:v42','vila-mediterrania:v41','vila-mediterrania:v40','vila-mediterrania:v39','vila-mediterrania:v38','vila-mediterrania:v37','vila-mediterrania:v36','vila-mediterrania:v35','vila-mediterrania:v34','vila-mediterrania:v33','vila-mediterrania:v32','vila-mediterrania:v31','vila-mediterrania:v30','vila-mediterrania:v29','vila-mediterrania:v28','vila-mediterrania:v27','vila-mediterrania:v26','vila-mediterrania:v25','vila-mediterrania:v24','vila-mediterrania:v23','vila-mediterrania:v22','vila-mediterrania:v21','vila-mediterrania:v20','vila-mediterrania:v19','vila-mediterrania:v18','vila-mediterrania:v17','vila-mediterrania:v16','vila-mediterrania:v15','vila-mediterrania:v14','vila-mediterrania:v13','vila-mediterrania:v12','vila-mediterrania:v11','vila-mediterrania:v10','vila-mediterrania:v9','vila-mediterrania:v8','vila-mediterrania:v7','vila-mediterrania:v6','vila-mediterrania:v5','vila-mediterrania:v4','vila-mediterrania:v3','vila-mediterrania:v2','vila-mediterrania:v1'];
 let bridgeStart=null,designs=[];
 let world,scene,tool='house',treeSpecies='pine',terrainType='land',color=0,roof='tile',roofDirection=0,keyboardCell={x:0,z:0},toastTimer;
 const history=new History();
 if(['localhost','127.0.0.1','[::1]'].includes(location.hostname))$('#download-code').hidden=true;
 const instructions={
+  'building-sign':['Canviar el rètol d’un edifici','Escriu el nom i clica qualsevol cel·la de l’edifici. Deixa el camp buit per recuperar el rètol original.'],
+  museum:['El museu de la vila','Ocupa 2 × 2 cel·les, amb entrada porticada, galeries i peces exposades al davant. Prepara tota la base a la mateixa alçada i escull l’entrada.'],
+  monastery:['Un monestir català','Conjunt de 3 × 3 cel·les inspirat en Poblet, amb església, campanar i claustre obert amb jardí i pou. Prepara tota la base lliure a la mateixa alçada.'],
+  hotel3:['Hotel de tres estrelles','Ocupa 2 × 2 cel·les: tres plantes amb balcons i un terrat amb pèrgola. Prepara tota la base a la mateixa alçada i escull l’entrada.'],
+  hotel5:['Hotel de cinc estrelles','Ocupa 3 × 3 cel·les: quatre plantes, piscina, gandules, para-sols i jardí. Prepara tota la base lliure a la mateixa alçada.'],
+  hostal:['L’hostal de la vila','Ocupa 2 × 1 cel·les: dues plantes, finestres amb porticons i teulada de teula. Escull l’orientació de l’entrada.'],
+  pension:['Una pensió familiar','Ocupa una cel·la: dues plantes amb porticons, teulada de teula i flors a l’entrada.'],
   castle:['Un castell medieval català','Tria 2 × 2 o 3 × 3 cel·les i l’orientació del portal. Prepara tota la superfície lliure a la mateixa alçada.'],
   ...Object.fromEntries(Object.entries(LANDMARK_TYPES).filter(([,d])=>d.flag).map(([id,d])=>[id,[d.name,'Un pal amb bandera que oneja, sobre una cel·la de terra ferma. Tria cap on mira la bandera i clica per col·locar-lo.']])),
   fireStation:['L’estació de bombers','Tria 2 × 2 o 3 × 2 cel·les i l’orientació de les cotxeres. Prepara terra ferma lliure a la mateixa alçada.'],
@@ -172,7 +180,7 @@ function applyEdit(cell,erase=false){
   const before=structuredClone(world);const roofOnly=tool==='house'&&roof!=='flat'&&$('#roof-direction-only').checked;
   const selectedTool=tool==='house'&&$('#house-action').value==='business'?'business':tool==='house'&&$('#house-action').value==='paint'?'paint-floor':roofOnly?'roof-direction':patioMode()?'patio-house':tool==='pine'?treeSpecies:tool==='land'?terrainType:tool;
   if(!erase&&selectedTool==='custom'&&!selectedDesign()){toast('Obre l’editor i desa un disseny abans de col·locar-lo.');return;}
-  const result=editWorld(world,cell.x,cell.z,erase?'erase':selectedTool,{castleSize:Number($('#castle-size').value),cemeterySize:Number($('#cemetery-size').value),civicSize:Number($('#civic-size').value),landmarkDirection:landmarkOptions().direction,playgroundSize:Number($('#playground-size').value),slopeDirection:$('#slope-direction').value==='flat'?null:Number($('#slope-direction').value),slopeFinish:$('#slope-finish').value,...patioOptions(),customDesign:selectedDesign(),customDirection:Number($('#custom-direction').value),color,roof,roofDirection,beachBarDirection:Number($('#beachbar-direction').value),beachBarName:$('#beachbar-name').value,level:!erase&&selectedTool==='paint-floor'&&$('#paint-floor').value!=='pointed'?Number($('#paint-floor').value):cell.level??null,businessFloor:Number($('#business-floor').value),businessType:$('#business-type').value,businessName:$('#business-name').value,businessDirection:Number($('#business-direction').value),businessTerrace:$('#business-terrace').checked,townHallSize:Number($('#townhall-size').value),townHallDirection:Number($('#townhall-direction').value),churchDirection:Number($('#church-direction').value),marketSize:Number($('#market-size').value),marketDirection:Number($('#market-direction').value)});
+  const result=editWorld(world,cell.x,cell.z,erase?'erase':selectedTool,{buildingName:$('#building-sign-name').value,castleSize:Number($('#castle-size').value),cemeterySize:Number($('#cemetery-size').value),civicSize:Number($('#civic-size').value),landmarkDirection:landmarkOptions().direction,playgroundSize:Number($('#playground-size').value),slopeDirection:$('#slope-direction').value==='flat'?null:Number($('#slope-direction').value),slopeFinish:$('#slope-finish').value,...patioOptions(),customDesign:selectedDesign(),customDirection:Number($('#custom-direction').value),color,roof,roofDirection,beachBarDirection:Number($('#beachbar-direction').value),beachBarName:$('#beachbar-name').value,level:!erase&&selectedTool==='paint-floor'&&$('#paint-floor').value!=='pointed'?Number($('#paint-floor').value):cell.level??null,businessFloor:Number($('#business-floor').value),businessType:$('#business-type').value,businessName:$('#business-name').value,businessDirection:Number($('#business-direction').value),businessTerrace:$('#business-terrace').checked,townHallSize:Number($('#townhall-size').value),townHallDirection:Number($('#townhall-direction').value),churchDirection:Number($('#church-direction').value),marketSize:Number($('#market-size').value),marketDirection:Number($('#market-direction').value)});
   if(result.message)toast(result.message);
   if(result.changed){history.push(before);refresh();scene.setCursor(cell.x,cell.z,erase||tool==='erase',cell.level);keyboardCell={...scene.hovered};}
 }
@@ -184,6 +192,7 @@ function selectTool(next){
   $('#monument-options').hidden=!monumentMode;
   if(buildingMode)$('#building-type').value=tool;
   $('#building-options').hidden=!buildingMode;
+  $('#building-sign-options').hidden=tool!=='building-sign';
   for(const b of $$('[data-tool]'))b.setAttribute('aria-pressed',String(b.dataset.tool===(buildingMode?'buildings':monumentMode?'monuments':tool)));
   $('#tool-heading').textContent=instructions[tool][0];$('#tool-description').textContent=instructions[tool][1];$('#house-options').hidden=tool!=='house';
   $('#tree-options').hidden=tool!=='pine';
@@ -228,6 +237,7 @@ function describeTerrain(){
   $('#slope-options').hidden=terrainType!=='slope';
   if(terrainType==='slope'){$('#terrain-note').textContent=$('#slope-direction').value==='flat'?'Retira el pendent i deixa el terreny al nivell inferior. Els elements es conserven.':'Puja un nivell cap al costat escollit. Clica al nivell inferior (0–3). Els carrers segueixen el pendent; els edificis recolzen sobre fonaments horitzontals al nivell superior.';return;}
 
+  if(terrainType==='rocky'){$('#terrain-note').textContent='Pedra grisa amb afloraments irregulars. Conserva l’alçada i el pendent; permet construir-hi, plantar-hi i pavimentar. Terra ferma permet elevar-lo; esborrar retira l’acabat rocós.';return;}
   if(terrainType==='meadow'){$('#terrain-note').textContent='Pradera verda amb floretes blanques, grogues i rosades. Clica per cobrir el terreny conservant-ne l’alçada i el pendent. Terra ferma permet elevar-lo; esborrar retira la pradera.';return;}
   const roads={cobble:'Empedrat de pedra amb juntes i tons variats.',dirt:'Terra ocre amb grava fina.',asphalt:'Asfalt gris fosc amb un acabat granulat.'};
   if(roads[terrainType]){$('#terrain-note').textContent=roads[terrainType]+' Clica per pavimentar sense canviar l’alçada. Terra ferma permet elevar-lo; esborrar retira el paviment.';return;}

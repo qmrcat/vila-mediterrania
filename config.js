@@ -5,15 +5,15 @@
  */
 export const CONFIG = {
   houses: {
-    maxFloors: 5,           // Plantes totals, inclosa la planta baixa.
-    maxPatioFloors: 2,      // Cases amb pati; no pot superar maxFloors.
+    maxFloors: 9,           // Plantes totals, inclosa la planta baixa.
+    maxPatioFloors: 3,      // Cases amb pati; no pot superar maxFloors.
   },
   terrain: {
-    maxElevation: 4,        // Nivell màxim. Un pendent també ocupa el nivell superior.
+    maxElevation: 8,        // Nivell màxim. Un pendent també ocupa el nivell superior.
   },
   flags: {
-    housePercentage: 35,    // Percentatge de cases elegibles amb bandera: 0–100.
-    esteladaPercentage: 50, // Percentatge d’estelades entre les banderes: 0–100.
+    housePercentage: 65,    // Percentatge de cases elegibles amb bandera: 0–100.
+    esteladaPercentage: 60, // Percentatge d’estelades entre les banderes: 0–100.
     enabledByDefault: false,// Només per a viles noves; les desades conserven el botó.
   },
   grid: {

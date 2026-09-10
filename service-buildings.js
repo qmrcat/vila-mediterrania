@@ -32,7 +32,7 @@ export function renderServiceBuilding(l,part,unit){
       box('#557f8a',x,.75,front+.081,.63,.12,.018);
       box('#e9d7a8',x,.102,.61,.026,.014,.88);
     }
-    sign('BOMBERS',large?.38:.32,1.16,front+.055,large?1.55:1.18,'#b54f3e');
+    sign(l.signName??'BOMBERS',large?.38:.32,1.16,front+.055,large?1.55:1.18,'#b54f3e');
     // Separate staff door beside the cotxeres.
     box('#f7eed9',tower,.47,front+.019,.35,.74,.04);
     box('#426a73',tower,.47,front+.046,.27,.66,.022);
@@ -80,7 +80,7 @@ export function renderServiceBuilding(l,part,unit){
   box('#d6ccb5',0,.22,back,w-.04,.28,.055);
   for(const y of [.46,.65])box('#718b7b',0,y,back,w-.04,.025,.025);
   for(const x of [-.78,.78])box('#667e70',x,.77,back,.04,1.36,.04);
-  sign('DEIXALLERIA',0,1.34,back+.025,1.70);
+  sign(l.signName??'DEIXALLERIA',0,1.34,back+.025,1.70);
   // Four common fractions; the larger yard adds organics and metals.
   const fractions=[['PAPER','#5688af'],['ENVASOS','#d6b445'],['VIDRE','#5b9267'],['RESTA','#888f88'],['ORGÀNIC','#9d7751'],['METALL','#87a4a7']];
   const count=large?6:4,spacing=(w-.52)/count;

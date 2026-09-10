@@ -28,7 +28,7 @@ No cal executar `npm install`, compilar ni configurar Vite. El joc no utilitza c
 
 Cada canvi es desa al `localStorage` d’aquest navegador i d’aquest origen web. El desament no se sincronitza entre dispositius i pot desaparèixer si es netegen les dades del navegador. El servidor inclòs utilitza el port 3000 o el primer disponible a partir d’aquest: conserva la mateixa adreça per recuperar el desament local.
 
-A **La meva vila → Desa una còpia (.json)** pots exportar la vila. Obre-la amb **Obre una vila…**. El format 45 guarda els edificis del jugador amb els seus dissenys, els ajuntaments, les esglésies, les cases amb pati, la mida de la quadrícula, els mercats, els negocis de planta baixa, els ponts, la costa, totes les construccions, els buits entre pisos cada espècie plantada i les caselles de platja. S’importen també fitxers dels formats 1–44, convertits automàticament; els pins existents continuen sent pins. El desament anterior es conserva separadament al navegador; la càmera, la llum i l’historial de desfer no es guarden al fitxer.
+A **La meva vila → Desa una còpia (.json)** pots exportar la vila. Obre-la amb **Obre una vila…**. El format 49 guarda els edificis del jugador amb els seus dissenys, els ajuntaments, les esglésies, les cases amb pati, la mida de la quadrícula, els mercats, els negocis de planta baixa, els ponts, la costa, totes les construccions, els buits entre pisos cada espècie plantada i les caselles de platja. S’importen també fitxers dels formats 1–48, convertits automàticament; els pins existents continuen sent pins. El desament anterior es conserva separadament al navegador; la càmera, la llum i l’historial de desfer no es guarden al fitxer.
 
 **Fes una fotografia** exporta una imatge PNG de la vista 3D sense els controls.
 
@@ -200,21 +200,15 @@ S’accepten fitxers MP3, OGG, OGA, WAV, M4A, AAC, FLAC, OPUS i WEBM, segons els
 
 **♫ → Escull una carpeta…** permet reproduir fitxers locals tant al joc en línia com al descarregat. Els àudios no s’envien a cap servidor. Cal tornar a escollir la carpeta quan es recarrega o es reobre la pàgina, perquè el navegador no conserva l’accés als fitxers seleccionats. La decisió de tenir la música desactivada o pausada sí que es conserva.
 
-### Live Server i allotjament estàtic (Apache, GitHub Pages)
+### Live Server i allotjament estàtic
 
-Amb aquests servidors, el joc llegeix la llista del fitxer **music/playlist.json**. La manera més segura d’actualitzar-lo és regenerar-lo amb:
-
-```
-node genera-playlist.mjs
-```
-
-També pots editar-lo a mà amb els noms relatius dels àudios, vigilant les comes (un sol error de sintaxi deixa la música muda i el joc mostra «playlist.json no és un JSON vàlid»):
+Amb altres servidors, afegeix els noms relatius dels àudios a **music/playlist.json**, per exemple:
 
 ```json
 ["01-mar.mp3", "02-vespre.ogg", "ambient/03-passeig.mp3"]
 ```
 
-Els fitxers han de ser dins de **music** i, a GitHub Pages, cal pujar-los al repositori amb el mateix nom exacte (majúscules i accents inclosos). Amb el servidor Node inclòs o amb **Inicia-Vila.exe**, la llista es genera automàticament i aquest JSON s’ignora.
+Els fitxers han de ser dins de **music**. Amb el servidor Node inclòs, la llista es genera automàticament i no cal modificar aquest JSON.
 
 El navegador pot exigir una interacció abans de deixar sonar música: prem **Reprodueix** o fes clic al joc. No s’inclouen pistes d’àudio al ZIP; hi has d’afegir les teves.
 
@@ -688,3 +682,52 @@ A **Casa → Pintar una planta**, escull un color i assenyala la planta que vols
 En construir una casa, els pisos nous utilitzen el color seleccionat i conserven els colors dels pisos anteriors. Pintar no afegeix pisos ni canvia teulades o negocis. Re Pàg i Av Pàg seleccionen plantes amb el teclat, també als edificis del jugador.
 
 Els colors i els negocis es conserven amb **Desfés/Refés**, el desament automàtic i l’exportació/importació de la vila. El **format 45** importa els formats **1–44**.
+
+
+## Terreny rocós — v57
+
+A **Terreny → Terreny rocós** pots posar una superfície de pedra grisa amb afloraments irregulars. També està disponible com a acabat de **Terreny amb pendent**. Conserva l’alçada i la inclinació existents, i les roques segueixen el pendent. A tocar del mar forma una costa de roca tant a la Costa Brava com a la Costa Daurada.
+
+Funciona com a terra ferma: pots elevar-lo amb **Terra ferma**, construir-hi, plantar-hi, pavimentar-hi o utilitzar-lo com a riba d’un pont. Els afloraments es retiren sota els edificis, les terrasses i els ponts perquè no travessin els elements. **Esborra** retira primer l’acabat rocós, conservant la base de terra.
+
+Es conserva amb Desfés/Refés i el desament automàtic o JSON. El **format 46** importa els formats **1–45**.
+
+
+## Pals de bandera adaptats al terreny — v58
+
+Els tres pals de bandera conserven l’acabat de la casella: empedrat, terra, asfalt, pradera, roca o plaça. Als pendents, el pal es manté vertical i el petit pedestal recolza a l’alçada real del punt on es col·loca, sense aplanar tota la casella. Les floretes i roques es mantenen al voltant, deixant lliure únicament el pedestal.
+
+S’aplica també als pals de les viles que ja tenies desades. El format de vila continua sent el **46**.
+
+
+## Hotels, hostal i pensió — v59
+
+Dins d’**Edificis** trobaràs quatre allotjaments:
+
+- **Hotel de 3 estrelles:** 2 × 2 cel·les, tres plantes amb balcons i terrat amb pèrgola. Rètol HOTEL amb tres estrelles.
+- **Hotel de 5 estrelles:** 3 × 3 cel·les, quatre plantes amb balcons, piscina amb escala, gandules, para-sols i jardí amb arbres, flors i camí fins a recepció. Rètol HOTEL amb cinc estrelles.
+- **Hostal:** 2 × 1 cel·les, dues plantes amb porticons, teulada de teula i flors.
+- **Pensió:** una cel·la, dues plantes i façana familiar amb porticons i rètol PENSIÓ.
+
+Prepara totes les cel·les amb terra ferma o un acabat compatible, lliures i a la mateixa alçada. Tria l’orientació de l’entrada (sud, est, nord o oest). El conjunt, inclòs el jardí, gira amb l’edifici. **Esborra** sobre qualsevol de les seves cel·les retira tot l’allotjament i conserva el terreny.
+
+Admeten Desfés/Refés, desament automàtic i exportació/importació JSON. El **format 47** importa els formats **1–46**.
+
+
+## Museu i monestir — v60
+
+Dins d’**Edificis** trobaràs:
+
+- **Museu:** 2 × 2 cel·les, dues plantes, entrada porticada amb quatre columnes, rètol MUSEU, galeries amb finestres i dues peces exposades al davant.
+- **Monestir:** 3 × 3 cel·les, una interpretació estilitzada inspirada en Poblet, amb església de pedra, rosassa, campanar i claustre obert. Les galeries tenen arcades obertes i envolten un jardí amb camins i pou.
+
+Tria l’orientació de l’entrada i prepara totes les cel·les lliures a la mateixa alçada. **Esborra** sobre qualsevol cel·la retira tot el conjunt i conserva el terreny. Admeten Desfés/Refés, desament automàtic i exportació/importació. El **format 48** importa els formats **1–47**.
+
+
+## Rètols dels edificis — v61
+
+Ves a **Edificis → Canviar un rètol existent**, escriu el nom (màxim 24 caràcters, amb accents) i clica qualsevol cel·la de l’edifici. Deixa el camp buit i torna-hi a clicar per recuperar el rètol original.
+
+Funciona amb els hotels, hostals, pensions, museus, monestirs, hospitals, escoles, comissaries, estacions de bombers, deixalleries, cementiris, mercats, ajuntaments i guinguetes. Cada edifici conserva el seu nom independentment dels altres. Canvia el rètol principal; les estrelles dels hotels i les indicacions secundàries, com URGÈNCIES o les etiquetes dels contenidors, es mantenen. Els elements sense rètol no es modifiquen.
+
+Els noms es conserven amb Desfés/Refés, desament automàtic i exportació/importació de la vila. El **format 49** importa els formats **1–48**.

@@ -39,7 +39,7 @@ export function renderCivicBuilding(l,part,unit){
   box('#3e6a7a',0,.42,front+.08,.58,.61,.025);
   box('#d9e1d5',0,.42,front+.10,.027,.60,.017);
   for(const side of [-1,1])box('#dfcf91',side*.053,.42,front+.115,.014,.12,.015);
-  sign(hospital?'HOSPITAL':school?'ESCOLA':'POLICIA',0,.91,front+.035,school?1.15:1.30);
+  sign(l.signName??(hospital?'HOSPITAL':school?'ESCOLA':'POLICIA'),0,.91,front+.035,school?1.15:1.30);
   // Level threshold and shallow canopy remain within the reserved footprint.
   box('#eee6d4',0,.10,front+.13,.77,.04,.28);
   if(hospital){
