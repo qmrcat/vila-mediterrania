@@ -1,3 +1,4 @@
+import {chooseFestiveFlags,createFestiveFlag,waveFestiveFlag} from './festive-flags.js';
 import {createBarberStripeGeometry} from './barber-pole.js';
 import {SPECIAL_SHOPS,renderSpecialShop} from './special-shops.js';
 import {renderMeadowFlowers,MEADOW_GREEN} from './meadow.js';
@@ -139,7 +140,7 @@ export function createPickingGeometry(world,pickingMaterial){
 
 /** All repeating architecture is instanced, so windows do not each cost a draw call. */
 export function createVillageGeometry(world){
-  const batches=new Map(),flags=[];
+  const batches=new Map(),flags=[],festiveCandidates=[];
   const helper=new THREE.Object3D();
   const map=new Map(world.tiles.map(t=>[key(t.x,t.z),t]));
   for(const m of world.markets??[])for(const c of marketCells(m)){
@@ -693,16 +694,30 @@ export function createVillageGeometry(world){
         const upper=t.upperBusinesses?.find(b=>b.floor===floor&&b.direction===d);
         const shop=floor===0?(t.business?.direction===d?t:null):upper?businessOwner(t,upper):null;
         if(shop&&businessFrontClear(world,shop)&&(floor>0||accessible)){if(Object.hasOwn(SPECIAL_SHOPS,shop.business.type))renderSpecialShop(shop.business,(shape,color,u,h,depth,sx,sy,sz)=>face(shape,color,shop,d,u,bottom+h,depth,sx,sy,sz));else if(shop.business.type==='greengrocer')fruitFacade(shop,d,bottom);else if(shop.business.type==='grocery')groceryFacade(shop,d,bottom);else if(shop.business.type==='butcher')butcherFacade(shop,d,bottom);else if(shop.business.type==='bakery')bakeryFacade(shop,d,bottom);else if(shop.business.type==='fishmonger')fishmongerFacade(shop,d,bottom);else if(shop.business.type==='pharmacy')pharmacyFacade(shop,d,bottom);else if(shop.business.type==='florist')floristFacade(shop,d,bottom);else if(shop.business.type==='newsstand')newsstandFacade(shop,d,bottom);else if(shop.business.type==='restaurant')restaurantFacade(shop,d,bottom);else barFacade(shop,d,bottom);continue;}
+        // Record only openings actually drawn on this exposed residential face.
+        const festiveOpening=(u,top,depth=.724,mount='window')=>{
+          if(!world.diada)return;
+          const potU=entrances[d]?.position==='right'?-.47:.47;
+          if(floor===0&&accessible&&Math.abs(u-potU)<.28&&entranceSupported(t,d,potU,.24)&&randomAt(t.x,t.z,d+33)>.65)return;
+          const height=mount==='balcony'?.40:.20;
+          if(solidAtHeight(next,top)||solidAtHeight(next,top-height))return;
+          const [dx,dz]=DIRECTIONS[d],nearLandmark=landmarkAt(world,t.x+dx,t.z+dz);
+          if(nearLandmark&&top-height<terrainY(next)+landmarkHeight(nearLandmark))return;
+          festiveCandidates.push({x:t.x,z:t.z,floor,direction:d,u,top,depth,mount});
+        };
         if(floor===0&&!accessible){
           renderRaisedEntrance(entrances[d],(shape,color,u,h,depth,sx,sy,sz)=>face(shape,color,t,d,u,bottom+h,depth,sx,sy,sz),{shutter});
+          for(const u of [doorU,...(entrances[d]?entranceLayout(entrances[d]).windows:[-.4,.4])])festiveOpening(u,bottom+.33);
         }else if(floor===0&&t.patio&&d!==t.patio.direction&&d!==patioDirection(t)){
           for(const u of [-.29,.29]){
             face('box','#eee4d1',t,d,u,bottom+.47,.64,.31,.37,.045);
             face('box',shutter,t,d,u,bottom+.47,.67,.24,.29,.025);
             face('box','#e1dac7',t,d,u,bottom+.47,.69,.018,.29,.014);
+            festiveOpening(u,bottom+.305);
           }
         }else if((floor===0||middleAccess)&&entrances[d]){
           renderEntrance(entrances[d],(shape,color,u,h,depth,sx,sy,sz)=>face(shape,color,t,d,u,bottom+h,depth,sx,sy,sz),{shutter});
+          for(const u of entranceLayout(entrances[d]).windows)festiveOpening(u,bottom+.33);
         }else if(floor===0||middleAccess){
           face('arch','#ded5bc',t,d,0,bottom+.025,.642,.36,.53,.025);
           face('arch',shutter,t,d,0,bottom+.035,.67,.28,.46,.022);
@@ -711,6 +726,7 @@ export function createVillageGeometry(world){
             face('box','#eee4d1',t,d,u,bottom+.48,.64,.23,.32,.045);
             face('box',shutter,t,d,u,bottom+.48,.67,.17,.25,.025);
             face('box','#e1dac7',t,d,u,bottom+.48,.69,.015,.26,.014);
+            festiveOpening(u,bottom+.33);
           }
         }else{
           const balcony=(floor===1&&randomAt(t.x,t.z,d+6)>.57);
@@ -723,7 +739,7 @@ export function createVillageGeometry(world){
               face('box',shutter,t,d,u+side*.15,bottom+.44,.69,.10,.39,.035);
               for(let s=0;s<4;s++)face('box','#366469',t,d,u+side*.15,bottom+.33+s*.065,.712,.08,.01,.012);
             }
-            if(!balcony)face('box','#f6ecda',t,d,u,bottom+.195,.69,.36,.05,.14);
+            if(!balcony){face('box','#f6ecda',t,d,u,bottom+.195,.69,.36,.05,.14);festiveOpening(u,bottom+.222,.77);}
           }
           if(balcony){
             face('box','#eee6d2',t,d,0,bottom+.14,.8,1.08,.08,.38);
@@ -731,6 +747,7 @@ export function createVillageGeometry(world){
             for(let b=-3;b<=3;b++)face('box','#4d655f',t,d,b*.15,bottom+.32,.98,.018,.30,.018);
             for(const u of [-.50,.50])face('box','#4d655f',t,d,u,bottom+.47,.8,.03,.035,.37);
             pot(t,d,.37,bottom+.20);
+            festiveOpening(-.22,bottom+.475,1.005,'balcony');
           }
         }
         const potU=entrances[d]?.position==='right'?-.47:.47;
@@ -969,9 +986,14 @@ export function createVillageGeometry(world){
     part('sphere','#d2b675',-.32,2.49,front+.13,.057,.057,.057);
     const flag=createSenyera();flag.position.set(cx+c*(-.32)+s*(front+.13),y+2.08,cz-s*(-.32)+c*(front+.13));flag.rotation.y=a;flags.push(flag);
   }
-  renderLandmarks(world,add,UNIT);
+  renderLandmarks(world,add,UNIT,flags);
   renderBeachBars(world,add,UNIT);
   renderCustomBuildings(world,add,UNIT,FLOOR,entranceSteps);
+  for(const placement of chooseFestiveFlags(festiveCandidates)){
+    const flag=createFestiveFlag(placement),{x,z,direction,u,top,depth}=placement,a=direction*Math.PI/2;
+    flag.position.set(x*UNIT+Math.cos(a)*u+Math.sin(a)*depth,top,z*UNIT-Math.sin(a)*u+Math.cos(a)*depth);
+    flag.rotation.y=a;flag.userData.placement={...placement};flags.push(flag);
+  }
   const group=new THREE.Group();group.name='village';group.userData.flags=flags;for(const flag of flags)group.add(flag);
   for(const {shape,color,matrices} of batches.values()){
     const mesh=new THREE.InstancedMesh(geometries[shape],material(color),matrices.length);
@@ -1243,7 +1265,7 @@ export class VillageScene{
   frame(time){
     this.animation=requestAnimationFrame(t=>this.frame(t));
     if(document.hidden)return;
-    if(!this.reducedMotion){this.time.value=time/1000;for(const flag of this.village?.userData.flags??[])waveSenyera(flag,this.time.value);this.boats.children.forEach((b,i)=>{b.position.y=.05+Math.sin(time*.0013+i)*.025;b.rotation.z=Math.sin(time*.001+i)*.035;});}
+    if(!this.reducedMotion){this.time.value=time/1000;for(const flag of this.village?.userData.flags??[]){if(flag.userData.festiveFlag)waveFestiveFlag(flag,this.time.value);else waveSenyera(flag,this.time.value);}this.boats.children.forEach((b,i)=>{b.position.y=.05+Math.sin(time*.0013+i)*.025;b.rotation.z=Math.sin(time*.001+i)*.035;});}
     this.renderer.render(this.scene,this.camera);
   }
   async photograph(){

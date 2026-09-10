@@ -64,3 +64,5 @@
 
 .palette:has(#landmark-options:not([hidden])){width:238px;max-height:calc(100dvh - 285px);overflow-y:auto}.palette #landmark-options .field-label{display:block;font-size:14px}#landmark-options select{font-size:16px;margin-bottom:12px;min-height:42px;width:100%}.toolbar button[data-tool="playground"]{min-width:90px}
 @media(max-width:740px){.palette:has(#landmark-options:not([hidden])){width:194px;padding:14px 12px}}
+
+#diada-toggle{font-size:14px;line-height:1.35;margin-top:4px;padding:9px 6px}#diada-toggle[aria-pressed=true]{background:#e6eddf;box-shadow:inset 3px 0 #bc4c3b;color:#214f4d}

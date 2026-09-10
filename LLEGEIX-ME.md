@@ -28,7 +28,7 @@ No cal executar `npm install`, compilar ni configurar Vite. El joc no utilitza c
 
 Cada canvi es desa al `localStorage` d’aquest navegador i d’aquest origen web. El desament no se sincronitza entre dispositius i pot desaparèixer si es netegen les dades del navegador. El servidor inclòs utilitza el port 3000 o el primer disponible a partir d’aquest: conserva la mateixa adreça per recuperar el desament local.
 
-A **La meva vila → Desa una còpia (.json)** pots exportar la vila. Obre-la amb **Obre una vila…**. El format 39 guarda els edificis del jugador amb els seus dissenys, els ajuntaments, les esglésies, les cases amb pati, la mida de la quadrícula, els mercats, els negocis de planta baixa, els ponts, la costa, totes les construccions, els buits entre pisos cada espècie plantada i les caselles de platja. S’importen també fitxers dels formats 1–38, convertits automàticament; els pins existents continuen sent pins. El desament anterior es conserva separadament al navegador; la càmera, la llum i l’historial de desfer no es guarden al fitxer.
+A **La meva vila → Desa una còpia (.json)** pots exportar la vila. Obre-la amb **Obre una vila…**. El format 41 guarda els edificis del jugador amb els seus dissenys, els ajuntaments, les esglésies, les cases amb pati, la mida de la quadrícula, els mercats, els negocis de planta baixa, els ponts, la costa, totes les construccions, els buits entre pisos cada espècie plantada i les caselles de platja. S’importen també fitxers dels formats 1–40, convertits automàticament; els pins existents continuen sent pins. El desament anterior es conserva separadament al navegador; la càmera, la llum i l’historial de desfer no es guarden al fitxer.
 
 **Fes una fotografia** exporta una imatge PNG de la vista 3D sense els controls.
 
@@ -573,3 +573,46 @@ Prepara totes les cel·les lliures amb terra ferma, pradera, carrer o plaça a l
 El desament automàtic, Desfés/Refés i els fitxers JSON conserven els dos edificis. El **format 39** obre també viles dels formats **1–38** i recupera el desament anterior del navegador.
 
 Aquesta distribució inclou el joc complet i l’editor, amb tots els edificis, negocis, monuments, ponts i terrenys anteriors.
+
+
+## Banderes de la Diada — v49
+
+Prem **Banderes de la Diada**, sota **Mostra la quadrícula**, per posar o treure banderes a les cases. El botó queda ressaltat quan l’opció està activada. No depèn de la data: el pots utilitzar quan vulguis.
+
+- Es decora aproximadament el **35 % de les cases amb balcons o finestres exposats**: una bandera per casa, repartint senyeres i estelades blaves amb estrella blanca. En viles molt petites, el nombre s’arrodoneix a banderes senceres.
+- Es prioritzen els balcons; quan no n’hi ha, les banderes pengen dels ampits. S’eviten els portals, els aparadors, els pisos buits, les façanes tapades i les torretes de flors.
+- La tria es manté en girar la càmera, activar i desactivar el botó, o recuperar la mateixa vila. Construir o eliminar cases pot ajustar el repartiment per mantenir la proporció.
+- La roba es mou suaument amb el vent, ancorada per la vora superior. Si tens activada la reducció de moviment al sistema, no s’anima.
+- Les banderes permanents dels ajuntaments continuen al seu lloc encara que apaguis l’opció de la Diada.
+
+L’opció es desa amb la vila, tant al navegador com al JSON, i és compatible amb **Desfés/Refés**. Les viles noves i les dels formats antics comencen amb les banderes de la Diada desactivades. El **format 40** obre també els formats **1–39**.
+
+El ZIP inclou el joc complet i l’editor, amb tots els edificis, negocis, monuments, ponts i terrenys de les versions anteriors.
+
+
+## Configuració centralitzada — v50
+
+Els límits editables són a **config.js**: plantes de les cases i de les cases amb pati, nivells del terreny, percentatge de cases amb banderes, proporció d’estelades, Diada inicial, mides de quadrícula, longitud dels ponts, elements per categoria i passos de Desfés.
+
+Edita el fitxer, desa’l i recarrega amb **Ctrl+F5**. Els controls, les regles de construcció i la importació es mantenen sincronitzats. Consulta **CONFIGURACIO.md** per veure tots els camps i un exemple. Els valors inicials mantenen el comportament de la v49.
+
+Si una configuració més restrictiva impedeix recuperar la vila del navegador, s’ofereix descarregar el desament original sense modificar-lo. Restaura uns límits compatibles per continuar. El JSON de les viles continua en format 40; config.js és global per a la còpia del joc.
+
+
+## Pals de bandera — v51
+
+A **Edificis** trobaràs tres opcions noves:
+
+- **Pal amb senyera:** fons groc amb quatre barres vermelles.
+- **Pal amb estelada:** senyera amb triangle blau i estrella blanca de cinc puntes.
+- **Pal amb bandera negra:** fons negre, aspa blanca central i estrella blanca al costat de l’asta, seguint la imatge de referència.
+
+Cada pal ocupa **una cel·la** i té peu de pedra, asta metàl·lica, corda i bandera que oneja. Tria **La bandera mira cap a** per orientar la cara de la bandera al nord, sud, est o oest. El dibuix es veu també pel revers.
+
+Col·loca’l sobre terra ferma, pradera, carrer o plaça lliure. També admet terreny elevat o amb pendent, amb el peu recolzat horitzontalment. La bandera i el pal es mantenen dins de la cel·la reservada.
+
+Són elements permanents: **el botó Banderes de la Diada no els amaga**, i els percentatges de banderes de config.js només afecten les cases. Els pals comparteixen el límit d’equipaments de limits.objectsPerCategory.
+
+Pots desfer, refer o esborrar el conjunt conservant el terreny. Es desen al navegador i al **JSON format 41**, que també obre els formats **1–40** quan compleixen els límits configurats. Si tens activada la reducció de moviment al sistema, les banderes es mantenen quietes.
+
+Aquest ZIP conté el joc complet, l’editor i config.js amb totes les funcionalitats anteriors.

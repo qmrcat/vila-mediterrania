@@ -1,3 +1,4 @@
+import {createPoleFlag,renderFlagpole,POLE_FLAG_ORIGIN} from './flagpoles.js';
 import {renderServiceBuilding} from './service-buildings.js';
 import {renderCemetery} from './cemetery-geometry.js';
 import {renderWall} from './wall-geometry.js';
@@ -6,7 +7,7 @@ import {renderCivicBuilding} from './civic-geometry.js';
 import {LANDMARK_TYPES,landmarkDimensions,terrainY} from './model.js';
 
 /** Instanced playground equipment and a Mediterranean lighthouse. */
-export function renderLandmarks(world,add,unit){
+export function renderLandmarks(world,add,unit,flags=[]){
   for(const l of world.landmarks??[]){
     const {width,depth}=landmarkDimensions(l),base=terrainY(world.tiles.find(t=>t.x===l.x&&t.z===l.z));
     const x=(l.x+(width-1)/2)*unit,z=(l.z+(depth-1)/2)*unit,a=l.direction*Math.PI/2,c=Math.cos(a),s=Math.sin(a);
@@ -18,6 +19,12 @@ export function renderLandmarks(world,add,unit){
       // Vertical tilt is around Z; yaw places it in the required horizontal direction.
       part('cylinder',color,(p[0]+q[0])/2,(p[1]+q[1])/2,(p[2]+q[2])/2,r,len,r,-Math.atan2(dz,dx),0,-Math.atan2(Math.hypot(dx,dz),dy));
     };
+    if(LANDMARK_TYPES[l.type]?.flag){
+      renderFlagpole(part);
+      const flag=createPoleFlag(LANDMARK_TYPES[l.type].flag),p=POLE_FLAG_ORIGIN;
+      flag.position.set(x+c*p.u+s*p.z,base+p.y,z-s*p.u+c*p.z);flag.rotation.y=a;
+      flag.userData.landmark={...l};flags.push(flag);continue;
+    }
     if(l.type==='cemetery'){renderCemetery(l,part,unit);continue;}
     if(LANDMARK_TYPES[l.type]?.category==='monument'){renderWall(l,part,unit);continue;}
     if(['hospital','school','police','fireStation','recycling'].includes(l.type)){
