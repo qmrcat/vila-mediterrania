@@ -1,3 +1,3 @@
-Vila Mediterrània — v66
-Parlament de 4 × 4 amb porxada i balcó de banda a banda i senyera al centre. El model de 3 × 2 es conserva com a Edifici institucional.
-Versió completa amb totes les funcions anteriors. Format de vila 52, compatible amb 1–51.
+Vila Mediterrània — v67 — 2026-09-11
+Controls reorganitzats per a PC i mòbil: opcions a La meva vila, columna de càmera/historial/estadístiques, paleta lateral i eines inferiors plegables, compàs compacte al mòbil.
+Versió completa amb totes les funcions anteriors. Format de vila 52.

@@ -1,4 +1,5 @@
 import {CONFIG} from './config.js';
+import {initControlDrawers} from './control-drawers.js';
 import {TerrainStroke} from './terrain-stroke.js';
 import {SPECIAL_SHOPS} from './special-shops.js';
 import {checkBeachBar,checkLandmark,LANDMARK_TYPES} from './model.js';
@@ -96,6 +97,7 @@ function refresh(save=true){
   const houses=world.tiles.filter(t=>t.kind==='house');$('#house-count').textContent=houses.length;$('#floor-count').textContent=houses.reduce((sum,t)=>sum+floorCount(t),0);
   $('#undo').disabled=!history.past.length;$('#redo').disabled=!history.future.length;
   for(const el of $$('[data-region]'))el.setAttribute('aria-pressed',String(el.dataset.region===world.region));
+  $('#region-select').value=world.region;
   $('#coast-caption').textContent=world.region==='brava'?'Cales, pins i cases de calç':'Sorra daurada i tardes de marinada';
   $('#grid-size-status').textContent=`Quadrícula actual: ${world.gridSize} × ${world.gridSize}`;$('#expand-grid').disabled=world.gridSize===GRID_SIZES.at(-1);
   describeTerrain();previewMarket(scene.hovered);previewPatio(scene.hovered);previewChurch(scene.hovered);previewTownHall(scene.hovered);previewCustom(scene.hovered);previewBeachBar(scene.hovered);previewLandmark(scene.hovered);
@@ -259,6 +261,11 @@ function download(blob,name){const url=URL.createObjectURL(blob);const a=documen
 function exportVillage(){download(new Blob([JSON.stringify(world,null,2)],{type:'application/json'}),`vila-${world.region==='brava'?'costa-brava':'costa-daurada'}.json`);toast('Còpia de la vila preparada.');closeMenu();}
 function closeMenu(){$('#village-menu').hidden=true;$('#file-menu').setAttribute('aria-expanded','false');}
 function undo(){const previous=history.undo(world);if(previous){world=previous;refresh();toast('Canvi desfet.');}}
+function changeRegion(region){
+  if(world.region===region||!['brava','daurada'].includes(region))return;
+  scene.endTerrainStroke();history.push(world);world.region=region;selectColor(region==='brava'?0:1);refresh();
+  toast(region==='brava'?'Costa Brava: roca, calç i pins.':'Costa Daurada: sorra i colors càlids.');
+}
 function redo(){const next=history.redo(world);if(next){world=next;refresh();toast('Canvi refet.');}}
 function openDialog(selector){closeMenu();$(selector).showModal();}
 
@@ -306,20 +313,12 @@ async function init(){
   window.addEventListener('storage',e=>{if(e.key===DESIGN_KEY)refreshDesigns();});
   window.addEventListener('focus',refreshDesigns);
   initMusic();
-  // Visibility is a view setting for this session; both panels start visible.
-  $('#interface-toggle').addEventListener('click',()=>{
-    const visible=$('#construction-palette').hidden;
-    $('#construction-palette').hidden=!visible;
-    $('#construction-tools').hidden=!visible;
-    const button=$('#interface-toggle'),label=visible?'Amaga la paleta i la barra d’eines':'Mostra la paleta i la barra d’eines';
-    button.setAttribute('aria-pressed',String(visible));button.setAttribute('aria-label',label);button.title=label;
-  });
+  initControlDrawers();
   refresh(false);scene.setLight(Number($('#light').value));$('#loading').hidden=true;
   if(storageWarning)toast(storageWarning);
   for(const b of $$('[data-tool]'))b.addEventListener('click',()=>selectTool(b.dataset.tool));
-  for(const b of $$('[data-region]'))b.addEventListener('click',()=>{
-    const region=b.dataset.region;if(world.region===region)return;history.push(world);world.region=region;selectColor(region==='brava'?0:1);refresh();toast(region==='brava'?'Costa Brava: roca, calç i pins.':'Costa Daurada: sorra i colors càlids.');
-  });
+  for(const b of $$('[data-region]'))b.addEventListener('click',()=>changeRegion(b.dataset.region));
+  $('#region-select').addEventListener('change',e=>changeRegion(e.target.value));
   $('#house-action').addEventListener('change',describeHouseAction);
   $('#house-type').addEventListener('change',()=>{$('#roof-direction-only').checked=false;describeHouseAction();});
   for(const id of ['patio-position','patio-direction','patio-floors'])$('#'+id).addEventListener('change',describePatio);
@@ -371,6 +370,7 @@ async function init(){
   for(const b of $$('[data-preset]'))b.addEventListener('click',()=>{history.push(world);world=createWorld(world.region,b.dataset.preset,Number($('#new-grid-size').value));refresh();scene.home({wholeGrid:b.dataset.preset==='coast80'});$('#new-dialog').close();toast(b.dataset.preset==='coast80'?'Costa creada: terra a l’oest i mar a l’est.':'Un nou racó de mar per imaginar.');});
   document.addEventListener('keydown',e=>{
     if(e.key==='Escape'){cancelBridge();closeMenu();return;}
+    if(['Enter',' '].includes(e.key)&&e.target.closest('button,a'))return;
     if($$('dialog').some(d=>d.open)||e.target.matches('input,select,textarea'))return;
     if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?redo():undo();return;}
     if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='y'){e.preventDefault();redo();return;}

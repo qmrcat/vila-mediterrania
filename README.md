@@ -774,3 +774,15 @@ Tria l’orientació de l’entrada i prepara tota la base sobre terra ferma lli
 El model anterior de **3 × 2** continua disponible a **Edificis → Edifici institucional**, amb rètol editable per dedicar-lo a altres institucions. En recuperar una vila anterior, els parlaments petits es conserven en el mateix lloc com a edificis institucionals: mantenen la mida, l’orientació, la bandera i el rètol. No s’amplien damunt de les construccions veïnes. Per col·locar el Parlament nou, prepara 16 cel·les lliures a la mateixa alçada.
 
 Tots dos admeten les quatre orientacions, rètols editables, Desfés/Refés i desament automàtic. El **format 52** importa els formats **1–51**.
+
+
+## Controls adaptats a PC i mòbil — v67
+
+- **La meva vila** inclou la regió (Costa Brava o Costa Daurada), la quadrícula i les banderes de la Diada. Al mòbil s’obre amb la icona de poble i desapareix el selector de regió de la capçalera.
+- A la dreta, els controls de càmera, Desfés/Refés i les estadístiques formen una columna, en aquest ordre, sota el compàs. Si la pantalla és molt baixa, la columna es pot desplaçar verticalment.
+- Les **opcions de construcció** estan incrustades al marge esquerre. Amaga-les amb la capçalera o lliscant-hi cap a l’esquerra; recupera-les amb la pestanya Opcions o lliscant-hi cap a la dreta.
+- Les **eines** estan incrustades al marge inferior. Amaga-les amb la capçalera o lliscant-hi cap avall; recupera-les amb la pestanya Eines o lliscant-hi cap amunt. La fila d’eines es desplaça horitzontalment quan no hi caben totes.
+- Els panells es controlen per separat i es recorda la visibilitat en aquest navegador. La primera vegada, al mòbil les opcions comencen plegades per deixar espai al mapa. El botó al costat de la música continua mostrant o amagant tots dos panells.
+- Al mòbil, el compàs és més petit i mostra **N, S, E i O**, que continuen seguint el gir del mapa.
+
+Els gestos per obrir o tancar panells es fan sobre les seves capçaleres i pestanyes; arrossegar el mapa continua movent la càmera. Es manté el format de vila 52.
