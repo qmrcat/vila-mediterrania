@@ -1,4 +1,6 @@
 /* Docked construction drawers and a single vertical camera/history rail. */
+#world[data-navigation="true"]{cursor:grab}
+#world[data-navigation="true"]:active{cursor:grabbing}
 #game{min-height:0;--ui-top:90px;--dock-space:116px;--edge:max(12px,env(safe-area-inset-right));--left-edge:max(12px,env(safe-area-inset-left))}
 #game[data-tools-open="false"]{--dock-space:52px}
 #game .topbar{z-index:5;top:max(12px,env(safe-area-inset-top));left:var(--left-edge);right:var(--edge)}

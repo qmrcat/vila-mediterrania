@@ -4,6 +4,8 @@ import {chooseFestiveFlags,createFestiveFlag,waveFestiveFlag} from './festive-fl
 import {createBarberStripeGeometry} from './barber-pole.js';
 import {SPECIAL_SHOPS,renderSpecialShop} from './special-shops.js';
 import {renderRockyTerrain,ROCKY_SURFACE,ROCKY_SOIL} from './rocky-terrain.js';
+import {treeBedExclusion,renderTreeBed} from './tree-planters.js';
+import {treeGroundY} from './model.js';
 import {renderMeadowFlowers,MEADOW_GREEN} from './meadow.js';
 import {createStoneArchGeometry,renderStoneBridge} from './stone-bridge.js';
 import {createWallGateGeometry} from './wall-geometry.js';
@@ -91,7 +93,7 @@ export function createPickingGeometry(world,pickingMaterial){
       for(let level=0;level<t.floors;level++)push(t,level,base+level*FLOOR,FLOOR);
       push(t,t.floors-1,base+t.floors*FLOOR,t.roof==='tile'?.46:t.roof==='shed'?.60:.56);
     }else {
-      const treeBase=isTree(t.kind)&&t.kind!=='vine'?terrainSurfaceY(t):base;
+      const treeBase=isTree(t.kind)?treeGroundY(t):base;
       push(t,null,0,treeBase+(TREE_SPECIES.find(s=>s.id===t.kind)?.height??(t.kind==='stairs'?.44:.05)));
       if(hasSlope(t)&&isFirmGround(t.kind))transforms.at(-1).premultiply(slopeShearMatrix(t,UNIT));
     }
@@ -599,30 +601,31 @@ export function createVillageGeometry(world){
     const x=t.x*UNIT,z=t.z*UNIT,y=terrainY(t),n=randomAt(t.x,t.z);
     const neighbours=DIRECTIONS.map(([dx,dz])=>map.get(key(t.x+dx,t.z+dz)));
     const coast=neighbours.some(t=>!t);
-    const sand=!isBrava&&coast&&t.kind==='land'&&!hasSlope(t);
-    const low=terrainBaseY(t),sloping=hasSlope(t),soil=t.kind==='rocky'?ROCKY_SOIL:isBrava?'#a9a18a':'#c9b386';
+    const groundKind=isTree(t.kind)?t.treeGround??'land':t.kind,ground={...t,kind:groundKind};
+    const sand=!isBrava&&coast&&groundKind==='land'&&!hasSlope(t);
+    const low=terrainBaseY(t),sloping=hasSlope(t),soil=groundKind==='rocky'?ROCKY_SOIL:isBrava?'#a9a18a':'#c9b386';
     const shear=sloping?slopeShearMatrix(t,UNIT):null;
     const surfaceBox=(color,...args)=>{box(color,...args);if(shear)batches.get(`box:${color}`).matrices.at(-1).premultiply(shear);};
     box(soil,x,low/2-.09,z,UNIT+.008,low+.18,UNIT+.008);
     if(sloping){
       add('ramp',soil,x,low,z,UNIT,.42,UNIT,t.slopeDirection*Math.PI/2);
-      surfaceBox(t.kind==='rocky'?ROCKY_SURFACE:t.kind==='meadow'?MEADOW_GREEN:isTree(t.kind)?'#b7b38e':'#d6cfb4',x,y+.002,z,UNIT,.014,UNIT);
-    }else box(t.kind==='rocky'?ROCKY_SURFACE:t.kind==='meadow'?MEADOW_GREEN:sand?'#ead39b':(isTree(t.kind)?'#b7b38e':'#d6cfb4'),x,y-.035,z,UNIT+.01,.09,UNIT+.01);
-    const landmark=landmarkAt(world,t.x,t.z),flagPole=isFlagpole(landmark)?landmark:null,exclude=flagPole?poleExclusion(flagPole,UNIT):null;
+      surfaceBox(groundKind==='rocky'?ROCKY_SURFACE:groundKind==='meadow'?MEADOW_GREEN:'#d6cfb4',x,y+.002,z,UNIT,.014,UNIT);
+    }else box(groundKind==='rocky'?ROCKY_SURFACE:groundKind==='meadow'?MEADOW_GREEN:sand?'#ead39b':'#d6cfb4',x,y-.035,z,UNIT+.01,.09,UNIT+.01);
+    const landmark=landmarkAt(world,t.x,t.z),flagPole=isFlagpole(landmark)?landmark:null,exclude=flagPole?poleExclusion(flagPole,UNIT):t.treeGround?treeBedExclusion(t,UNIT):null;
     const reserved=(landmark&&!flagPole)||customAt(world,t.x,t.z)||townHallAt(world,t.x,t.z)||churchAt(world,t.x,t.z)||marketAt(world,t.x,t.z)||patios.has(key(t.x,t.z));
     // Retaining foundations keep architecture and terrace furniture upright.
-    if(sloping&&(reserved||['house','plaza','stairs','vine'].includes(t.kind)||spaces.has(key(t.x,t.z)))){
+    if(sloping&&(reserved||['house','plaza','stairs'].includes(t.kind)||t.kind==='vine'&&!t.treeGround||spaces.has(key(t.x,t.z)))){
       const width=reserved?UNIT:t.kind==='house'?1.20:1.28;
       box('#b2a58c',x,low+.21,z,width,.42,width);
     }
     if(t.kind==='meadow'&&sloping&&(reserved||spaces.has(key(t.x,t.z))))box(MEADOW_GREEN,x,y+.009,z,UNIT,.018,UNIT);
     if(t.kind==='rocky'&&sloping&&(reserved||spaces.has(key(t.x,t.z))))box(ROCKY_SURFACE,x,y+.009,z,UNIT,.018,UNIT);
     if(reserved)continue;
-    if(t.kind==='rocky'&&!spaces.has(key(t.x,t.z))&&!bridgeAt(world,t.x,t.z))renderRockyTerrain(t,add,UNIT,exclude);
-    if(t.kind==='meadow'&&!spaces.has(key(t.x,t.z))&&!bridgeAt(world,t.x,t.z))renderMeadowFlowers(t,add,UNIT,exclude);
+    if(groundKind==='rocky'&&!spaces.has(key(t.x,t.z))&&!bridgeAt(world,t.x,t.z))renderRockyTerrain(ground,add,UNIT,exclude);
+    if(groundKind==='meadow'&&!spaces.has(key(t.x,t.z))&&!bridgeAt(world,t.x,t.z))renderMeadowFlowers(ground,add,UNIT,exclude);
     if(coast&&!sloping)for(let d=0;d<4;d++)if(!neighbours[d]){
       const [dx,dz]=DIRECTIONS[d];
-      if(isBrava||t.kind==='rocky'){
+      if(isBrava||groundKind==='rocky'){
         for(let j=0;j<3;j++){
           const k=randomAt(t.x+j,t.z,d+2),shift=(j-1)*.42;
           const rx=x+dx*.63+dz*shift,rz=z+dz*.63-dx*shift;
@@ -637,7 +640,7 @@ export function createVillageGeometry(world){
         face('box','#f7efd8',t,d,0,y+.30,.61,1.29,.05,.15);
       }
     }
-    if(isRoad(t.kind))renderRoadSurface(t,surfaceBox,UNIT);
+    if(isRoad(groundKind))renderRoadSurface(ground,surfaceBox,UNIT);
     // A subtle paving pattern joins neighbouring squares into streets and plazas.
     if(t.kind==='plaza'||t.kind==='stairs'){
       box('#e6dcc4',x,y+.014,z,1.27,.035,1.27);
@@ -656,7 +659,8 @@ export function createVillageGeometry(world){
     if(t.kind==='stairs'){
       for(let step=0;step<6;step++)face('box','#f2e7ce',t,t.rotation,0,y+.045+step*.035,(step-2.5)*.195,1.15,.08+step*.07,.20);
     }
-    const treeY=t.kind==='vine'?y:terrainSurfaceY(t);
+    if(isTree(t.kind))renderTreeBed(t,surfaceBox,add,UNIT);
+    const treeY=treeGroundY(t);
     if(t.kind==='pine')pine(x,treeY,z,n);
     if(t.kind==='palm')palm(x,treeY,z,n);
     if(t.kind==='oak')oak(x,treeY,z,n);
@@ -1174,6 +1178,7 @@ export class VillageScene{
   }
   setCursor(x,z,erase=false,level=null){
     const limit=worldLimit(this.world);x=THREE.MathUtils.clamp(x,-limit,limit);z=THREE.MathUtils.clamp(z,-limit,limit);
+    if(this.navigationOnly){this.hovered={x,z,level:null};this.cursor.visible=false;return;}
     this.eraseCursor=erase;
     const t=this.tileMap?.get(key(x,z));
     this.cursor.matrixAutoUpdate=true;this.cursor.scale.set(1,1,1);
@@ -1264,7 +1269,7 @@ export class VillageScene{
       this.pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
       if(this.pointers.size===1){
         gesture={x:e.clientX,y:e.clientY,startX:e.clientX,startY:e.clientY,moved:false,button:e.button,multi:false};
-        if(e.button===0&&e.altKey&&!e.ctrlKey&&!e.metaKey&&e.pointerType!=='touch'&&this.onTerrainStrokeStart()){
+        if(!this.navigationOnly&&e.button===0&&e.altKey&&!e.ctrlKey&&!e.metaKey&&e.pointerType!=='touch'&&this.onTerrainStrokeStart()){
           e.preventDefault();gesture.paint=true;gesture.paintGesture=true;gesture.moved=true;paintAt(e);
         }
       }else {this.endTerrainStroke();gesture.multi=true;gesture.moved=true;gesture.pinch=pinchInfo();}
@@ -1294,7 +1299,7 @@ export class VillageScene{
     const finish=(e,cancelled=false)=>{
       if(!this.pointers.has(e.pointerId))return;
       if(gesture?.paint){if(!cancelled&&e.altKey)paintAt(e);this.endTerrainStroke();}
-      if(!cancelled&&gesture&&!gesture.moved&&!gesture.multi&&gesture.button!==1){const p=this.pick(e.clientX,e.clientY);if(p)this.onClick(p,gesture.button===2);}
+      if(!cancelled&&!this.navigationOnly&&gesture&&!gesture.moved&&!gesture.multi&&gesture.button!==1){const p=this.pick(e.clientX,e.clientY);if(p)this.onClick(p,gesture.button===2);}
       this.pointers.delete(e.pointerId);if(!this.pointers.size)gesture=null;
     };
     canvas.addEventListener('pointerup',e=>finish(e),{signal});canvas.addEventListener('pointercancel',e=>finish(e,true),{signal});canvas.addEventListener('lostpointercapture',e=>finish(e,true),{signal});

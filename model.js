@@ -33,6 +33,8 @@ export const TREE_SPECIES = [
   {id:'cypress',name:'Xiprer',scientific:'Cupressus sempervirens',height:2.85,description:'Silueta alta i estreta, acabada en punta, amb fullatge verd fosc.'},
 ];
 export const isTree = kind => TREE_SPECIES.some(s=>s.id===kind);
+export const TREE_GROUNDS=['meadow','rocky','cobble','dirt','asphalt'];
+export const treeGroundY=t=>(t.kind==='vine'?terrainY(t):terrainSurfaceY(t))+(isRoad(t.treeGround)?.043:0);
 export const COLORS = [
   {name:'Calç',hex:'#f5eee0'}, {name:'Sorra',hex:'#e7ca92'},
   {name:'Terracota',hex:'#db947b'}, {name:'Blau marí',hex:'#84adb6'},
@@ -55,7 +57,7 @@ export const DIRECTIONS = [[0,1],[1,0],[0,-1],[-1,0]];
 export const floorCount = tile => tile.levels.filter(Boolean).length;
 export function createWorld(region='brava',preset='village',gridSize=CONFIG.grid.defaultSize) {
   if(!GRID_SIZES.includes(gridSize))throw new Error('Mida de quadrícula no vàlida.');
-  const world={version:52,diada:CONFIG.flags.enabledByDefault,gridSize,region,tiles:[],bridges:[],markets:[],churches:[],townHalls:[],customBuildings:[],landmarks:[]};
+  const world={version:53,diada:CONFIG.flags.enabledByDefault,gridSize,region,tiles:[],bridges:[],markets:[],churches:[],townHalls:[],customBuildings:[],landmarks:[]};
   if(preset==='empty') return world;
   if(preset==='coast80'){
     const limit=worldLimit(world),target=Math.round(gridSize*gridSize*.80);
@@ -102,7 +104,7 @@ export function validateWorld(input) {
   const gridSize=input?.version<13?33:input?.gridSize;
   if(!GRID_SIZES.includes(gridSize))throw new Error('Mida de quadrícula no vàlida.');
   const limit=(gridSize-1)/2;
-  if(!input||![1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52].includes(input.version)||!['brava','daurada'].includes(input.region)||!Array.isArray(input.tiles)||input.tiles.length>gridSize**2) throw new Error('Aquest fitxer no és una vila compatible (formats 1–52).');
+  if(!input||![1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53].includes(input.version)||!['brava','daurada'].includes(input.region)||!Array.isArray(input.tiles)||input.tiles.length>gridSize**2) throw new Error('Aquest fitxer no és una vila compatible (formats 1–53).');
   const diada=input.version<40?false:input.diada;
   if(typeof diada!=='boolean')throw new Error('L’opció de banderes de la Diada no és vàlida.');
   const seen=new Set();
@@ -113,6 +115,7 @@ export function validateWorld(input) {
     const k=key(t.x,t.z);if(seen.has(k))throw new Error('El fitxer conté caselles repetides.');seen.add(k);
     if(t.kind==='beach'&&t.elevation!==0)throw new Error('Les platges han d’estar al nivell de la costa.');
     const slopeDirection=input.version<29?undefined:t.slopeDirection;
+    if(t.treeGround!==undefined&&(!isTree(t.kind)||!TREE_GROUNDS.includes(t.treeGround)))throw new Error('El terreny sota l’arbre no és vàlid.');
     if(slopeDirection!==undefined&&(!Number.isInteger(slopeDirection)||slopeDirection<0||slopeDirection>3||t.elevation>=MAX_TERRAIN_LEVEL||t.kind==='beach'))throw new Error('El pendent ha de pujar un nivell, tenir una orientació vàlida i estar sobre terra ferma.');
     const roofDirection=input.version<6?0:t.roofDirection;
     if(!Number.isInteger(roofDirection)||roofDirection<0||roofDirection>3)throw new Error('L’orientació de la teulada no és vàlida.');
@@ -127,9 +130,9 @@ export function validateWorld(input) {
     const beachBarData=beachBar===undefined?undefined:normalizeBeachBar(beachBar);
     const patio=input.version<14?null:t.patio;
     if(patio!=null&&(t.kind!=='house'||t.floors>MAX_PATIO_FLOORS||!['front','back'].includes(patio.position)||!Number.isInteger(patio.direction)||patio.direction<0||patio.direction>3))throw new Error(`La casa amb pati ha de tenir d’1 a ${MAX_PATIO_FLOORS} plantes i una posició i orientació vàlides.`);
-    return {...(t.floorColors?{floorColors:[...t.floorColors]}:{}),...(upperBusinesses.length?{upperBusinesses}:{}),...(slopeDirection!==undefined?{slopeDirection}:{}),...(beachBarData?{beachBar:beachBarData}:{}),...(patio!=null?{patio:{position:patio.position,direction:patio.direction}}:{}),business:business===null?null:{type:business.type,direction:business.direction,terrace:business.terrace,...(business.name!==undefined&&normalizeBusinessName(business.name)?{name:normalizeBusinessName(business.name)}:{})},x:t.x,z:t.z,elevation:t.elevation,kind:t.kind,floors:t.floors,levels:[...levels],color:t.color,roof:t.roof,roofDirection,rotation:t.rotation};
+    return {...(t.treeGround?{treeGround:t.treeGround}:{}),...(t.floorColors?{floorColors:[...t.floorColors]}:{}),...(upperBusinesses.length?{upperBusinesses}:{}),...(slopeDirection!==undefined?{slopeDirection}:{}),...(beachBarData?{beachBar:beachBarData}:{}),...(patio!=null?{patio:{position:patio.position,direction:patio.direction}}:{}),business:business===null?null:{type:business.type,direction:business.direction,terrace:business.terrace,...(business.name!==undefined&&normalizeBusinessName(business.name)?{name:normalizeBusinessName(business.name)}:{})},x:t.x,z:t.z,elevation:t.elevation,kind:t.kind,floors:t.floors,levels:[...levels],color:t.color,roof:t.roof,roofDirection,rotation:t.rotation};
   });
-  const world={version:52,diada,gridSize,region:input.region,tiles,bridges:[],markets:[],churches:[],townHalls:[],customBuildings:[],landmarks:[]};
+  const world={version:53,diada,gridSize,region:input.region,tiles,bridges:[],markets:[],churches:[],townHalls:[],customBuildings:[],landmarks:[]};
   const bridges=input.version<7?[]:input.bridges;
   if(!Array.isArray(bridges)||bridges.length>CONFIG.limits.objectsPerCategory)throw new Error('La llista de ponts no és vàlida.');
   for(const b of bridges){
@@ -673,7 +676,7 @@ export function editWorld(world,x,z,tool,{buildingName='',landmarkDirection=0,ci
       t.floors=t.levels.length;pruneUpperBusinesses(t);if(t.floorColors)t.floorColors.length=t.floors;
       if(!t.floors){delete t.floorColors;t.kind='land';delete t.patio;}
     }
-    else if(t.kind!=='land'){t.kind='land';t.floors=0;t.levels=[];}
+    else if(t.kind!=='land'){t.kind=isTree(t.kind)?t.treeGround??'land':'land';delete t.treeGround;t.floors=0;t.levels=[];}
     else if(hasSlope(t))delete t.slopeDirection;
     else if(t.elevation>0)t.elevation--;
     else world.tiles.splice(world.tiles.indexOf(t),1);
@@ -690,13 +693,14 @@ export function editWorld(world,x,z,tool,{buildingName='',landmarkDirection=0,ci
     if(slopeDirection===null)delete t.slopeDirection;else t.slopeDirection=slopeDirection;
     if(t.kind==='beach')t.kind='land';
     if(isFirmGround(t.kind)&&slopeFinish!=='keep')t.kind=slopeFinish;
+    if(isTree(t.kind)&&slopeFinish!=='keep'){if(slopeFinish==='land')delete t.treeGround;else t.treeGround=slopeFinish;}
     return {changed:JSON.stringify(t)!==before,message:slopeDirection===null?'Terreny aplanat al nivell inferior.':'Pendent aplicat. Pots pavimentar-hi, plantar-hi o construir-hi.'};
   }
   if(!['house','land','meadow','rocky','beach','plaza','stairs'].includes(tool)&&!isTree(tool)&&!isRoad(tool))return {changed:false};
   if(!t){t={x,z,elevation:0,kind:'land',floors:0,levels:[],color,roof,roofDirection:0,rotation:0,business:null};world.tiles.push(t);if(tool==='land')return {changed:true};}
   if(tool==='beach'){
     if(t.kind==='beach')return {changed:false};
-    delete t.floorColors;t.kind='beach';delete t.slopeDirection;delete t.patio;t.business=null;delete t.upperBusinesses;t.elevation=0;t.floors=0;t.levels=[];return {changed:true};
+    delete t.treeGround;delete t.floorColors;t.kind='beach';delete t.slopeDirection;delete t.patio;t.business=null;delete t.upperBusinesses;t.elevation=0;t.floors=0;t.levels=[];return {changed:true};
   }
   if(tool==='land') {
     if(t.patio)return {changed:false,message:'La casa i el pati han de mantenir la mateixa alçada de terreny. Retira el conjunt abans de modificar-ne la base.'};
@@ -715,13 +719,15 @@ export function editWorld(world,x,z,tool,{buildingName='',landmarkDirection=0,ci
     }
     if(t.kind!=='house')t.levels=[];
     if(t.floorColors)t.floorColors.push(color);else if(t.floors&&t.color!==color)t.floorColors=[...Array(t.floors).fill(t.color),color];
-    t.levels.push(true);t.floors=t.levels.length;t.kind='house';t.color=color;t.roof=roof;t.roofDirection=roofDirection;
+    delete t.treeGround;t.levels.push(true);t.floors=t.levels.length;t.kind='house';t.color=color;t.roof=roof;t.roofDirection=roofDirection;
   } else if(tool==='stairs') {
-    delete t.floorColors;delete t.patio;
+    delete t.treeGround;delete t.floorColors;delete t.patio;
     t.rotation=t.kind==='stairs'?(t.rotation+1)%4:0;t.kind='stairs';t.business=null;delete t.upperBusinesses;t.floors=0;t.levels=[];
   } else {
     delete t.patio;
     if(t.kind===tool)return {changed:false};
+    const ground=isTree(t.kind)?t.treeGround:t.kind;
+    if(isTree(tool)&&TREE_GROUNDS.includes(ground))t.treeGround=ground;else delete t.treeGround;
     delete t.floorColors;t.kind=tool;t.business=null;delete t.upperBusinesses;t.floors=0;t.levels=[];
   }
   return {changed:true};

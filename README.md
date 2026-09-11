@@ -28,7 +28,7 @@ No cal executar `npm install`, compilar ni configurar Vite. El joc no utilitza c
 
 Cada canvi es desa al `localStorage` d’aquest navegador i d’aquest origen web. El desament no se sincronitza entre dispositius i pot desaparèixer si es netegen les dades del navegador. El servidor inclòs utilitza el port 3000 o el primer disponible a partir d’aquest: conserva la mateixa adreça per recuperar el desament local.
 
-A **La meva vila → Desa una còpia (.json)** pots exportar la vila. Obre-la amb **Obre una vila…**. El format 52 guarda els edificis del jugador amb els seus dissenys, els ajuntaments, les esglésies, les cases amb pati, la mida de la quadrícula, els mercats, els negocis de planta baixa, els ponts, la costa, totes les construccions, els buits entre pisos cada espècie plantada i les caselles de platja. S’importen també fitxers dels formats 1–51, convertits automàticament; els pins existents continuen sent pins. El desament anterior es conserva separadament al navegador; la càmera, la llum i l’historial de desfer no es guarden al fitxer.
+A **La meva vila → Desa una còpia (.json)** pots exportar la vila. Obre-la amb **Obre una vila…**. El format 53 guarda els edificis del jugador amb els seus dissenys, els ajuntaments, les esglésies, les cases amb pati, la mida de la quadrícula, els mercats, els negocis de planta baixa, els ponts, la costa, totes les construccions, els buits entre pisos cada espècie plantada i les caselles de platja. S’importen també fitxers dels formats 1–52, convertits automàticament; els pins existents continuen sent pins. El desament anterior es conserva separadament al navegador; la càmera, la llum i l’historial de desfer no es guarden al fitxer.
 
 **Fes una fotografia** exporta una imatge PNG de la vista 3D sense els controls.
 
@@ -786,3 +786,25 @@ Tots dos admeten les quatre orientacions, rètols editables, Desfés/Refés i de
 - Al mòbil, el compàs és més petit i mostra **N, S, E i O**, que continuen seguint el gir del mapa.
 
 Els gestos per obrir o tancar panells es fan sobre les seves capçaleres i pestanyes; arrossegar el mapa continua movent la càmera. Es manté el format de vila 52.
+
+
+## Arbres sobre el terreny existent — v68
+
+Plantar un arbre conserva la **pradera**, el **terreny rocós** o el **carrer empedrat, de terra o asfaltat** de la casella. Un petit parterre de terra amb vorada de pedra envolta el tronc. Sobre **terra ferma** no es posa parterre. Funciona amb totes les espècies, inclosa la parra, que té el parterre al peu de la tija.
+
+El terreny i la vorada segueixen els pendents. En terrenys inclinats, la pèrgola de la parra té peus individuals perquè es continuï veient el paviment. Canviar d’espècie conserva l’acabat; esborrar l’arbre retira també el parterre i recupera el terreny de sota, a la mateixa alçada.
+
+Es conserva amb Desfés/Refés, desament automàtic i JSON. Els arbres de viles anteriors sense informació del terreny continuen sobre terra ferma. El **format 53** importa els formats **1–52**.
+
+
+## Navegar sense construir — v69
+
+La primera opció de les eines és **Navega**, amb una icona de fletxa i la drecera **N**. Mentre està seleccionada, els clics esquerre i dret, els tocs al mòbil i les tecles Retorn, Espai, Supr i Retrocés no insereixen ni eliminen elements. El marc de construcció queda ocult.
+
+Es mantenen els gestos de càmera: arrossegar per girar, Majúscules + arrossegar per desplaçar, roda per apropar i pinça amb dos dits al mòbil. Tria una altra eina per tornar a construir o esborrar. Es manté el format de vila 53.
+
+**Direcció, producció i disseny:** Quim Miralles
+
+**Realització:** OpenAI Astra
+
+**Música:** Suno
