@@ -1,3 +1,6 @@
+/**
+ * Main application script for Vila Mediterrània.
+ */
 import {captureClone,pasteClone,cloneBounds,clonePlacement,captureAppearance,pasteAppearance,houseToDesign} from './cloning.js';
 import {CONFIG} from './config.js';
 import {initControlDrawers} from './control-drawers.js';
