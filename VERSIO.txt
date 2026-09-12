@@ -1,3 +1,4 @@
-Vila Mediterrània — v69
-Navega (N): primera eina amb fletxa per moure la vista sense inserir ni esborrar elements.
-Versió completa amb totes les funcions anteriors. Format de vila 53.
+Vila Mediterrània v72 · Ordre de les eines
+Joc complet amb totes les funcions de la v71.
+Navega, Terreny, Casa, Edificis, Monuments, Arbres, Plaça, Escales, Ponts, Els meus edificis, Esborra.
+Format de vila: 53.

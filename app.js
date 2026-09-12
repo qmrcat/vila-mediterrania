@@ -1,5 +1,6 @@
 import {CONFIG} from './config.js';
 import {initControlDrawers} from './control-drawers.js';
+import {initVersionNotice} from './version-notice.js';
 import {TerrainStroke} from './terrain-stroke.js';
 import {SPECIAL_SHOPS} from './special-shops.js';
 import {checkBeachBar,checkLandmark,LANDMARK_TYPES} from './model.js';
@@ -20,7 +21,7 @@ const BUILDING_TOOLS=new Map([
 const MONUMENT_TOOLS=new Map(Object.entries(LANDMARK_TYPES).filter(([,definition])=>definition.category==='monument').map(([id,definition])=>[id,definition.name]));
 const LEGACY_STORAGE_KEYS=['vila-mediterrania:v52','vila-mediterrania:v51','vila-mediterrania:v50','vila-mediterrania:v49','vila-mediterrania:v48','vila-mediterrania:v47','vila-mediterrania:v46','vila-mediterrania:v45','vila-mediterrania:v44','vila-mediterrania:v43','vila-mediterrania:v42','vila-mediterrania:v41','vila-mediterrania:v40','vila-mediterrania:v39','vila-mediterrania:v38','vila-mediterrania:v37','vila-mediterrania:v36','vila-mediterrania:v35','vila-mediterrania:v34','vila-mediterrania:v33','vila-mediterrania:v32','vila-mediterrania:v31','vila-mediterrania:v30','vila-mediterrania:v29','vila-mediterrania:v28','vila-mediterrania:v27','vila-mediterrania:v26','vila-mediterrania:v25','vila-mediterrania:v24','vila-mediterrania:v23','vila-mediterrania:v22','vila-mediterrania:v21','vila-mediterrania:v20','vila-mediterrania:v19','vila-mediterrania:v18','vila-mediterrania:v17','vila-mediterrania:v16','vila-mediterrania:v15','vila-mediterrania:v14','vila-mediterrania:v13','vila-mediterrania:v12','vila-mediterrania:v11','vila-mediterrania:v10','vila-mediterrania:v9','vila-mediterrania:v8','vila-mediterrania:v7','vila-mediterrania:v6','vila-mediterrania:v5','vila-mediterrania:v4','vila-mediterrania:v3','vila-mediterrania:v2','vila-mediterrania:v1'];
 let bridgeStart=null,designs=[];
-let terrainStroke=null;
+let terrainStroke=null,controlDrawers;
 let world,scene,tool='house',treeSpecies='pine',terrainType='land',color=0,roof='tile',roofDirection=0,keyboardCell={x:0,z:0},toastTimer;
 const history=new History();
 if(['localhost','127.0.0.1','[::1]'].includes(location.hostname))$('#download-code').hidden=true;
@@ -87,8 +88,8 @@ for(const el of $$('[data-icon]'))el.innerHTML=`<svg viewBox="0 0 24 24" aria-hi
 function toast(text){clearTimeout(toastTimer);$('#toast').textContent=text;$('#toast').classList.add('visible');toastTimer=setTimeout(()=>$('#toast').classList.remove('visible'),3300);}
 function failure(message){$('#loading').hidden=true;$('#failure').hidden=false;$('#failure-message').textContent=message;}
 function persist(){
-  try{localStorage.setItem(STORAGE_KEY,JSON.stringify(world));$('#save-status').textContent='Vila desada en aquest navegador.';}
-  catch{$('#save-status').textContent='No s’ha pogut desar al navegador. Exporta una còpia .json per conservar la vila.';toast('No s’ha pogut desar. Utilitza «Desa una còpia».');}
+  try{localStorage.setItem(STORAGE_KEY,JSON.stringify(world));$('#save-status').textContent='Vila desada en aquest navegador.';return true;}
+  catch{$('#save-status').textContent='No s’ha pogut desar al navegador. Exporta una còpia .json per conservar la vila.';toast('No s’ha pogut desar. Utilitza «Desa una còpia».');return false;}
 }
 function refresh(save=true){
   cancelBridge();
@@ -224,6 +225,8 @@ function selectTool(next){
   describeChurch();
   describeMarket();
   describeHouseAction();
+  // Open only when the selected tool has its own option sections.
+  if($('#construction-palette').hidden&&$('#construction-palette > [id$="-options"]:not([hidden])'))controlDrawers?.set('palette',true);
   if(scene){scene.eraseCursor=tool==='erase';if(scene.hovered)scene.setCursor(scene.hovered.x,scene.hovered.z,scene.eraseCursor,scene.hovered.level);}
 }
 function selectColor(index){color=index;$('#color-name').textContent=COLORS[index].name;for(const b of $$('.swatch'))b.setAttribute('aria-pressed',String(Number(b.dataset.color)===index));}
@@ -317,7 +320,8 @@ async function init(){
   window.addEventListener('storage',e=>{if(e.key===DESIGN_KEY)refreshDesigns();});
   window.addEventListener('focus',refreshDesigns);
   initMusic();
-  initControlDrawers();
+  controlDrawers=initControlDrawers();
+  initVersionNotice({currentVersion:Number($('meta[name="game-version"]').content),beforeReload:()=>{scene.endTerrainStroke();return persist();}});
   refresh(false);scene.setLight(Number($('#light').value));$('#loading').hidden=true;
   if(storageWarning)toast(storageWarning);
   for(const b of $$('[data-tool]'))b.addEventListener('click',()=>selectTool(b.dataset.tool));

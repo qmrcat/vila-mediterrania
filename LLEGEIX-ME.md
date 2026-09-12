@@ -802,3 +802,21 @@ Es conserva amb Desfés/Refés, desament automàtic i JSON. Els arbres de viles 
 La primera opció de les eines és **Navega**, amb una icona de fletxa i la drecera **N**. Mentre està seleccionada, els clics esquerre i dret, els tocs al mòbil i les tecles Retorn, Espai, Supr i Retrocés no insereixen ni eliminen elements. El marc de construcció queda ocult.
 
 Es mantenen els gestos de càmera: arrossegar per girar, Majúscules + arrossegar per desplaçar, roda per apropar i pinça amb dos dits al mòbil. Tria una altra eina per tornar a construir o esborrar. Es manté el format de vila 53.
+
+## v70 · Obertura automàtica de les opcions
+
+Seleccionar una eina amb opcions obre el panell esquerre si està amagat, tant al PC com al mòbil i també amb les dreceres de teclat. Tornar a prémer la mateixa eina també el recupera. Navega, Plaça, Escales i Esborra no canvien la visibilitat del panell. Es conserven totes les funcions de la v69 i el format de vila 53.
+
+## v71 · Llum del dia i avís de noves versions
+
+«Llum del dia» és ara a «La meva vila», tant al PC com al mòbil, independentment dels panells de construcció.
+
+El joc comprova la versió en obrir-lo, cada minut mentre és visible i en tornar a la pestanya (amb un mínim de 30 segons entre comprovacions). Si hi ha una versió superior al mateix servidor, mostra «Actualitza ara» i «Més tard». L’actualització desa primer la vila i recarrega la pàgina; si no pot desar-la, s’atura i demana exportar una còpia JSON. «Més tard» amaga l’avís per a aquella versió durant la sessió, però manté l’opció d’actualitzar a «La meva vila». No hi ha recàrregues automàtiques. Sense connexió, el joc continua funcionant.
+
+Cal carregar aquesta versió una primera vegada per rebre els avisos futurs. Una còpia local comprova el seu servidor local: només detecta novetats quan s’hi substitueixen els fitxers; no consulta la publicació d’Internet.
+
+Per publicar una actualització, incrementa el número de `version.json` i el valor de la metaetiqueta `game-version` a `index.html` al mateix número, i actualitza el paràmetre `v` dels recursos d’entrada. Publica tots els fitxers conjuntament. `_headers` demana revalidar els recursos al servidor Sites; el servidor local ja ho fa. El format de vila continua sent el 53 i es conserven totes les funcions de la v70.
+
+## v72 · Ordre de les eines
+
+Navega, Terreny, Casa, Edificis, Monuments, Arbres, Plaça, Escales, Ponts, Els meus edificis i Esborra. Les dreceres de teclat es mantenen. Inclou totes les funcions de la v71; format de vila 53.
