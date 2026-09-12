@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vila Mediterrània, en resum</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=Karla:ital,wght@0,400..700;1,400&display=swap">
+<style>
+  :root{
+    --ground:#f6f1e3; --surface:#fffdf6; --ink:#1e3a40; --muted:#5f7370;
+    --sea:#1c565b; --sea-soft:#84adb6; --terra:#c06a4d; --sand:#e2c68f; --olive:#93a87f;
+    --line:rgba(30,58,64,.16); --chip:rgba(28,86,91,.08);
+    --display:"Fraunces",Georgia,serif; --body:"Karla","Segoe UI",system-ui,sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ground:#0e2226; --surface:#153338; --ink:#ece3cd; --muted:#a3b8b1;
+      --sea:#8fc6cb; --sea-soft:#4e7d84; --terra:#e09a7d; --sand:#d8bc85; --olive:#a4b892;
+      --line:rgba(236,227,205,.18); --chip:rgba(143,198,203,.12);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#0e2226; --surface:#153338; --ink:#ece3cd; --muted:#a3b8b1;
+    --sea:#8fc6cb; --sea-soft:#4e7d84; --terra:#e09a7d; --sand:#d8bc85; --olive:#a4b892;
+    --line:rgba(236,227,205,.18); --chip:rgba(143,198,203,.12);
+  }
+  *{box-sizing:border-box}
+  body{background:var(--ground); color:var(--ink); font-family:var(--body); font-size:16.5px; line-height:1.6; margin:0; padding:0 20px 64px;}
+  .page{max-width:760px; margin:0 auto;}
+  header.hero{padding-block:44px 0;}
+  .eyebrow{font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:var(--terra); font-weight:700;}
+  h1{font-family:var(--display); font-weight:600; font-size:clamp(38px,7vw,58px); line-height:1.04; margin:.25em 0 .2em; text-wrap:balance;}
+  .tagline{font-family:var(--display); font-style:italic; font-size:clamp(18px,3vw,22px); color:var(--sea); margin:0 0 24px;}
+  .coast{display:block; width:100%; height:auto; margin:8px 0 6px;}
+  .facts{display:flex; flex-wrap:wrap; gap:10px 26px; border-top:1px solid var(--line); border-bottom:1px solid var(--line); padding:14px 2px; margin:18px 0 8px; font-size:14.5px;}
+  .facts b{font-family:var(--display); font-weight:600; font-size:19px; color:var(--sea); display:block; font-variant-numeric:tabular-nums;}
+  .facts span{color:var(--muted);}
+  h2{font-family:var(--display); font-weight:600; font-size:27px; line-height:1.15; margin:52px 0 10px; text-wrap:balance;}
+  h2::before{content:"≋ "; color:var(--sea-soft); font-family:var(--body);}
+  h3{font-size:15px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); font-weight:700; margin:26px 0 8px;}
+  p{margin:0 0 14px; max-width:66ch;}
+  .tools{list-style:none; margin:16px 0 0; padding:0; display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:10px;}
+  .tools li{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:11px 13px;}
+  .tools b{display:block; font-family:var(--display); font-weight:600; font-size:17px;}
+  .tools small{color:var(--muted); line-height:1.45; display:block; margin-top:2px;}
+  .chips{display:flex; flex-wrap:wrap; gap:7px; margin:6px 0 4px; padding:0; list-style:none; max-width:none;}
+  .chips li{background:var(--chip); border-radius:999px; padding:3px 12px; font-size:14px; white-space:nowrap;}
+  .chips li.mes{background:none; border:1px dashed var(--line); color:var(--muted);}
+  kbd{font-family:ui-monospace,Consolas,monospace; font-size:12.5px; background:var(--chip); border:1px solid var(--line); border-bottom-width:2px; border-radius:5px; padding:1px 6px;}
+  .duo{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px;}
+  .duo>div{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:14px 16px;}
+  .duo b{font-family:var(--display); font-size:17px; font-weight:600;}
+  .duo p{font-size:14.5px; color:var(--muted); margin:6px 0 0;}
+  @media (max-width:560px){.duo{grid-template-columns:1fr}}
+  .fitxers{width:100%; border-collapse:collapse; font-size:14.5px; margin-top:10px;}
+  .fitxers td{border-top:1px solid var(--line); padding:7px 10px 7px 0; vertical-align:top;}
+  .fitxers td:first-child{font-family:ui-monospace,Consolas,monospace; font-size:13px; color:var(--terra); white-space:nowrap;}
+  .fitxers td:last-child{color:var(--muted);}
+  footer{margin-top:56px; border-top:1px solid var(--line); padding-top:16px; font-size:13.5px; color:var(--muted);}
+  a{color:var(--sea);}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="hero">
+    <div class="eyebrow">Catalunya · Mediterrani · Joc per a navegador</div>
+    <h1>Vila Mediterrània</h1>
+    <p class="tagline">Un poble al teu ritme — sense presses ni puntuacions.</p>
+    <svg class="coast" viewBox="0 0 760 120" role="img" aria-label="Silueta d'un poble costaner: cases de colors, campanar, pi i mar">
+      <rect x="0" y="78" width="760" height="42" fill="var(--sea-soft)"/>
+      <rect x="0" y="78" width="760" height="4" fill="var(--sea)" opacity=".5"/>
+      <polygon points="0,80 300,80 300,64 190,52 0,60" fill="var(--sand)"/>
+      <rect x="40" y="30" width="34" height="28" fill="var(--surface)" stroke="var(--line)"/>
+      <polygon points="36,30 57,16 78,30" fill="var(--terra)"/>
+      <rect x="84" y="22" width="30" height="34" fill="var(--terra)" opacity=".85"/>
+      <rect x="84" y="18" width="30" height="4" fill="var(--sea)" opacity=".55"/>
+      <rect x="124" y="34" width="30" height="20" fill="var(--olive)"/>
+      <polygon points="120,34 139,22 158,34" fill="var(--terra)"/>
+      <rect x="176" y="10" width="16" height="42" fill="var(--surface)" stroke="var(--line)"/>
+      <polygon points="172,10 184,0 196,10" fill="var(--terra)"/>
+      <rect x="181" y="18" width="6" height="9" rx="3" fill="var(--sea)"/>
+      <polygon points="236,52 250,24 264,52" fill="var(--olive)"/>
+      <rect x="247" y="52" width="6" height="10" fill="var(--terra)" opacity=".7"/>
+      <rect x="560" y="86" width="26" height="4" rx="2" fill="var(--surface)" opacity=".7"/>
+      <rect x="640" y="96" width="20" height="4" rx="2" fill="var(--surface)" opacity=".5"/>
+    </svg>
+    <div class="facts">
+      <div><b>v76</b><span>versió del joc</span></div>
+      <div><b>65 × 65</b><span>quadrícula màxima</span></div>
+      <div><b>Format 56</b><span>obre viles 1–55</span></div>
+      <div><b>0</b><span>frameworks i dependències</span></div>
+      <div><b>Català</b><span>interfície i ajuda</span></div>
+    </div>
+  </header>
+
+  <h2>Què és</h2>
+  <p>Un joc creatiu de <strong>construcció lliure en 3D</strong> per al navegador, inspirat en Townscaper i en l'arquitectura de la <strong>Costa Brava</strong> i la <strong>Costa Daurada</strong>. Cliques sobre una quadrícula (33×33, 49×49 o 65×65 caselles) i el poble creix: cases de calç i terracota, platges, carrers, places amb font, arbres i mar. No hi ha objectius, economia ni personatges — només construir al teu aire.</p>
+  <p>És JavaScript pur amb mòduls ES: sense compilar, sense <code>npm install</code>, sense Internet un cop descarregat. L'únic motor és Three.js 0.180, inclòs localment. Funciona a ordinador, tauleta i mòbil amb WebGL 2, i pots triar l'ambientació de cada costa, que canvia materials, platges i colors de les cases.</p>
+
+  <h2>Les eines</h2>
+  <ul class="tools">
+    <li><b>Navega</b><small>Mou la càmera sense construir ni esborrar res.</small></li>
+    <li><b>Terreny</b><small>Terra ferma, pendents, platja, pradera, roca i carrers empedrats, de terra o asfaltats. Amb <kbd>Alt</kbd> + arrossegar, pintes passades senceres.</small></li>
+    <li><b>Casa</b><small>Fins a 5 pisos, quatre acabats orientables — teulades a una i dues aigües, terrat i golfes amb estenedor —, colors per planta, cases amb pati i negocis a la planta baixa o als pisos.</small></li>
+    <li><b>Edificis</b><small>Mercat, església, ajuntament, hospital, escola, hotels, far, parc infantil… més de vint equipaments amb rètol editable.</small></li>
+    <li><b>Monuments</b><small>Cinc peces de muralla combinables i el castell medieval català amb senyera.</small></li>
+    <li><b>Arbres</b><small>Onze espècies mediterrànies, del pi i el margalló a l'olivera, la parra o el xiprer.</small></li>
+    <li><b>Plaça</b><small>Paviment amb font a la casella central; uneix caselles per fer passejos.</small></li>
+    <li><b>Escales</b><small>Connecta desnivells, amb baranes de ferro o sense; cada tram puja un nivell de terreny (0,42 unitats).</small></li>
+    <li><b>Ponts</b><small>De 2 a 16 caselles entre ribes, amb pendent si les alçades difereixen; el model amb arcades de pedra és orientable.</small></li>
+    <li><b>Els meus edificis</b><small>Col·loca els dissenys propis fets amb l'editor, fins a 128 per vila.</small></li>
+    <li><b>Clona</b><small>Copia una casa, un grup de cases o de terrenys, o només l'estètica d'una façana; també converteix una casa en un disseny editable.</small></li>
+    <li><b>Esborra</b><small>Treu el pis exacte que assenyales: si en queden a sobre, hi apareixen arcades i pilastres automàtiques.</small></li>
+  </ul>
+  <p style="margin-top:14px">Tot es controla amb ratolí, tacte o teclat (dreceres 1–9, <kbd>N</kbd>, <kbd>B</kbd>, <kbd>E</kbd>…), amb <strong>desfés/refés de 60 passos</strong>, brúixola sincronitzada amb la vista, llum del dia regulable de matí a capvespre i fotografia PNG de la vila sense controls.</p>
+
+  <h2>Un poble viu</h2>
+  <h3>Negocis de barri · 26 tipus</h3>
+  <ul class="chips">
+    <li>Bar</li><li>Restaurant</li><li>Fruiteria</li><li>Queviures</li><li>Fleca</li><li>Pastisseria</li><li>Carnisseria</li><li>Xarcuteria</li><li>Peixateria</li><li>Verduleria</li><li>Farmàcia</li><li>Òptica</li><li>Llibreria</li><li>Jogueteria</li><li>Floristeria</li><li>Ferreteria</li><li>Perruqueria</li><li>Barberia</li><li>Quiosc</li><li>Records</li><li>Roba</li><li>Sabateria</li><li>Banc</li><li class="mes">i comerços neutres</li>
+  </ul>
+  <p>Cada negoci vesteix la façana amb aparadors, tendals i mobiliari propis — els bars i restaurants poden treure terrassa amb taules parades al carrer — i admet un <strong>rètol personalitzat</strong> de fins a 24 caràcters: «Bar Can Martí», «Fruiteria L'Hort»… Si el terreny del davant canvia i deixa de ser viable, la terrassa s'amaga sola i torna quan recuperes l'espai.</p>
+  <h3>Equipaments i monuments</h3>
+  <ul class="chips">
+    <li>Mercat</li><li>Església amb campanar</li><li>Ajuntament amb senyera</li><li>Hospital</li><li>Escola</li><li>Comissaria</li><li>Bombers</li><li>Deixalleria</li><li>Cementiri</li><li>Far</li><li>Parc infantil</li><li>Guingueta de platja</li><li>Hotels de 3 i 5 estrelles</li><li>Hostal i pensió</li><li>Museu</li><li>Monestir</li><li>Parlament</li><li>Casernes</li><li>Pals de bandera</li><li>Muralles</li><li>Castell medieval</li>
+  </ul>
+  <p>Ocupen d'una a setze caselles, giren cap als quatre punts cardinals i es retiren sencers conservant el terreny. El botó <strong>Banderes de la Diada</strong> engalana un terç de les cases amb senyeres i estelades que onegen amb el vent (i es queden quietes si el sistema demana moviment reduït).</p>
+
+  <h2>L'editor d'edificis</h2>
+  <p>Una pàgina pròpia (<code>editor.html</code>) per dissenyar edificis modulars de fins a 3×3 caselles i cinc nivells: murs o arcades, portals configurables, balcons, terrats, golfes i teulades per cel·la, amb els sis colors del joc a un clic. Pots desar fins a <strong>100 dissenys</strong> al navegador, exportar-los i importar-los en JSON (format 3), i col·locar-los a la vila com qualsevol altre edifici — cada còpia és independent del catàleg, i també admet negocis i colors per planta. Amb <strong>Clona → Una casa a l'editor</strong>, qualsevol casa de la vila es converteix en un disseny nou amb les plantes editables una a una.</p>
+
+  <h2>Desar, compartir, actualitzar</h2>
+  <div class="duo">
+    <div><b>Desament automàtic</b><p>Cada canvi queda al navegador (localStorage). Exporta la vila a un fitxer JSON en format 56; s'obren i es converteixen automàticament tots els formats des de l'1.</p></div>
+    <div><b>Música de fons</b><p>Reproductor ♫ amb pausa, volum i pista següent. El servidor detecta sol els àudios de la carpeta <code>music</code> i els transmet per fragments; també pots triar una carpeta del dispositiu.</p></div>
+    <div><b>Configuració oberta</b><p><code>config.js</code> exposa els límits del joc: pisos, nivells, ponts, percentatge de banderes, passos de desfer… editables sense tocar el codi.</p></div>
+    <div><b>Avís de versions</b><p>«La meva vila» mostra la versió del joc, i el joc avisa quan el servidor en té una de nova, oferint actualitzar desant primer la vila. Sense connexió, tot continua funcionant.</p></div>
+  </div>
+
+  <h2>Últimes novetats</h2>
+  <div class="duo">
+    <div><b>Clona (v76)</b><p>Copia una casa amb el pati i els negocis, un grup de cases o de terrenys entre dues cantonades, o només l'estètica d'una façana per aplicar-la a altres cases. Cada còpia és independent i es pot enganxar tants cops com vulguis.</p></div>
+    <div><b>Golfes amb estenedor (v74)</b><p>Nou acabat de coberta: mitja teulada amb golfes i mig terrat amb barana de ferro i un estenedor amb roba i pinces, orientable als quatre punts cardinals.</p></div>
+    <div><b>Escales amb baranes (v74–v75)</b><p>Les escales poden dur baranes de ferro amb muntants i passamans, o quedar-se llises; canviar el tipus conserva l'orientació.</p></div>
+    <div><b>Editor més àgil (v73)</b><p>Els sis colors de les façanes del joc — calç, sorra, terracota, blau marí, oliva i rosa — són botons directes als selectors de murs i cobertes.</p></div>
+  </div>
+
+  <h2>Sota el capó</h2>
+  <p>Arquitectura neta en mòduls, sense cap framework: l'estat i les regles viuen separats del renderitzador, i tota la geometria és procedural i instanciada.</p>
+  <table class="fitxers">
+    <tr><td>model.js</td><td>Estat, regles de construcció, validació del JSON i historial — testejable sense navegador.</td></tr>
+    <tr><td>scene.js</td><td>Escena Three.js: geometria instanciada, mar, llum, ombres, càmera i selecció pis a pis.</td></tr>
+    <tr><td>app.js</td><td>Interfície, dreceres, importació/exportació i desament local.</td></tr>
+    <tr><td>beach.js · slope-geometry.js…</td><td>Mòduls de geometria: platges contínues per costa, pendents, carrers, arbres, monuments.</td></tr>
+    <tr><td>editor.js · designs.js</td><td>Editor d'edificis del jugador i format de col·leccions.</td></tr>
+    <tr><td>server.mjs · Inicia-Vila.exe</td><td>Servidors locals sense dependències (Node.js i executable de Windows) que obren el navegador i serveixen la música.</td></tr>
+  </table>
+
+  <footer>Prototip original en català, inspirat en la construcció lliure de Townscaper. Paisatges imaginaris de la costa catalana · Three.js 0.180 (MIT) inclòs a <code>vendor/</code> · No necessita comptes, claus ni Internet.</footer>
+</div>
+
+</body>
+</html>
