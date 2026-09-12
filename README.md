@@ -850,7 +850,6 @@ La nova eina **Clona** ofereix cinc accions:
 La cantonada nord-oest del conjunt copiat és l’ancoratge de destinació. El marc verd indica una zona seleccionada o un destí lliure; el vermell indica un destí ocupat o fora del mapa. Es pot enganxar diverses vegades. **Esc**, clic dret o **Nova selecció** permeten tornar a triar l’origen. Les còpies són independents i no alteren l’original. No se substitueixen construccions existents. Si una còpia no compleix les regles de la vila, no es col·loca cap fragment. **Desfés** retira la còpia sencera.
 
 El format de vila és el **56** i el dels dissenys és el **3**, amb importació dels formats anteriors. L’estètica de les cases clonades es conserva en desar i recuperar la vila, independentment de la ubicació. Aquesta versió inclou totes les funcions de la v75.
-s, Arbres, Plaça, Escales, Ponts, Els meus edificis i Esborra. Les dreceres de teclat es mantenen. Inclou totes les funcions de la v71; format de vila 53.
 
 ## Credits
 **Direcció, producció i disseny:** Quim Miralles
