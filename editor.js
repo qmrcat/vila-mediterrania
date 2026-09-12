@@ -1,10 +1,23 @@
 import {defaultEntrance} from './entrances.js';
 import {newDesign,validateDesign,resizeDesign,loadDesigns,saveDesign,writeDesigns,importDesigns,catalogFile,DESIGN_KEY,designId} from './designs.js';
-import {createWorld,editWorld} from './model.js';
+import {createWorld,editWorld,COLORS} from './model.js';
 const $=id=>document.getElementById(id),labels={ground:'Planta baixa',middle:'Planta del mig',roof:'Terrat i teulada'},faceLabels=['Davant','Dreta','Darrere','Esquerra'];
-let design=newDesign(),layer='ground',selected=0,dirty=false,library=[],viewer,timer;
+let design=newDesign(),layer='ground',middleLevel=0,selected=0,dirty=false,library=[],viewer,timer;
 const status=message=>{$('status').textContent=message;};
 function storage(){return localStorage;}
+function layerCells(){return layer==='middle'&&design.upperFloors?design.upperFloors[middleLevel]??design.middle:design[layer];}
+function setLayer(cells){if(layer==='middle'&&design.upperFloors&&design.upperFloors.length)design.upperFloors[middleLevel]=cells;else design[layer]=cells;}
+for(const field of ['wall-color','roof-color']){
+  for(const {name,hex} of COLORS){
+    const button=document.createElement('button'),sample=document.createElement('span'),label=document.createElement('span');
+    button.type='button';button.dataset.color=hex;button.title=`${name} · ${hex}`;
+    button.setAttribute('aria-label',`${name}: ${field==='wall-color'?'color dels murs':'color de la coberta'}`);
+    sample.className='game-color-sample';sample.style.backgroundColor=hex;sample.setAttribute('aria-hidden','true');label.textContent=name;
+    button.append(sample,label);
+    button.addEventListener('click',()=>{if($(field).disabled)return;$(field).value=hex;readCell();});
+    $(field+'-presets').append(button);
+  }
+}
 function reloadLibrary(){
   try{library=loadDesigns(storage());}catch{library=[];status('No s’han pogut llegir els dissenys desats. Pots continuar editant i exportar un JSON.');}
   const select=$('saved-designs');select.replaceChildren(new Option('Disseny sense desar',''));
@@ -29,12 +42,15 @@ for(let d=0;d<4;d++){
   wrapper.append(details);$('faces').append(wrapper);
 }
 function renderFields(){
-  $('cell-title').textContent=`${labels[layer]} · cel·la ${selected+1}`;
+  middleLevel=Math.min(middleLevel,Math.max(0,design.middleCount-1));
+  $('individual-floor-options').hidden=layer!=='middle'||!design.upperFloors?.length;
+  $('middle-level').replaceChildren(...Array.from({length:design.middleCount},(_,i)=>new Option(`Planta ${i+1}`,String(i))));$('middle-level').value=String(middleLevel);
+  $('cell-title').textContent=`${layer==='middle'&&design.upperFloors?'Planta '+(middleLevel+1):labels[layer]} · cel·la ${selected+1}`;
   $('floor-fields').hidden=layer==='roof';$('roof-fields').hidden=layer!=='roof';
   if(layer==='roof'){
-    const cell=design.roof[selected];$('roof-type').value=cell.type;$('roof-color').value=cell.color;$('roof-turn').value=String(cell.direction);$('roof-turn').disabled=cell.type==='flat';
+    const cell=design.roof[selected];$('roof-type').value=cell.type;$('roof-color').value=cell.color;$('roof-turn').value=String(cell.direction);$('roof-turn').disabled=cell.type==='flat';$('roof-turn-label').textContent=cell.type==='attic'?'Terrat cap a':'Vessant o costat baix cap a';
   }else{
-    const cell=design[layer][selected];$('cell-style').querySelector('[value="empty"]').disabled=layer==='ground';$('cell-style').value=cell?.style??'empty';$('wall-color').value=cell?.color??'#f5eee0';$('wall-color').disabled=!cell;$('face-fields').hidden=!cell||cell.style==='arcade';
+    const cell=layerCells()[selected];$('cell-style').querySelector('[value="empty"]').disabled=layer==='ground';$('cell-style').value=cell?.style??'empty';$('wall-color').value=cell?.color??'#f5eee0';$('wall-color').disabled=!cell;$('face-fields').hidden=!cell||cell.style==='arcade';
     for(let d=0;d<4;d++){
       const value=cell?.faces[d]??'window',entrance=typeof value==='object'?value:defaultEntrance();
       $('face-'+d).value=typeof value==='object'?'entrance':value;$('entrance-'+d).hidden=typeof value!=='object';
@@ -42,14 +58,18 @@ function renderFields(){
       $(`entrance-count-${d}`).disabled=entrance.windows==='none';
     }
   }
+  for(const field of ['wall-color','roof-color'])for(const button of $(field+'-presets').children){
+    button.disabled=$(field).disabled;
+    button.setAttribute('aria-pressed',String(!button.disabled&&button.dataset.color===$(field).value.toLowerCase()));
+  }
   for(const button of document.querySelectorAll('[data-layer]'))button.setAttribute('aria-pressed',String(button.dataset.layer===layer));
   $('plan-hint').textContent=layer==='middle'&&design.middleCount===0?'La planta intermèdia està desactivada. Augmenta les repeticions per veure-la a l’edifici.':'Selecciona una cel·la i canvia els seus elements als controls.';
 }
 function renderGrid(){
   const grid=$('plan');grid.style.gridTemplateColumns=`repeat(${design.width},86px)`;grid.replaceChildren();
-  design[layer].forEach((cell,i)=>{
+  layerCells().forEach((cell,i)=>{
     const button=document.createElement('button'),sample=document.createElement('span'),text=document.createElement('span');sample.className='cell-sample';sample.style.backgroundColor=cell?.color??'#e2e6df';
-    const name=!cell?'Sense planta':layer==='roof'?{tile:'Dues aigües',shed:'Una aigua',flat:'Terrat'}[cell.type]:cell.style==='arcade'?'Arcades':'Murs';text.textContent=`${i+1} · ${name}`;
+    const name=!cell?'Sense planta':layer==='roof'?{tile:'Dues aigües',shed:'Una aigua',flat:'Terrat',attic:'Golfes i terrat'}[cell.type]:cell.style==='arcade'?'Arcades':'Murs';text.textContent=`${i+1} · ${name}`;
     button.setAttribute('aria-pressed',String(i===selected));button.setAttribute('aria-label',`${labels[layer]}, fila ${Math.floor(i/design.width)+1}, columna ${i%design.width+1}: ${name}`);
     button.append(sample,text);button.addEventListener('click',()=>{selected=i;renderFields();renderGrid();});grid.append(button);
   });
@@ -62,10 +82,12 @@ function fit(){if(!viewer)return;viewer.target.set((design.width-1)*1.3/2,(1+des
 function changed(){dirty=true;status('Canvis sense desar.');renderFields();renderGrid();clearTimeout(timer);timer=setTimeout(renderPreview,90);}
 function readCell(){
   if(layer==='roof')design.roof[selected]={type:$('roof-type').value,color:$('roof-color').value,direction:Number($('roof-turn').value)};
-  else design[layer][selected]=$('cell-style').value==='empty'&&layer==='middle'?null:{style:$('cell-style').value,color:$('wall-color').value,faces:faceLabels.map((_,d)=>$('face-'+d).value==='entrance'?{type:'entrance',door:$(`entrance-door-${d}`).value,position:$(`entrance-position-${d}`).value,windows:$(`entrance-windows-${d}`).value,count:Number($(`entrance-count-${d}`).value)}:$('face-'+d).value)};
+  else layerCells()[selected]=$('cell-style').value==='empty'&&layer==='middle'?null:{style:$('cell-style').value,color:$('wall-color').value,faces:faceLabels.map((_,d)=>$('face-'+d).value==='entrance'?{type:'entrance',door:$(`entrance-door-${d}`).value,position:$(`entrance-position-${d}`).value,windows:$(`entrance-windows-${d}`).value,count:Number($(`entrance-count-${d}`).value)}:$('face-'+d).value)};
   changed();
 }
 function fill(){
+  $('middle-count-label').textContent=design.upperFloors?'Nombre de plantes intermèdies':'Repeticions de la planta intermèdia';
+  const max=design.upperFloors?Math.max(3,design.middleCount):3;$('middle-count').replaceChildren(...Array.from({length:max+1},(_,i)=>new Option(i?`${i} plantes intermèdies`:'Cap · només planta baixa',String(i))));
   $('design-name').value=design.name;$('width').value=String(design.width);$('depth').value=String(design.depth);$('middle-count').value=String(design.middleCount);selected=Math.min(selected,design.ground.length-1);renderFields();renderGrid();renderPreview();fit();reloadLibrary();
 }
 function discard(){return !dirty||confirm('Hi ha canvis sense desar. Vols descartar-los?');}
@@ -87,8 +109,9 @@ for(const id of ['width','depth'])$(id).addEventListener('change',()=>perform(()
   if((width<design.width||depth<design.depth)&&!confirm('Les cel·les que quedin fora de la nova mida es retiraran del disseny. Vols continuar?')){fill();return;}
   design=resizeDesign(design,width,depth);selected=0;changed();fit();
 }));
-$('middle-count').addEventListener('change',()=>{design.middleCount=Number($('middle-count').value);changed();fit();});
-$('apply-layer').addEventListener('click',()=>{design[layer]=design[layer].map(()=>structuredClone(design[layer][selected]));changed();});
+$('middle-level').addEventListener('change',()=>{middleLevel=Number($('middle-level').value);renderFields();renderGrid();});
+$('middle-count').addEventListener('change',()=>{design.middleCount=Number($('middle-count').value);if(design.upperFloors)design.upperFloors=Array.from({length:design.middleCount},(_,i)=>design.upperFloors[i]??structuredClone(design.middle));changed();fit();});
+$('apply-layer').addEventListener('click',()=>{setLayer(layerCells().map(()=>structuredClone(layerCells()[selected])));changed();});
 $('save').addEventListener('click',()=>save());$('copy').addEventListener('click',()=>save(true));
 $('new').addEventListener('click',()=>{if(!discard())return;design=newDesign();dirty=false;selected=0;fill();status('Disseny nou.');});
 $('saved-designs').addEventListener('change',()=>{
@@ -114,6 +137,8 @@ window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.return
 window.addEventListener('storage',e=>{if(e.key===DESIGN_KEY)reloadLibrary();});
 window.addEventListener('pagehide',()=>{clearTimeout(timer);viewer?.dispose();},{once:true});window.addEventListener('pageshow',e=>{if(e.persisted)location.reload();});
 $('rotate').addEventListener('click',()=>viewer?.rotate());$('center').addEventListener('click',()=>{viewer?.home();fit();});
+reloadLibrary();
+const requested=new URLSearchParams(location.search).get('design'),saved=library.find(d=>d.id===requested);if(saved)design=structuredClone(saved);
 fill();
 try{
   const {VillageScene}=await import('./scene.js');

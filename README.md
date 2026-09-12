@@ -28,7 +28,7 @@ No cal executar `npm install`, compilar ni configurar Vite. El joc no utilitza c
 
 Cada canvi es desa al `localStorage` d’aquest navegador i d’aquest origen web. El desament no se sincronitza entre dispositius i pot desaparèixer si es netegen les dades del navegador. El servidor inclòs utilitza el port 3000 o el primer disponible a partir d’aquest: conserva la mateixa adreça per recuperar el desament local.
 
-A **La meva vila → Desa una còpia (.json)** pots exportar la vila. Obre-la amb **Obre una vila…**. El format 53 guarda els edificis del jugador amb els seus dissenys, els ajuntaments, les esglésies, les cases amb pati, la mida de la quadrícula, els mercats, els negocis de planta baixa, els ponts, la costa, totes les construccions, els buits entre pisos cada espècie plantada i les caselles de platja. S’importen també fitxers dels formats 1–52, convertits automàticament; els pins existents continuen sent pins. El desament anterior es conserva separadament al navegador; la càmera, la llum i l’historial de desfer no es guarden al fitxer.
+A **La meva vila → Desa una còpia (.json)** pots exportar la vila. Obre-la amb **Obre una vila…**. El format 56 guarda els edificis del jugador amb els seus dissenys, els ajuntaments, les esglésies, les cases amb pati, la mida de la quadrícula, els mercats, els negocis de planta baixa, els ponts, la costa, totes les construccions, els buits entre pisos cada espècie plantada i les caselles de platja. S’importen també fitxers dels formats 1–55, convertits automàticament; els pins existents continuen sent pins. El desament anterior es conserva separadament al navegador; la càmera, la llum i l’historial de desfer no es guarden al fitxer.
 
 **Fes una fotografia** exporta una imatge PNG de la vista 3D sense els controls.
 
@@ -820,6 +820,37 @@ Per publicar una actualització, incrementa el número de `version.json` i el va
 ## v72 · Ordre de les eines
 
 Navega, Terreny, Casa, Edificis, Monuments, Arbres, Plaça, Escales, Ponts, Els meus edificis i Esborra. Les dreceres de teclat es mantenen. Inclou totes les funcions de la v71; format de vila 53.
+
+## v73 · Colors del joc a l’editor
+
+Els selectors de color dels murs i de la coberta incorporen sis botons: Calç, Sorra, Terracota, Blau marí, Oliva i Rosa. Els botons apliquen el color a la cel·la seleccionada i actualitzen el selector i la vista prèvia. El selector lliure continua disponible. «Aplica a tota aquesta planta» permet estendre el color i els altres elements de la cel·la. Els botons dels murs es desactiven a les cel·les sense planta intermèdia. Inclou totes les funcions de la v72; format de vila 53.
+
+## v74 · Escales amb ferro, golfes i versió visible
+
+Les escales de l’eina Escales incorporen baranes de ferro als dos costats: muntants a cada graó i passamans inclinats. Els accessos queden oberts i les baranes giren amb l’escala. També apareixen a les escales de les viles existents.
+
+A Casa → Acabat de la casa pots escollir «Golfes i mig terrat amb estenedor». Una meitat té golfes amb teulada de teula, finestres i una porta al terrat; l’altra és un terrat obert amb barana de ferro i un estenedor de dos fils amb roba i pinces. «Terrat cap a» permet escollir Est, Nord, Oest o Sud. «Només gira la teulada» aplica aquesta orientació sense afegir pisos. També és disponible a l’editor, amb els colors del disseny.
+
+«La meva vila» mostra el número de versió del joc, vinculat a la mateixa versió que comprova l’avís d’actualitzacions. Aquesta versió manté totes les funcions de la v73. El format de vila és el 54, amb lectura dels formats 1–53; les golfes no afegeixen una planta habitable al recompte. Els dissenys mantenen el format 2 amb el nou tipus de coberta `attic`.
+
+## v75 · Escales amb baranes o sense
+
+A Escales, tria «Sense baranes» (opció inicial) o «Amb baranes de ferro». Canviar el tipus d’una escala existent en conserva l’orientació. Clicar amb el mateix tipus la gira. Les escales dels fitxers de la v74 (format 54) conserven el ferro; les dels formats anteriors recuperen l’aspecte sense baranes. El tipus es desa al JSON i admet desfer i refer. Inclou totes les funcions de la v74; format de vila 55.
+
+## v76 · Clonar cases, terrenys i estètica
+
+La nova eina **Clona** ofereix cinc accions:
+
+- **Una casa:** clica una casa normal o un edifici del jugador i després el lloc on vols la còpia. Inclou el conjunt de la casa amb pati, els negocis i la base de les terrasses quan n’hi ha.
+- **Un grup de cases:** marca dues cantonades i enganxa el conjunt. Els edificis del jugador han de quedar sencers dins de la selecció. La base i l’alçada dels terrenys copiats es conserven.
+- **Un grup de terrenys:** marca dues cantonades. Copia el terreny, el pendent, l’alçada i l’acabat que consta a la casella, sense les cases ni els arbres. Sota una casa normal el terreny es desa com a terra ferma; el joc no conserva l’acabat anterior a la construcció. Les caselles de mar no substitueixen el destí.
+- **Només l’estètica:** copia d’una casa normal els portals, finestres, balcons, colors per planta i coberta. Aplica-ho a altres cases normals sense canviar-ne l’alçada, els buits o els negocis. Si la destinació té més plantes, les plantes addicionals prenen l’últim color de la casa d’origen. Les façanes continuen adaptant-se als veïns i a l’accés des del terreny.
+- **Una casa a l’editor:** crea un disseny independent a la col·lecció i l’obre a l’editor. Les plantes tenen controls individuals per conservar-ne els colors i les obertures. Els pisos buits es representen amb arcades. La conversió utilitza els elements editables de l’editor; no és una còpia de la malla 3D. El pati, els negocis i la decoració exterior de la casa continuen al joc i no s’incorporen al disseny arquitectònic. Un edifici del jugador reutilitza el seu disseny com a còpia nova.
+
+La cantonada nord-oest del conjunt copiat és l’ancoratge de destinació. El marc verd indica una zona seleccionada o un destí lliure; el vermell indica un destí ocupat o fora del mapa. Es pot enganxar diverses vegades. **Esc**, clic dret o **Nova selecció** permeten tornar a triar l’origen. Les còpies són independents i no alteren l’original. No se substitueixen construccions existents. Si una còpia no compleix les regles de la vila, no es col·loca cap fragment. **Desfés** retira la còpia sencera.
+
+El format de vila és el **56** i el dels dissenys és el **3**, amb importació dels formats anteriors. L’estètica de les cases clonades es conserva en desar i recuperar la vila, independentment de la ubicació. Aquesta versió inclou totes les funcions de la v75.
+s, Arbres, Plaça, Escales, Ponts, Els meus edificis i Esborra. Les dreceres de teclat es mantenen. Inclou totes les funcions de la v71; format de vila 53.
 
 ## Credits
 **Direcció, producció i disseny:** Quim Miralles

@@ -1,4 +1,4 @@
-Vila Mediterrània v72 · Ordre de les eines
-Joc complet amb totes les funcions de la v71.
-Navega, Terreny, Casa, Edificis, Monuments, Arbres, Plaça, Escales, Ponts, Els meus edificis, Esborra.
-Format de vila: 53.
+Vila Mediterrània v76 · Clonar
+Joc complet amb totes les funcions de la v75.
+Clonar cases, grups de cases, terrenys i estètica. Crear una còpia editable d’una casa amb plantes individuals.
+Format de vila: 56; dissenys: 3.

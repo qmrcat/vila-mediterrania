@@ -1,3 +1,5 @@
+import {designFloor} from './designs.js';
+import {renderAtticRoof,ATTIC_ROOF_HEIGHT} from './attic-roof.js';
 import {createHotelStarGeometry} from './lodging-geometry.js';
 import {isFlagpole,poleGroundY,poleExclusion} from './flagpole-ground.js';
 import {chooseFestiveFlags,createFestiveFlag,waveFestiveFlag} from './festive-flags.js';
@@ -91,10 +93,10 @@ export function createPickingGeometry(world,pickingMaterial){
     if(t.kind==='house'){
       push(t,null,0,base);
       for(let level=0;level<t.floors;level++)push(t,level,base+level*FLOOR,FLOOR);
-      push(t,t.floors-1,base+t.floors*FLOOR,t.roof==='tile'?.46:t.roof==='shed'?.60:.56);
+      push(t,t.floors-1,base+t.floors*FLOOR,t.roof==='attic'?ATTIC_ROOF_HEIGHT:t.roof==='tile'?.46:t.roof==='shed'?.60:.56);
     }else {
       const treeBase=isTree(t.kind)?treeGroundY(t):base;
-      push(t,null,0,treeBase+(TREE_SPECIES.find(s=>s.id===t.kind)?.height??(t.kind==='stairs'?.44:.05)));
+      push(t,null,0,treeBase+(TREE_SPECIES.find(s=>s.id===t.kind)?.height??(t.kind==='stairs'?(t.stairRailing==='iron'?.87:.44):.05)));
       if(hasSlope(t)&&isFirmGround(t.kind))transforms.at(-1).premultiply(slopeShearMatrix(t,UNIT));
     }
   }
@@ -119,7 +121,7 @@ export function createPickingGeometry(world,pickingMaterial){
     for(let i=0;i<b.design.ground.length;i++){
       const p=customCell(b,i),floors=customFloors(b.design,i);
       for(let level=0;level<floors;level++)push(p,level,terrainY(ground)+level*FLOOR,FLOOR);
-      push(p,floors-1,terrainY(ground)+floors*FLOOR,.62);
+      push(p,floors-1,terrainY(ground)+floors*FLOOR,b.design.roof[i].type==='attic'?ATTIC_ROOF_HEIGHT:.62);
     }
   }
   for(const t of world.tiles.filter(t=>t.patio))push(patioCell(t),null,terrainY(t),.42);
@@ -164,7 +166,7 @@ export function createVillageGeometry(world){
     const t=map.get(key(p.x,p.z));map.set(key(p.x,p.z),{...t,kind:'house',floors:2,levels:[true,true]});
   }
   for(const b of world.customBuildings??[])for(let i=0;i<b.design.ground.length;i++){
-    const p=customCell(b,i),t=map.get(key(p.x,p.z)),floors=customFloors(b.design,i);map.set(key(p.x,p.z),{...t,kind:'house',floors,levels:Array.from({length:floors},(_,level)=>(level===0?b.design.ground[i]:b.design.middle[i]).style==='solid')});
+    const p=customCell(b,i),t=map.get(key(p.x,p.z)),floors=customFloors(b.design,i);map.set(key(p.x,p.z),{...t,kind:'house',floors,levels:Array.from({length:floors},(_,level)=>designFloor(b.design,i,level).style==='solid')});
   }
   const terraces=diningTerraces(world),spaces=businessSpaces(world),entranceSupported=createEntranceSupport(world),entranceSteps=createEntranceSteps(world);
   const patios=new Map(world.tiles.filter(t=>t.patio).map(t=>{const p=patioCell(t);return [key(p.x,p.z),t];}));
@@ -598,7 +600,7 @@ export function createVillageGeometry(world){
   for(const owner of terraces.values())barTerrace(owner);
   for(const t of world.tiles){
     if(t.kind==='beach')continue;
-    const x=t.x*UNIT,z=t.z*UNIT,y=terrainY(t),n=randomAt(t.x,t.z);
+    const x=t.x*UNIT,z=t.z*UNIT,y=terrainY(t),n=randomAt(t.appearance?.x??t.x,t.appearance?.z??t.z);
     const neighbours=DIRECTIONS.map(([dx,dz])=>map.get(key(t.x+dx,t.z+dz)));
     const coast=neighbours.some(t=>!t);
     const groundKind=isTree(t.kind)?t.treeGround??'land':t.kind,ground={...t,kind:groundKind};
@@ -658,6 +660,11 @@ export function createVillageGeometry(world){
     }
     if(t.kind==='stairs'){
       for(let step=0;step<6;step++)face('box','#f2e7ce',t,t.rotation,0,y+.045+step*.035,(step-2.5)*.195,1.15,.08+step*.07,.20);
+      const a=t.rotation*Math.PI/2,c=Math.cos(a),sn=Math.sin(a),iron='#3c5553';
+      if(t.stairRailing==='iron')for(const u of [-.53,.53]){
+        for(let step=0;step<6;step++)face('box',iron,t,t.rotation,u,y+.285+step*.07,(step-2.5)*.195,.025,.40,.025);
+        for(const offset of [0,-.18])branch(iron,[x+c*u-sn*.4875,y+.485+offset,z-sn*u-c*.4875],[x+c*u+sn*.4875,y+.835+offset,z-sn*u+c*.4875],.018);
+      }
     }
     if(isTree(t.kind))renderTreeBed(t,surfaceBox,add,UNIT);
     const treeY=treeGroundY(t);
@@ -673,7 +680,7 @@ export function createVillageGeometry(world){
     }
     if(t.kind!=='house')continue;
     const wall=COLORS[t.floorColors?.at(-1)??t.color].hex,shutter=t.color===3?'#e7e4d3':(n>.62?'#577e6c':'#447e87');
-    const total=t.floors*FLOOR,top=y+total,entrances=Array.from({length:4},(_,d)=>residentialEntrance(t.x,t.z,d));
+    const total=t.floors*FLOOR,top=y+total,entrances=Array.from({length:4},(_,d)=>residentialEntrance(t.appearance?.x??t.x,t.appearance?.z??t.z,d));
     // Continuous empty levels share tall supports and have no intervening slabs.
     for(let level=0;level<t.floors;level++){
       if(t.levels[level])continue;
@@ -714,7 +721,7 @@ export function createVillageGeometry(world){
         const festiveOpening=(u,top,depth=.724,mount='window')=>{
           if(!world.diada)return;
           const potU=entrances[d]?.position==='right'?-.47:.47;
-          if(floor===0&&accessible&&Math.abs(u-potU)<.28&&entranceSupported(t,d,potU,.24)&&randomAt(t.x,t.z,d+33)>.65)return;
+          if(floor===0&&accessible&&Math.abs(u-potU)<.28&&entranceSupported(t,d,potU,.24)&&randomAt(t.appearance?.x??t.x,t.appearance?.z??t.z,d+33)>.65)return;
           const height=mount==='balcony'?.40:.20;
           if(solidAtHeight(next,top)||solidAtHeight(next,top-height))return;
           const [dx,dz]=DIRECTIONS[d],nearLandmark=landmarkAt(world,t.x+dx,t.z+dz);
@@ -745,7 +752,7 @@ export function createVillageGeometry(world){
             festiveOpening(u,bottom+.33);
           }
         }else{
-          const balcony=(floor===1&&randomAt(t.x,t.z,d+6)>.57);
+          const balcony=(floor===1&&randomAt(t.appearance?.x??t.x,t.appearance?.z??t.z,d+6)>.57);
           for(const u of [-.29,.29]){
             face('box','#eee5d2',t,d,u,bottom+.43,.64,.29,.48,.04);
             face('box','#3d6469',t,d,u,bottom+.44,.669,.20,.37,.025);
@@ -767,12 +774,14 @@ export function createVillageGeometry(world){
           }
         }
         const potU=entrances[d]?.position==='right'?-.47:.47;
-        if(floor===0&&accessible&&entranceSupported(t,d,potU,.24)&&randomAt(t.x,t.z,d+33)>.65)pot(t,d,potU,bottom);
+        if(floor===0&&accessible&&entranceSupported(t,d,potU,.24)&&randomAt(t.appearance?.x??t.x,t.appearance?.z??t.z,d+33)>.65)pot(t,d,potU,bottom);
       }
     }
     const direction=t.roofDirection*Math.PI/2,c=Math.cos(direction),s=Math.sin(direction);
     const roofPart=(shape,color,u,h,v,sx,sy,sz,tilt=0)=>add(shape,color,x+c*u+s*v,top+h,z-s*u+c*v,sx,sy,sz,direction,0,tilt);
-    if(t.roof==='shed'){
+    if(t.roof==='attic'){
+      renderAtticRoof(roofPart,wall,n>.5?'#bf7957':'#c9825c');
+    }else if(t.roof==='shed'){
       // One sloping plane, with a closed wedge of wall underneath on all sides.
       roofPart('shedWall',wall,0,0,0,1.255,1,1.255);
       const angle=Math.atan(.42/1.255),width=1.39/Math.cos(angle),roofColor=n>.5?'#bf7957':'#c9825c';
@@ -1317,10 +1326,22 @@ export class VillageScene{
   }
   async photograph(){
     const previewVisible=this.bridgePreview.visible;this.bridgePreview.visible=false;
+    const cloneVisible=this.clonePreview?.visible;if(this.clonePreview)this.clonePreview.visible=false;
     const visible=this.cursor.visible;this.cursor.visible=false;const grid=this.grid.visible;this.grid.visible=false;
     this.renderer.render(this.scene,this.camera);
     const blob=await new Promise(resolve=>this.canvas.toBlob(resolve,'image/png'));
-    this.cursor.visible=visible;this.bridgePreview.visible=previewVisible;this.grid.visible=grid;if(!blob)throw new Error('No s’ha pogut crear la fotografia.');return blob;
+    if(this.clonePreview)this.clonePreview.visible=cloneVisible;this.cursor.visible=visible;this.bridgePreview.visible=previewVisible;this.grid.visible=grid;if(!blob)throw new Error('No s’ha pogut crear la fotografia.');return blob;
   }
-  dispose(){this.endTerrainStroke();this.bridgePreview.children.forEach(m=>{m.geometry.dispose();m.material.dispose();});cancelAnimationFrame(this.animation);this.abort.abort();this.resizeObserver.disconnect();this.renderer.dispose();}
+  setClonePreview(rect,valid=true){
+    if(!this.clonePreview){
+      const geometry=new THREE.EdgesGeometry(new THREE.BoxGeometry(UNIT,.04,UNIT));
+      this.clonePreview=new THREE.LineSegments(geometry,new THREE.LineBasicMaterial({color:'#9de6bd',depthTest:false,transparent:true,opacity:.95}));this.clonePreview.renderOrder=12;this.scene.add(this.clonePreview);
+    }
+    this.clonePreview.visible=!!rect;if(!rect)return;
+    const tile=this.world?.tiles.find(t=>t.x===rect.x&&t.z===rect.z);
+    this.clonePreview.scale.set(rect.width,1,rect.depth);
+    this.clonePreview.position.set((rect.x+(rect.width-1)/2)*UNIT,(tile?terrainY(tile):.01)+.1,(rect.z+(rect.depth-1)/2)*UNIT);
+    this.clonePreview.material.color.set(valid?'#9de6bd':'#ff8d73');
+  }
+  dispose(){this.clonePreview?.geometry.dispose();this.clonePreview?.material.dispose();this.endTerrainStroke();this.bridgePreview.children.forEach(m=>{m.geometry.dispose();m.material.dispose();});cancelAnimationFrame(this.animation);this.abort.abort();this.resizeObserver.disconnect();this.renderer.dispose();}
 }

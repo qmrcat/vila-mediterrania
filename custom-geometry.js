@@ -1,3 +1,5 @@
+import {designFloor} from './designs.js';
+import {renderAtticRoof} from './attic-roof.js';
 import {createEntranceSupport,createEntranceSteps,renderEntranceSteps} from './entrance-access.js';
 import {terrainY,customBusinessOwner,businessFrontClear} from './model.js';
 import {SPECIAL_SHOPS} from './special-shops.js';
@@ -15,7 +17,7 @@ export function renderCustomBuildings(world,add,UNIT,FLOOR,entranceSteps=createE
       });
       const face=(shape,color,d,u,h,depth,sx,sy,sz)=>{const angle=a+d*Math.PI/2;add(shape,color,x+Math.cos(angle)*u+Math.sin(angle)*depth,base+h,z-Math.sin(angle)*u+Math.cos(angle)*depth,sx,sy,sz,angle);};
       for(let level=0;level<floors;level++){
-        const source=level===0?design.ground[i]:design.middle[i],cell={...source,color:b.floorColors?.[level]??source.color},bottom=level*FLOOR;
+        const source=designFloor(design,i,level),cell={...source,color:b.floorColors?.[level]??source.color},bottom=level*FLOOR;
         if(cell.style==='arcade'){
           for(const u of [-.535,.535])for(const v of [-.535,.535]){
             const c=Math.cos(a),s=Math.sin(a);add('box',cell.color,x+c*u+s*v,base+bottom+FLOOR/2,z-s*u+c*v,.18,FLOOR,.18,a);
@@ -24,7 +26,7 @@ export function renderCustomBuildings(world,add,UNIT,FLOOR,entranceSteps=createE
         }else{
           add('box',cell.color,x,base+bottom+FLOOR/2,z,1.255,FLOOR,1.255,a);
           for(let d=0;d<4;d++){
-            const next=neighbours[d];if(next>=0&&customFloors(design,next)>level&&(level===0?design.ground[next]:design.middle[next]).style==='solid')continue;
+            const next=neighbours[d];if(next>=0&&customFloors(design,next)>level&&designFloor(design,next,level).style==='solid')continue;
             const worldDirection=(d+b.direction)%4,entry=b.businesses?.find(e=>e.cell===i&&e.floor===level&&e.direction===worldDirection);
             const shop=entry?customBusinessOwner(world,b,entry):null;
             if(shop&&renderBusiness&&businessFrontClear(world,shop)){
@@ -68,9 +70,11 @@ export function renderCustomBuildings(world,add,UNIT,FLOOR,entranceSteps=createE
           }
         }
       }
-      const topColor=b.floorColors?.[floors-1]??(floors>1?design.middle[i].color:design.ground[i].color),roof=design.roof[i],top=base+floors*FLOOR,angle=a+roof.direction*Math.PI/2,c=Math.cos(angle),s=Math.sin(angle);
+      const topColor=b.floorColors?.[floors-1]??designFloor(design,i,floors-1).color,roof=design.roof[i],top=base+floors*FLOOR,angle=a+roof.direction*Math.PI/2,c=Math.cos(angle),s=Math.sin(angle);
       const rp=(shape,color,u,h,v,sx,sy,sz,tilt=0)=>add(shape,color,x+c*u+s*v,top+h,z-s*u+c*v,sx,sy,sz,angle,0,tilt);
-      if(roof.type==='flat'){
+      if(roof.type==='attic'){
+        renderAtticRoof(rp,topColor,roof.color);
+      }else if(roof.type==='flat'){
         rp('box',roof.color,0,.04,0,1.30,.08,1.30);
         for(let d=0;d<4;d++){
           const next=neighbours[d];if(next>=0&&customFloors(design,next)===floors&&design.roof[next].type==='flat')continue;

@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="ca">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#1c565b"><title>Editor d’edificis · Vila Mediterrània</title><link rel="stylesheet" href="./editor.css"></head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#1c565b"><title>Editor d’edificis · Vila Mediterrània</title><link rel="stylesheet" href="./editor.css?v=76"></head>
 <body>
 <header><div><a id="return-game" href="./index.html?tool=custom">← Torna a la vila</a><h1>Editor d’edificis</h1></div><div class="actions"><button id="save" class="primary">Desa el disseny</button><button id="export">Exporta aquest JSON</button><button id="import">Importa JSON…</button></div></header>
 <main class="editor-layout">
@@ -10,14 +10,19 @@
     <button id="export-all" class="wide">Exporta tota la col·lecció</button>
     <hr><label for="design-name">Nom de l’edifici</label><input id="design-name" maxlength="60" value="El meu edifici">
     <div class="two-columns"><div><label for="width">Amplada</label><select id="width"><option value="1">1 cel·la</option><option value="2">2 cel·les</option><option value="3">3 cel·les</option></select></div><div><label for="depth">Fondària</label><select id="depth"><option value="1">1 cel·la</option><option value="2">2 cel·les</option><option value="3">3 cel·les</option></select></div></div>
-    <label for="middle-count">Repeticions de la planta intermèdia</label><select id="middle-count"><option value="0">Cap · només planta baixa</option><option value="1" selected>1 planta intermèdia</option><option value="2">2 plantes intermèdies</option><option value="3">3 plantes intermèdies</option></select>
+    <label id="middle-count-label" for="middle-count">Repeticions de la planta intermèdia</label><select id="middle-count"><option value="0">Cap · només planta baixa</option><option value="1" selected>1 planta intermèdia</option><option value="2">2 plantes intermèdies</option><option value="3">3 plantes intermèdies</option></select>
+    <div id="individual-floor-options" hidden><label for="middle-level">Planta del mig que vols editar</label><select id="middle-level"></select></div>
     <hr><h2 id="cell-title">Planta baixa · cel·la 1</h2>
     <div id="floor-fields">
       <label for="cell-style">Construcció de la cel·la</label><select id="cell-style"><option value="solid">Murs</option><option value="arcade">Arcades obertes amb pilastres</option><option value="empty">Sense planta intermèdia</option></select>
       <label for="wall-color">Color dels murs</label><input id="wall-color" type="color" value="#f5eee0">
+      <div id="wall-color-presets" class="game-colors" role="group" aria-label="Colors del joc per als murs"></div>
+
       <div id="face-fields"><p class="note">Combina obertures diferents a cada costat. Tria «Portal configurable» per escollir la forma, la posició i les finestres. Esquerra i dreta es miren des de fora, de cara a cada façana. Només es veuen les obertures exteriors.</p><div id="faces" class="two-columns"></div></div>
     </div>
-    <div id="roof-fields" hidden><label for="roof-type">Coberta</label><select id="roof-type"><option value="tile">Teulada a dues aigües</option><option value="shed">Teulada a una aigua</option><option value="flat">Terrat amb barana</option></select><label for="roof-color">Color de la coberta</label><input id="roof-color" type="color" value="#bf7957"><label for="roof-turn">Vessant o costat baix cap a</label><select id="roof-turn"><option value="0">Dreta</option><option value="1">Darrere</option><option value="2">Esquerra</option><option value="3">Davant</option></select></div>
+    <div id="roof-fields" hidden><label for="roof-type">Coberta</label><select id="roof-type"><option value="tile">Teulada a dues aigües</option><option value="shed">Teulada a una aigua</option><option value="flat">Terrat amb barana</option><option value="attic">Golfes i mig terrat amb estenedor</option></select><label for="roof-color">Color de la coberta</label><input id="roof-color" type="color" value="#bf7957">
+      <div id="roof-color-presets" class="game-colors" role="group" aria-label="Colors del joc per a la coberta"></div>
+<label id="roof-turn-label" for="roof-turn">Vessant o costat baix cap a</label><select id="roof-turn"><option value="0">Dreta</option><option value="1">Darrere</option><option value="2">Esquerra</option><option value="3">Davant</option></select></div>
     <button id="apply-layer" class="wide">Aplica a tota aquesta planta</button>
     <p class="note">La planta baixa ocupa tota la parcel·la. Les cel·les sense planta intermèdia tenen la coberta més baixa. Les arcades deixen buits amb suports.</p>
   </aside>
@@ -28,5 +33,5 @@
 </main>
 <footer><p id="status" role="status" aria-live="polite">Disseny nou. Desa’l per utilitzar-lo a la vila.</p><span>Els edificis ja col·locats conserven el seu disseny original.</span></footer>
 <input id="import-file" type="file" accept=".json,application/json" hidden>
-<script type="module" src="./editor.js"></script>
+<script type="module" src="./editor.js?v=76"></script>
 </body></html>
