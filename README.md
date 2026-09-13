@@ -28,7 +28,7 @@ No cal executar `npm install`, compilar ni configurar Vite. El joc no utilitza c
 
 Cada canvi es desa al `localStorage` d’aquest navegador i d’aquest origen web. El desament no se sincronitza entre dispositius i pot desaparèixer si es netegen les dades del navegador. El servidor inclòs utilitza el port 3000 o el primer disponible a partir d’aquest: conserva la mateixa adreça per recuperar el desament local.
 
-A **La meva vila → Desa una còpia (.json)** pots exportar la vila. Obre-la amb **Obre una vila…**. El format 59 guarda els edificis del jugador amb els seus dissenys, els ajuntaments, les esglésies, les cases amb pati, la mida de la quadrícula, els mercats, els negocis de planta baixa, els ponts, la costa, totes les construccions, els buits entre pisos cada espècie plantada i les caselles de platja. S’importen també fitxers dels formats 1–58, convertits automàticament; els pins existents continuen sent pins. El desament anterior es conserva separadament al navegador; la càmera, la llum i l’historial de desfer no es guarden al fitxer.
+A **La meva vila → Desa una còpia (.json)** pots exportar la vila. Obre-la amb **Obre una vila…**. El format 63 guarda els edificis del jugador amb els seus dissenys, els ajuntaments, les esglésies, les cases amb pati, la mida de la quadrícula, els mercats, els negocis de planta baixa, els ponts, la costa, totes les construccions, els buits entre pisos cada espècie plantada i les caselles de platja. S’importen també fitxers dels formats 1–62, convertits automàticament; els pins existents continuen sent pins. El desament anterior es conserva separadament al navegador; la càmera, la llum i l’historial de desfer no es guarden al fitxer.
 
 **Fes una fotografia** exporta una imatge PNG de la vista 3D sense els controls.
 
@@ -897,6 +897,66 @@ Esquerra i dreta s’entenen mirant la façana des de fora. Els nous balcons ten
 A les cases del joc, les composicions varien automàticament per façana i pis i es conserven en desar, recarregar o clonar l’estètica. A l’editor, es poden escollir i combinar al selector de cada façana. Clonar una casa cap a l’editor conserva aquestes composicions en les plantes editables. Els accessos i negocis que donen a terreny de la mateixa alçada continuen tenint prioritat sobre les composicions dels pisos.
 
 Format de vila **59**, compatible amb els formats 1–58. Dissenys i col·leccions de l’editor en format **4**, amb lectura dels formats 1–3. Es mantenen totes les funcions de la v78.
+
+
+## Pastura de cabres — v80
+
+A **Terreny → Terrenys agrícoles → Pastura de cabres** trobaràs un terreny d’herba amb petits arbustos i un ramat animat.
+
+- Cada zona de pastura connectada té **dues o tres cabres**. Afegir-hi cel·les amplia l’espai disponible per al ramat.
+- Les cabres caminen, mouen les potes i fan pauses. Poden passar entre cel·les adjacents, mantenint-se dins de la pastura i evitant els arbustos i les altres cabres del ramat.
+- Els arbustos tenen posicions variades dins de cada cel·la. Aquesta variació és estable: es conserva en recarregar la vila.
+- El terreny conserva l’alçada i el pendent. Les cabres només travessen vores que coincideixen en alçada; un salt de terreny separa les pastures.
+- Els edificis, patis, ponts i terrasses ocupats queden fora de la zona de pastura. Plantar un arbre en una cel·la conserva l’herba però retira aquella cel·la del recorregut de les cabres; esborrar l’arbre la recupera.
+- Funciona amb pintura de terreny amb Alt, clonació, desfer i importació/exportació JSON. Les posicions instantànies de les cabres no es guarden: reprenen el passeig en obrir la vila. Es respecta la preferència de moviment reduït del dispositiu.
+
+Es mantenen totes les funcions de la v79. Format de vila **60**, compatible amb els formats 1–59; dissenys de l’editor en format **4**.
+
+
+## Pastura d’ovelles — v81
+
+A **Terreny → Terrenys agrícoles → Pastura d’ovelles**, col·loca una pastura d’herba tendra, verda i baixa, amb petits brins en posicions variades.
+
+Cada zona de pastura d’ovelles connectada té **dues o tres ovelles**, amb cos arrodonit de llana, cara curta i cua baixa. Caminen amb moviment de potes, fan pauses i es mouen entre les cel·les adjacents del mateix tipus. Les ovelles es mantenen a les pastures d’ovelles i les cabres a les de cabres.
+
+Com amb les cabres, les vores han de coincidir en alçada per poder passar-hi. Edificis, ponts, patis i terrasses ocupats interrompen el recorregut. Es conserven el suport de pendents, la pintura amb Alt, la clonació de terrenys, desfer i la importació/exportació JSON. Les posicions instantànies dels animals no es guarden; reprenen el passeig en obrir la vila. Es respecta la preferència de moviment reduït del dispositiu.
+
+Es mantenen totes les funcions de la v80. Format de vila **61**, compatible amb els formats 1–60; dissenys de l’editor en format **4**.
+
+
+## Pastura de vaques Bruna dels Pirineus — v82
+
+A **Terreny → Terrenys agrícoles → Pastura de vaques · Bruna dels Pirineus**, col·loca una pastura d’herba tendra com la de les ovelles, amb petites bales rectangulars de palla als marges. La posició de les bales varia entre cel·les i es conserva en recarregar.
+
+Cada zona de pastura de vaques connectada té **dues o tres vaques**. El model estilitzat té cos robust, pelatge bru de diferents tonalitats, morro fosc amb contorn clar, banyes clares amb puntes fosques i cua llarga. Referència de la capa bruna: [Federació de la Raça Bruna dels Pirineus](https://www.brunadelspirineus.org/raca-bruna).
+
+Les vaques caminen amb moviment de potes, fan pauses i passen entre pastures de vaques adjacents. Esquiven les bales, incloses les de les cel·les veïnes, i mantenen separació respecte de les altres vaques. Les pastures d’ovelles i de cabres conserven els seus ramats propis.
+
+Es mantenen les regles d’accés: vores a la mateixa alçada, edificis i espais ocupats fora del recorregut. Admet pintura amb Alt, clonació de terreny, desfer, desament i importació/exportació JSON. Les posicions instantànies dels animals no es guarden; reprenen el passeig en obrir la vila. Es respecta la preferència de moviment reduït del dispositiu.
+
+Es mantenen totes les funcions de la v81. Format de vila **62**, compatible amb els formats 1–61; dissenys de l’editor en format **4**.
+
+
+## Activar o aturar els ramats — v83
+
+A **La meva vila → Moviment dels ramats**, pots activar o aturar alhora les cabres, ovelles i vaques. El botó indica si el moviment està activat o aturat. Aturar-lo manté els animals visibles al punt on són; tornar-lo a activar reprèn el passeig.
+
+La preferència es desa en aquest navegador i es conserva en recarregar, importar una vila o començar-ne una de nova. És una preferència del navegador, independent del JSON de la vila. Si encara no l’has escollida, el moviment està activat tret que el dispositiu tingui activada la preferència de moviment reduït; el botó permet canviar-ho explícitament.
+
+Aquesta opció controla només els ramats. Les banderes i les barques mantenen el seu funcionament. Es mantenen totes les funcions de la v82; format de vila **62** i dissenys **4**.
+
+
+## Gallines i oques; carpeta de descàrregues — v84
+
+A **Terreny → Terrenys agrícoles → Gallines i oques**, col·loca un terreny de terra trepitjada, palla disseminada i petits flocs d’herba. Cada cel·la incorpora un galliner de fusta amb rampa d’entrada, teulada i ponedor lateral.
+
+Cada zona connectada té **quatre o cinc gallines i una o dues oques**. Les gallines tenen plomes de colors variats i cresta vermella; les oques són blanques, de coll llarg i bec ataronjat. Comparteixen el recorregut i poden passar entre els terrenys de gallines i oques adjacents, evitant els galliners i les altres aus. Es conserven les regles d’alçada, obstacles i zones separades dels altres ramats.
+
+**La meva vila → Moviment dels ramats** també activa o atura gallines i oques, i recorda la preferència. El terreny admet pendents, pintura amb Alt, clonació, desfer i desament JSON. Les posicions instantànies dels animals no es guarden.
+
+El botó **Descarrega el joc i el codi** apunta ara a **descarregues/vila-mediterrania-v84-gallines-oques.zip**. També hi ha una còpia amb el nom estable **descarregues/vila-mediterrania.zip** al servidor. Els ZIP no s’inclouen dins d’altres ZIP. En una instal·lació pròpia, posa el ZIP descarregable en aquesta subcarpeta.
+
+Es mantenen totes les funcions de la v83. Format de vila **63**, compatible amb els formats 1–62; dissenys de l’editor en format **4**.
 
 
 ## Credits

@@ -13,7 +13,7 @@ import {createWorld,validateWorld,editWorld,History,COLORS,worldLimit,expandWorl
 
 const $=selector=>document.querySelector(selector);
 const $$=selector=>[...document.querySelectorAll(selector)];
-const STORAGE_KEY='vila-mediterrania:v59';
+const STORAGE_KEY='vila-mediterrania:v63';
 // New landmark types join the building selector without widening the toolbar.
 const BUILDING_TOOLS=new Map([
   ['beachbar','Guingueta'],['market','Mercat'],['church','Església'],['townhall','Ajuntament'],
@@ -21,7 +21,7 @@ const BUILDING_TOOLS=new Map([
   ['building-sign','Canviar un rètol existent'],
 ]);
 const MONUMENT_TOOLS=new Map(Object.entries(LANDMARK_TYPES).filter(([,definition])=>definition.category==='monument').map(([id,definition])=>[id,definition.name]));
-const LEGACY_STORAGE_KEYS=['vila-mediterrania:v58','vila-mediterrania:v57','vila-mediterrania:v56','vila-mediterrania:v55','vila-mediterrania:v54','vila-mediterrania:v53','vila-mediterrania:v52','vila-mediterrania:v51','vila-mediterrania:v50','vila-mediterrania:v49','vila-mediterrania:v48','vila-mediterrania:v47','vila-mediterrania:v46','vila-mediterrania:v45','vila-mediterrania:v44','vila-mediterrania:v43','vila-mediterrania:v42','vila-mediterrania:v41','vila-mediterrania:v40','vila-mediterrania:v39','vila-mediterrania:v38','vila-mediterrania:v37','vila-mediterrania:v36','vila-mediterrania:v35','vila-mediterrania:v34','vila-mediterrania:v33','vila-mediterrania:v32','vila-mediterrania:v31','vila-mediterrania:v30','vila-mediterrania:v29','vila-mediterrania:v28','vila-mediterrania:v27','vila-mediterrania:v26','vila-mediterrania:v25','vila-mediterrania:v24','vila-mediterrania:v23','vila-mediterrania:v22','vila-mediterrania:v21','vila-mediterrania:v20','vila-mediterrania:v19','vila-mediterrania:v18','vila-mediterrania:v17','vila-mediterrania:v16','vila-mediterrania:v15','vila-mediterrania:v14','vila-mediterrania:v13','vila-mediterrania:v12','vila-mediterrania:v11','vila-mediterrania:v10','vila-mediterrania:v9','vila-mediterrania:v8','vila-mediterrania:v7','vila-mediterrania:v6','vila-mediterrania:v5','vila-mediterrania:v4','vila-mediterrania:v3','vila-mediterrania:v2','vila-mediterrania:v1'];
+const LEGACY_STORAGE_KEYS=['vila-mediterrania:v62','vila-mediterrania:v61','vila-mediterrania:v60','vila-mediterrania:v59','vila-mediterrania:v58','vila-mediterrania:v57','vila-mediterrania:v56','vila-mediterrania:v55','vila-mediterrania:v54','vila-mediterrania:v53','vila-mediterrania:v52','vila-mediterrania:v51','vila-mediterrania:v50','vila-mediterrania:v49','vila-mediterrania:v48','vila-mediterrania:v47','vila-mediterrania:v46','vila-mediterrania:v45','vila-mediterrania:v44','vila-mediterrania:v43','vila-mediterrania:v42','vila-mediterrania:v41','vila-mediterrania:v40','vila-mediterrania:v39','vila-mediterrania:v38','vila-mediterrania:v37','vila-mediterrania:v36','vila-mediterrania:v35','vila-mediterrania:v34','vila-mediterrania:v33','vila-mediterrania:v32','vila-mediterrania:v31','vila-mediterrania:v30','vila-mediterrania:v29','vila-mediterrania:v28','vila-mediterrania:v27','vila-mediterrania:v26','vila-mediterrania:v25','vila-mediterrania:v24','vila-mediterrania:v23','vila-mediterrania:v22','vila-mediterrania:v21','vila-mediterrania:v20','vila-mediterrania:v19','vila-mediterrania:v18','vila-mediterrania:v17','vila-mediterrania:v16','vila-mediterrania:v15','vila-mediterrania:v14','vila-mediterrania:v13','vila-mediterrania:v12','vila-mediterrania:v11','vila-mediterrania:v10','vila-mediterrania:v9','vila-mediterrania:v8','vila-mediterrania:v7','vila-mediterrania:v6','vila-mediterrania:v5','vila-mediterrania:v4','vila-mediterrania:v3','vila-mediterrania:v2','vila-mediterrania:v1'];
 let bridgeStart=null,designs=[];
 let terrainStroke=null,controlDrawers;
 let cloneStart=null,cloneClipboard=null,cloneStyle=null;
@@ -300,7 +300,7 @@ function describeTerrain(){
   $('#slope-options').hidden=terrainType!=='slope';
   if(terrainType==='slope'){$('#terrain-note').textContent=$('#slope-direction').value==='flat'?'Retira el pendent i deixa el terreny al nivell inferior. Els elements es conserven.':'Puja un nivell cap al costat escollit. Clica al nivell inferior (0–3). Els carrers segueixen el pendent; els edificis recolzen sobre fonaments horitzontals al nivell superior.';return;}
 
-  if(AGRICULTURAL_TERRAINS[terrainType]){$('#terrain-note').textContent=AGRICULTURAL_TERRAINS[terrainType].description+' Conserva l’alçada i el pendent. Pots construir-hi, pintar amb Alt i arrossegar, o copiar-lo amb Clona. Esborra retira el conreu.';return;}
+  if(AGRICULTURAL_TERRAINS[terrainType]){$('#terrain-note').textContent=AGRICULTURAL_TERRAINS[terrainType].description+' Conserva l’alçada i el pendent. Pots construir-hi, pintar amb Alt i arrossegar, o copiar-lo amb Clona. Esborra retira aquest terreny agrícola.';return;}
   if(terrainType==='rocky'){$('#terrain-note').textContent='Pedra grisa amb afloraments irregulars. Conserva l’alçada i el pendent; permet construir-hi, plantar-hi i pavimentar. Terra ferma permet elevar-lo; esborrar retira l’acabat rocós.';return;}
   if(terrainType==='meadow'){$('#terrain-note').textContent='Pradera verda amb floretes blanques, grogues i rosades. Clica per cobrir el terreny conservant-ne l’alçada i el pendent. Terra ferma permet elevar-lo; esborrar retira la pradera.';return;}
   const roads={cobble:'Empedrat de pedra amb juntes i tons variats.',dirt:'Terra ocre amb grava fina.',asphalt:'Asfalt gris fosc amb un acabat granulat.'};
@@ -362,6 +362,21 @@ async function init(){
     onTerrainStrokeMove:p=>{if(terrainStroke?.visit(p))refresh();},
     onTerrainStrokeEnd:()=>{terrainStroke=null;},
     onHover:p=>{keyboardCell=p;previewClone(p);previewBridge(p);previewMarket(p);previewPatio(p);previewChurch(p);previewTownHall(p);previewCustom(p);previewBeachBar(p);previewLandmark(p);},onError:failure,onCameraChange:({theta,phi})=>updateCompass($('#compass'),theta,phi)});
+  const animalMotionKey='vila-mediterrania:animal-motion',animalMotionButton=$('#animal-motion-toggle');
+  const setAnimalMotion=enabled=>{
+    scene.animalsMoving=enabled;animalMotionButton.setAttribute('aria-pressed',String(enabled));
+    $('#animal-motion-state').textContent=enabled?'activat':'aturat';
+    $('#animal-motion-icon').textContent=enabled?'▶':'Ⅱ';
+    animalMotionButton.title=enabled?'Atura les cabres, ovelles, vaques, gallines i oques':'Activa el moviment de cabres, ovelles, vaques, gallines i oques';
+  };
+  let animalMotion=scene.animalsMoving;
+  try{const saved=localStorage.getItem(animalMotionKey);if(saved==='true'||saved==='false')animalMotion=saved==='true';}catch{}
+  setAnimalMotion(animalMotion);
+  animalMotionButton.addEventListener('click',()=>{
+    setAnimalMotion(!scene.animalsMoving);
+    try{localStorage.setItem(animalMotionKey,String(scene.animalsMoving));}
+    catch{toast('La preferència s’aplica ara, però no s’ha pogut desar en aquest navegador.');}
+  });
   refreshDesigns();
   for(const id of ['custom-design','custom-direction'])$('#'+id).addEventListener('change',describeCustom);
   for(const link of $$('a[href="./editor.html"]'))link.addEventListener('click',persist);

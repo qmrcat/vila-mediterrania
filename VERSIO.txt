@@ -1,5 +1,4 @@
-Vila Mediterrània — versió 79
-Balcons individuals, balcó i finestra a esquerra/dreta i dos balcons separats.
-Disponibles a les cases, a l’editor i en clonar.
-Masies sense rètol per defecte; noms personalitzats conservats.
-Inclou totes les funcions de la v78. Format de vila 59; dissenys 4.
+Vila Mediterrània — versió 84
+Terreny de gallines i oques: galliner de fusta, quatre o cinc gallines i una o dues oques per zona connectada.
+Descàrregues a la subcarpeta descarregues.
+Inclou totes les funcions de la v83. Format de vila 63; dissenys 4.

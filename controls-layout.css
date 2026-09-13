@@ -45,7 +45,7 @@
 #game #village-menu{z-index:6;top:76px;right:var(--edge);max-height:calc(100dvh - 90px - env(safe-area-inset-bottom,0px));overflow-y:auto;overscroll-behavior:contain;width:290px;max-width:calc(100% - 24px)}
 #village-menu label{display:block;margin:9px 10px;font-size:14px}
 #village-menu select{width:calc(100% - 20px);margin:0 10px 8px;font-size:16px;min-height:44px}
-#village-menu #grid,#village-menu #diada-toggle{margin:0;padding:12px 10px;font-size:14px;min-height:44px}
+#village-menu #grid,#village-menu #diada-toggle,#village-menu #animal-motion-toggle{margin:0;padding:12px 10px;font-size:14px;min-height:44px}
 #game #toast{z-index:7;bottom:calc(var(--dock-space) + 12px)}
 @media(max-width:1100px){#game #construction-tools .toolbar{justify-content:flex-start}}
 @media(max-width:740px),(pointer:coarse) and (max-height:500px){

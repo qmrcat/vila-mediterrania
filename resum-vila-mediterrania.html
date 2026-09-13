@@ -85,24 +85,24 @@
       <rect x="640" y="96" width="20" height="4" rx="2" fill="var(--surface)" opacity=".5"/>
     </svg>
     <div class="facts">
-      <div><b>v76</b><span>versió del joc</span></div>
+      <div><b>v79</b><span>versió del joc</span></div>
       <div><b>65 × 65</b><span>quadrícula màxima</span></div>
-      <div><b>Format 56</b><span>obre viles 1–55</span></div>
+      <div><b>Format 59</b><span>obre viles 1–58</span></div>
       <div><b>0</b><span>frameworks i dependències</span></div>
       <div><b>Català</b><span>interfície i ajuda</span></div>
     </div>
   </header>
 
   <h2>Què és</h2>
-  <p>Un joc creatiu de <strong>construcció lliure en 3D</strong> per al navegador, inspirat en Townscaper i en l'arquitectura de la <strong>Costa Brava</strong> i la <strong>Costa Daurada</strong>. Cliques sobre una quadrícula (33×33, 49×49 o 65×65 caselles) i el poble creix: cases de calç i terracota, platges, carrers, places amb font, arbres i mar. No hi ha objectius, economia ni personatges — només construir al teu aire.</p>
+  <p>Un joc creatiu de <strong>construcció lliure en 3D</strong> per al navegador, inspirat en Townscaper i en l'arquitectura de la <strong>Costa Brava</strong> i la <strong>Costa Daurada</strong>. Cliques sobre una quadrícula (33×33, 49×49 o 65×65 caselles) i el poble creix: cases de calç i terracota, platges, carrers, places amb font, arbres, camps de vinya i mar. No hi ha objectius, economia ni personatges — només construir al teu aire.</p>
   <p>És JavaScript pur amb mòduls ES: sense compilar, sense <code>npm install</code>, sense Internet un cop descarregat. L'únic motor és Three.js 0.180, inclòs localment. Funciona a ordinador, tauleta i mòbil amb WebGL 2, i pots triar l'ambientació de cada costa, que canvia materials, platges i colors de les cases.</p>
 
   <h2>Les eines</h2>
   <ul class="tools">
     <li><b>Navega</b><small>Mou la càmera sense construir ni esborrar res.</small></li>
-    <li><b>Terreny</b><small>Terra ferma, pendents, platja, pradera, roca i carrers empedrats, de terra o asfaltats. Amb <kbd>Alt</kbd> + arrossegar, pintes passades senceres.</small></li>
+    <li><b>Terreny</b><small>Terra ferma, pendents, platja, pradera, roca, carrers empedrats, de terra o asfaltats i cinc conreus: vinya, oliverar, cereals, fruiters i horta. Amb <kbd>Alt</kbd> + arrossegar, pintes passades senceres.</small></li>
     <li><b>Casa</b><small>Fins a 5 pisos, quatre acabats orientables — teulades a una i dues aigües, terrat i golfes amb estenedor —, colors per planta, cases amb pati i negocis a la planta baixa o als pisos.</small></li>
-    <li><b>Edificis</b><small>Mercat, església, ajuntament, hospital, escola, hotels, far, parc infantil… més de vint equipaments amb rètol editable.</small></li>
+    <li><b>Edificis</b><small>Mercat, església, ajuntament, hospital, escola, hotels, masia catalana, far, parc infantil… més de vint equipaments amb rètol editable.</small></li>
     <li><b>Monuments</b><small>Cinc peces de muralla combinables i el castell medieval català amb senyera.</small></li>
     <li><b>Arbres</b><small>Onze espècies mediterrànies, del pi i el margalló a l'olivera, la parra o el xiprer.</small></li>
     <li><b>Plaça</b><small>Paviment amb font a la casella central; uneix caselles per fer passejos.</small></li>
@@ -122,16 +122,16 @@
   <p>Cada negoci vesteix la façana amb aparadors, tendals i mobiliari propis — els bars i restaurants poden treure terrassa amb taules parades al carrer — i admet un <strong>rètol personalitzat</strong> de fins a 24 caràcters: «Bar Can Martí», «Fruiteria L'Hort»… Si el terreny del davant canvia i deixa de ser viable, la terrassa s'amaga sola i torna quan recuperes l'espai.</p>
   <h3>Equipaments i monuments</h3>
   <ul class="chips">
-    <li>Mercat</li><li>Església amb campanar</li><li>Ajuntament amb senyera</li><li>Hospital</li><li>Escola</li><li>Comissaria</li><li>Bombers</li><li>Deixalleria</li><li>Cementiri</li><li>Far</li><li>Parc infantil</li><li>Guingueta de platja</li><li>Hotels de 3 i 5 estrelles</li><li>Hostal i pensió</li><li>Museu</li><li>Monestir</li><li>Parlament</li><li>Casernes</li><li>Pals de bandera</li><li>Muralles</li><li>Castell medieval</li>
+    <li>Mercat</li><li>Església amb campanar</li><li>Ajuntament amb senyera</li><li>Masia catalana</li><li>Hospital</li><li>Escola</li><li>Comissaria</li><li>Bombers</li><li>Deixalleria</li><li>Cementiri</li><li>Far</li><li>Parc infantil</li><li>Guingueta de platja</li><li>Hotels de 3 i 5 estrelles</li><li>Hostal i pensió</li><li>Museu</li><li>Monestir</li><li>Parlament</li><li>Casernes</li><li>Pals de bandera</li><li>Muralles</li><li>Castell medieval</li>
   </ul>
   <p>Ocupen d'una a setze caselles, giren cap als quatre punts cardinals i es retiren sencers conservant el terreny. El botó <strong>Banderes de la Diada</strong> engalana un terç de les cases amb senyeres i estelades que onegen amb el vent (i es queden quietes si el sistema demana moviment reduït).</p>
 
   <h2>L'editor d'edificis</h2>
-  <p>Una pàgina pròpia (<code>editor.html</code>) per dissenyar edificis modulars de fins a 3×3 caselles i cinc nivells: murs o arcades, portals configurables, balcons, terrats, golfes i teulades per cel·la, amb els sis colors del joc a un clic. Pots desar fins a <strong>100 dissenys</strong> al navegador, exportar-los i importar-los en JSON (format 3), i col·locar-los a la vila com qualsevol altre edifici — cada còpia és independent del catàleg, i també admet negocis i colors per planta. Amb <strong>Clona → Una casa a l'editor</strong>, qualsevol casa de la vila es converteix en un disseny nou amb les plantes editables una a una.</p>
+  <p>Una pàgina pròpia (<code>editor.html</code>) per dissenyar edificis modulars de fins a 3×3 caselles i cinc nivells: murs o arcades, portals configurables, balcons — amples, individuals o aparellats amb finestra —, terrats, golfes i teulades per cel·la, amb els sis colors del joc a un clic. Pots desar fins a <strong>100 dissenys</strong> al navegador, exportar-los i importar-los en JSON (format 4), i col·locar-los a la vila com qualsevol altre edifici — cada còpia és independent del catàleg, i també admet negocis i colors per planta. Amb <strong>Clona → Una casa a l'editor</strong>, qualsevol casa de la vila es converteix en un disseny nou amb les plantes editables una a una.</p>
 
   <h2>Desar, compartir, actualitzar</h2>
   <div class="duo">
-    <div><b>Desament automàtic</b><p>Cada canvi queda al navegador (localStorage). Exporta la vila a un fitxer JSON en format 56; s'obren i es converteixen automàticament tots els formats des de l'1.</p></div>
+    <div><b>Desament automàtic</b><p>Cada canvi queda al navegador (localStorage). Exporta la vila a un fitxer JSON en format 59; s'obren i es converteixen automàticament tots els formats des de l'1.</p></div>
     <div><b>Música de fons</b><p>Reproductor ♫ amb pausa, volum i pista següent. El servidor detecta sol els àudios de la carpeta <code>music</code> i els transmet per fragments; també pots triar una carpeta del dispositiu.</p></div>
     <div><b>Configuració oberta</b><p><code>config.js</code> exposa els límits del joc: pisos, nivells, ponts, percentatge de banderes, passos de desfer… editables sense tocar el codi.</p></div>
     <div><b>Avís de versions</b><p>«La meva vila» mostra la versió del joc, i el joc avisa quan el servidor en té una de nova, oferint actualitzar desant primer la vila. Sense connexió, tot continua funcionant.</p></div>
@@ -139,10 +139,10 @@
 
   <h2>Últimes novetats</h2>
   <div class="duo">
-    <div><b>Clona (v76)</b><p>Copia una casa amb el pati i els negocis, un grup de cases o de terrenys entre dues cantonades, o només l'estètica d'una façana per aplicar-la a altres cases. Cada còpia és independent i es pot enganxar tants cops com vulguis.</p></div>
-    <div><b>Golfes amb estenedor (v74)</b><p>Nou acabat de coberta: mitja teulada amb golfes i mig terrat amb barana de ferro i un estenedor amb roba i pinces, orientable als quatre punts cardinals.</p></div>
-    <div><b>Escales amb baranes (v74–v75)</b><p>Les escales poden dur baranes de ferro amb muntants i passamans, o quedar-se llises; canviar el tipus conserva l'orientació.</p></div>
-    <div><b>Editor més àgil (v73)</b><p>Els sis colors de les façanes del joc — calç, sorra, terracota, blau marí, oliva i rosa — són botons directes als selectors de murs i cobertes.</p></div>
+    <div><b>Balcons individuals (v79)</b><p>Quatre composicions noves als pisos: balcó d'una porta centrat, balcó amb finestra al costat (a esquerra o a dreta) i dos balcons separats amb barana pròpia. Varien soles a cada façana i pis, i es poden escollir a l'editor.</p></div>
+    <div><b>Masia catalana (v78)</b><p>Tres mides — 1×1, 1×2 i 2×2 amb porxada — de pedra, amb portal adovellat, porticons de fusta i xemeneia. Es pot aixecar damunt d'un camp de conreu, que es conserva a sota, i porta placa només si li poses nom.</p></div>
+    <div><b>Terrenys agrícoles (v77)</b><p>Vinya amb ceps i fils, oliverar, cereals, fruiters i horta amb bancals. Ajunta caselles per fer camps, segueixen els pendents i es poden pintar amb <kbd>Alt</kbd> o copiar amb Clona.</p></div>
+    <div><b>Clona (v76)</b><p>Copia una casa amb el pati i els negocis, un grup de cases o de terrenys entre dues cantonades, o només l'estètica d'una façana per aplicar-la a altres cases.</p></div>
   </div>
 
   <h2>Sota el capó</h2>

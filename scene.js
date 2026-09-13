@@ -1,3 +1,4 @@
+import {createGoatGeometry,createSheepGeometry,createCowGeometry,createPoultryGeometry} from './goat-geometry.js';
 import {BALCONY_FACES,upperFaceType,renderBalconyFacade} from './balcony-facades.js';
 import {AGRICULTURAL_TERRAINS,isAgricultural} from './agricultural-types.js';
 import {renderAgriculturalTerrain} from './agricultural-terrain.js';
@@ -1037,6 +1038,10 @@ export function createVillageGeometry(world){
     matrices.forEach((m,i)=>mesh.setMatrixAt(i,m));
     mesh.instanceMatrix.needsUpdate=true;mesh.castShadow=true;mesh.receiveShadow=true;mesh.computeBoundingSphere();group.add(mesh);
   }
+  const goats=createGoatGeometry(world,UNIT,geometries,material);group.userData.goats=goats;group.add(...goats.meshes);
+  const sheep=createSheepGeometry(world,UNIT,geometries,material);group.userData.sheep=sheep;group.add(...sheep.meshes);
+  const cows=createCowGeometry(world,UNIT,geometries,material);group.userData.cows=cows;group.add(...cows.meshes);
+  const poultry=createPoultryGeometry(world,UNIT,geometries,material);group.userData.poultry=poultry;group.add(...poultry.meshes);
   const beach=createBeachMesh(world);if(beach)group.add(beach);
   return group;
 }
@@ -1084,6 +1089,7 @@ export class VillageScene{
     this.pickingMaterial=new THREE.MeshBasicMaterial({visible:false});this.raycaster=new THREE.Raycaster();this.mouse=new THREE.Vector2();this.waterPlane=new THREE.Plane(UP,0);
     this.boats=new THREE.Group();this.scene.add(this.boats);this.makeBoats();
     this.reducedMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
+    this.animalsMoving=!this.reducedMotion;
     this.abort=new AbortController();this.installPointerControls();
     this.resizeObserver=new ResizeObserver(()=>this.resize());this.resizeObserver.observe(canvas);
     canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();this.onError('El navegador ha perdut el context gràfic. La vila es conserva en aquest navegador. Recarrega la pàgina per continuar.');},{signal:this.abort.signal});
@@ -1330,7 +1336,9 @@ export class VillageScene{
   }
   frame(time){
     this.animation=requestAnimationFrame(t=>this.frame(t));
+    const dt=this.lastFrameTime===undefined?0:(time-this.lastFrameTime)/1000;this.lastFrameTime=time;
     if(document.hidden)return;
+    if(this.animalsMoving){this.village?.userData.goats?.update(dt);this.village?.userData.sheep?.update(dt);this.village?.userData.cows?.update(dt);this.village?.userData.poultry?.update(dt);}
     if(!this.reducedMotion){this.time.value=time/1000;for(const flag of this.village?.userData.flags??[]){if(flag.userData.festiveFlag)waveFestiveFlag(flag,this.time.value);else waveSenyera(flag,this.time.value);}this.boats.children.forEach((b,i)=>{b.position.y=.05+Math.sin(time*.0013+i)*.025;b.rotation.z=Math.sin(time*.001+i)*.035;});}
     this.renderer.render(this.scene,this.camera);
   }

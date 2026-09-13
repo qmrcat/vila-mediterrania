@@ -1,3 +1,5 @@
+import {COOP,renderCoop} from './poultry-geometry.js';
+import {pastureShrubs,pastureBales} from './goat-pasture.js';
 import {terrainY,terrainSurfaceY,randomAt} from './model.js';
 /** Repeating rows join adjoining cells; every root rests on the actual slope. */
 export function renderAgriculturalTerrain(t,add,surfaceBox,unit,exclude,branch){
@@ -13,7 +15,41 @@ export function renderAgriculturalTerrain(t,add,surfaceBox,unit,exclude,branch){
       surfaceBox(color,p.x,soil+.020,p.z,width*unit,.030,.20*unit);
     }
   };
-  if(t.kind==='vineyard'){
+  if(t.kind==='poultryYard'){
+    const shelter=root(COOP.u,COOP.v,.26);if(shelter)renderCoop(shelter,add);
+    for(let i=0;i<19;i++){
+      const u=(randomAt(t.x,t.z,1290+i)-.5)*.88,v=(randomAt(t.x,t.z,1320+i)-.5)*.88,p=root(u,v,.025);if(!p)continue;
+      if(Math.hypot(u-COOP.u,v-COOP.v)<.20)continue;
+      if(i%3===0)emit(p,'box','#8f9c60',0,.019,0,.019,.038,.052,randomAt(t.x,t.z,1340+i)*6);
+      else surfaceBox(i%2?'#d0b876':'#dccb98',p.x,soil+.011,p.z,.055,.010,.011,randomAt(t.x,t.z,1360+i)*6);
+    }
+  }else if(t.kind==='sheepPasture'||t.kind==='cowPasture'){
+    for(let i=0;i<20;i++){
+      const u=(randomAt(t.x,t.z,1080+i)-.5)*.88,v=(randomAt(t.x,t.z,1110+i)-.5)*.88,p=root(u,v,.025);if(!p)continue;
+      const angle=randomAt(t.x,t.z,1140+i)*Math.PI,height=.025+randomAt(t.x,t.z,1170+i)*.022;
+      for(const turn of [0,Math.PI/2])emit(p,'box',i%2?'#b9d78e':'#8fb767',0,height/2,0,.012,height,.055,angle+turn);
+    }
+    if(t.kind==='cowPasture')for(const bale of pastureBales(t)){
+      const p=root(bale.u,bale.v,.105);if(!p)continue;
+      // Surface-aligned small rectangular bale with straw courses and two ties.
+      surfaceBox('#d4b86b',p.x,soil+.064,p.z,.18,.12,.14);
+      for(const y of [.036,.066,.096])surfaceBox('#e6ce88',p.x,soil+y,p.z,.184,.012,.143);
+      for(const x of [-.052,.052]){
+        surfaceBox('#8c8152',p.x+x,soil+.127,p.z,.009,.007,.147);
+        for(const z of [-.073,.073])surfaceBox('#8c8152',p.x+x,soil+.065,p.z+z,.009,.12,.008);
+      }
+    }
+  }else if(t.kind==='goatPasture'){
+    for(const shrub of pastureShrubs(t)){
+      const p=root(shrub.u,shrub.v,shrub.size/2);if(!p)continue;
+      emit(p,'rock','#66854f',0,.074,0,shrub.size,.15,shrub.size,randomAt(t.x,t.z,shrub.u)*6);
+      emit(p,'rock','#839958',-.025,.115,.012,shrub.size*.65,.09,shrub.size*.65);
+    }
+    for(let i=0;i<9;i++){
+      const u=(randomAt(t.x,t.z,980+i)-.5)*.88,v=(randomAt(t.x,t.z,1000+i)-.5)*.88,p=root(u,v,.025);if(!p)continue;
+      emit(p,'box',i%2?'#aabd80':'#869c5b',0,.020,0,.018,.04,.032,randomAt(t.x,t.z,1020+i)*6);
+    }
+  }else if(t.kind==='vineyard'){
     for(const u of [-.32,0,.32]){
       row(u,.18,'#987752');
       const posts=[];
