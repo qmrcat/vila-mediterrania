@@ -70,18 +70,52 @@
   .check li::before{content:"☐"; position:absolute; left:4px; top:-1px; color:var(--sea); font-size:17px;}
   .pitfall{margin-bottom:16px; max-width:68ch;}
   .pitfall b{color:var(--terra);}
+  .toc{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:16px 18px; margin:22px 0 10px;}
+  .toc b{font-family:var(--display); font-size:18px; display:block; margin-bottom:7px;}
+  .toc ol{columns:2; column-gap:28px; margin:0;}
+  .toc a{color:var(--sea); text-decoration-thickness:1px; text-underline-offset:3px;}
+  kbd{font-family:var(--mono); font-size:.78em; border:1px solid var(--line-strong); border-bottom-width:2px; border-radius:4px; padding:1px 5px; background:var(--surface);}
+  @media (max-width:620px){.toc ol{columns:1;}}
   footer{margin-top:56px; border-top:1px solid var(--line); padding-top:16px; font-size:13.5px; color:var(--muted);}
 </style>
 </head>
 <body>
 <div class="page">
 <header class="top">
-  <div class="eyebrow">Vila Mediterrània · v80 · Manual per a programadors</div>
+  <div class="eyebrow">Vila Mediterrània · v87 · Manual per a programadors</div>
   <h1>Ampliar el joc amb codi</h1>
-  <p class="lede">Com afegir <strong>edificis, monuments, terrenys, arbres i negocis</strong> nous al joc. Cada recepta segueix el camí que ja fan servir les peces existents: registrar l'element al model, dibuixar-lo en un mòdul de geometria i deixar que la interfície s'hi adapti sola.</p>
+  <p class="lede">Com crear <strong>cases personalitzades, edificis, monuments, terrenys, arbres i negocis</strong>. Inclou el camí visual, el camí amb JSON i el camí complet amb geometria 3D nova.</p>
 </header>
 
-<h2>Les tres capes</h2>
+<nav class="toc" aria-label="Índex del manual">
+  <b>Contingut</b>
+  <ol>
+    <li><a href="#tria-cami">Tria el camí adequat</a></li>
+    <li><a href="#arquitectura">Arquitectura i unitats</a></li>
+    <li><a href="#cases">Cases personalitzades</a></li>
+    <li><a href="#edificis">Edificis i monuments</a></li>
+    <li><a href="#terrenys">Terrenys nous</a></li>
+    <li><a href="#arbres">Arbres i plantes</a></li>
+    <li><a href="#negocis">Negocis</a></li>
+    <li><a href="#versions">Versions, proves i errors</a></li>
+  </ol>
+</nav>
+
+<h2 id="tria-cami">Tria el camí adequat</h2>
+<p>No cal modificar el motor per a tot. Comença pel camí més curt que permeti aconseguir el resultat:</p>
+<table>
+  <tr><th>Vull crear…</th><th>Camí recomanat</th><th>Fitxers principals</th></tr>
+  <tr><td>Casa pròpia</td><td class="plain">Editor visual; o un objecte de disseny creat amb JavaScript.</td><td class="plain"><code>editor.html</code>, <code>designs.js</code></td></tr>
+  <tr><td>Edifici singular</td><td class="plain">Un <code>landmark</code> nou i un mòdul de geometria.</td><td class="plain"><code>model.js</code>, <code>landmark-geometry.js</code></td></tr>
+  <tr><td>Monument</td><td class="plain">Com un edifici singular, amb <code>category:'monument'</code>.</td><td class="plain"><code>model.js</code>, mòdul de geometria</td></tr>
+  <tr><td>Conreu o vegetació de sòl</td><td class="plain">Terreny agrícola: el selector i la validació s'actualitzen sols.</td><td class="plain"><code>agricultural-types.js</code>, <code>agricultural-terrain.js</code></td></tr>
+  <tr><td>Nou sòl amb regles pròpies</td><td class="plain">Tipus bàsic de terreny; cal tocar model, interfície i escena.</td><td class="plain"><code>model.js</code>, <code>app.js</code>, <code>index.html</code>, <code>scene.js</code></td></tr>
+</table>
+<div class="rule">
+  <p><b>Abans de començar:</b> conserva una còpia dels fitxers que tocaràs i obre el projecte amb el servidor local. A PowerShell: <code>node server.mjs</code>. Després entra a l'adreça que mostra la terminal; no obris <code>index.html</code> directament amb <code>file://</code>, perquè els mòduls JavaScript poden quedar bloquejats.</p>
+</div>
+
+<h2 id="arquitectura">Les tres capes</h2>
 <p>Tot el projecte està partit en tres capes amb una frontera molt estricta. Entendre-la és el 80 % de la feina: si poses el codi a la capa correcta, la validació, el desament, el desfés i la selecció amb el ratolí et surten de franc.</p>
 <div class="layers">
   <div><b>El model</b><small><code>model.js</code>, <code>config.js</code>, <code>designs.js</code>. Quines peces existeixen, on es poden posar i què es desa al JSON. No sap res de Three.js ni del navegador.</small></div>
@@ -93,7 +127,7 @@
 </div>
 
 <h2>Unitats, alçades i direccions</h2>
-<p>Abans de dibuixar res, aquestes són les constants que fan que una peça encaixi amb la resta de la vila. Totes són al model.</p>
+<p>Abans de dibuixar res, aquestes són les constants que fan que una peça encaixi amb la resta de la vila. <code>FLOOR_HEIGHT</code>, les alçades del terreny i les direccions són a <code>model.js</code>; <code>UNIT</code> és a <code>scene.js</code>.</p>
 <table>
   <tr><th>Constant</th><th>Valor</th><th>Què és</th></tr>
   <tr><td>UNIT</td><td>1.3</td><td class="plain">L'amplada d'una casella en unitats de món. Tota la geometria d'una cel·la hi ha de cabre.</td></tr>
@@ -118,10 +152,67 @@
 </ul>
 <p>Són a l'objecte <code>geometries</code> de <code>scene.js</code>. <code>rock</code> (un dodecàedre) és el cavall de batalla de tot el fullatge i les pedres: escalat i girat a l'atzar sembla orgànic i costa molt poc.</p>
 <div class="rule">
-  <p><b>Els colors tenen cost, les formes no.</b> Cada parella <code>forma:color</code> obre un lot i un material nous. Reaprofitar els hex que ja fa servir el joc és gratis; inventar-ne vint de nous per a un sol edifici afegeix vint materials a cada fotograma. Mira les paletes de <code>farmhouse-geometry.js</code> o <code>civic-geometry.js</code> abans de triar-ne de noves.</p>
+  <p><b>Reutilitza formes i colors.</b> Cada parella <code>forma:color</code> obre un lot instanciat, i cada color nou crea un material. Inventar vint colors per a un sol edifici afegeix vint materials. Mira les paletes de <code>farmhouse-geometry.js</code> o <code>civic-geometry.js</code> abans de triar-ne de noves.</p>
 </div>
 
-<h2>Recepta A · Un edifici o un monument</h2>
+<h2 id="cases">Recepta A · Una casa personalitzada</h2>
+<p>Les cases personalitzades no necessiten geometria nova. El motor ja sap construir murs, arcades, portes, finestres, balcons i quatre tipus de coberta a partir d'un <strong>disseny</strong>. Aquesta és la millor opció per fer habitatges, blocs petits, porxos i cases entre mitgeres.</p>
+
+<h3>Opció 1 · Amb l'editor visual</h3>
+<ol class="steps">
+  <li><b>Obre <code>editor.html</code></b><p>Des del joc, entra a <em>Editor d'edificis</em>. Tria un nom, una amplada i una fondària d'1 a 3 cel·les.</p></li>
+  <li><b>Dissenya les plantes</b><p>A <em>Planta baixa</em> i <em>Planta del mig</em>, selecciona cada cel·la i defineix murs o arcades, color i quatre façanes. L'ordre és <strong>davant, dreta, darrere, esquerra</strong>. Pots repetir una planta intermèdia o activar plantes individuals.</p></li>
+  <li><b>Tria la coberta</b><p>Cada cel·la pot tenir teulada a dues aigües, a una aigua, terrat amb barana o golfes amb mig terrat. La direcció és local a la façana de l'edifici.</p></li>
+  <li><b>Desa i col·loca</b><p>Prem <em>Desa</em>, torna al joc i tria <em>Edificis → Els meus edificis</em>. El disseny queda al navegador. Exporta'l a JSON si el vols copiar a un altre ordinador.</p></li>
+</ol>
+<div class="rule">
+  <p><b>Les còpies col·locades són independents.</b> El món desa una còpia sencera del disseny dins de <code>customBuildings</code>. Si després edites o elimines l'original de la biblioteca, els edificis que ja hi ha a la vila no canvien.</p>
+</div>
+
+<h3>Opció 2 · Crear la casa amb JavaScript</h3>
+<p>Aquest exemple crea una casa de 2 × 1 cel·les i dues plantes intermèdies. Executa'l a la consola del navegador mentre tens obert el joc des del servidor local:</p>
+<pre><code><span class="k">const</span> {newDesign,resizeDesign,saveDesign}=<span class="k">await import</span>(<span class="s">'./designs.js'</span>);
+
+<span class="k">let</span> casa=resizeDesign(newDesign(),2,1);
+casa.name=<span class="s">'Casa blava amb porxo'</span>;
+casa.middleCount=2;
+
+<span class="c">// Cada cel·la té color, estil i 4 façanes:</span>
+<span class="c">// [davant, dreta, darrere, esquerra].</span>
+casa.ground[0]={
+  color:<span class="s">'#d7e5e1'</span>, style:<span class="s">'solid'</span>,
+  faces:[<span class="s">'door'</span>,<span class="s">'window'</span>,<span class="s">'window'</span>,<span class="s">'blank'</span>]
+};
+casa.ground[1]={
+  color:<span class="s">'#d7e5e1'</span>, style:<span class="s">'arcade'</span>,
+  faces:[<span class="s">'blank'</span>,<span class="s">'blank'</span>,<span class="s">'blank'</span>,<span class="s">'blank'</span>]
+};
+casa.middle=casa.middle.map((cel·la,i)=&gt;({
+  ...cel·la,
+  color:<span class="s">'#f2eee3'</span>,
+  faces:i===0?[<span class="s">'balcony'</span>,<span class="s">'window'</span>,<span class="s">'window'</span>,<span class="s">'blank'</span>]
+             :[<span class="s">'arched-window'</span>,<span class="s">'blank'</span>,<span class="s">'window'</span>,<span class="s">'window'</span>]
+}));
+casa.roof=casa.roof.map(cel·la=&gt;({
+  ...cel·la,type:<span class="s">'tile'</span>,color:<span class="s">'#b96f50'</span>,direction:0
+}));
+
+saveDesign(localStorage,casa);
+<span class="c">// Recarrega el joc: apareixerà a «Els meus edificis».</span></code></pre>
+
+<h3>Format mínim d'un disseny</h3>
+<table>
+  <tr><th>Camp</th><th>Valors acceptats</th></tr>
+  <tr><td>version</td><td class="plain"><code>4</code></td></tr>
+  <tr><td>width / depth</td><td class="plain">Enters d'1 a 3. Els arrays tenen <code>width × depth</code> entrades, per files.</td></tr>
+  <tr><td>middleCount</td><td class="plain">De 0 a 3 normalment; amb <code>upperFloors</code>, fins al límit de plantes de <code>config.js</code>.</td></tr>
+  <tr><td>style</td><td class="plain"><code>solid</code> o <code>arcade</code>. Una cel·la intermèdia també pot ser <code>null</code>.</td></tr>
+  <tr><td>faces</td><td class="plain"><code>blank</code>, <code>door</code>, <code>window</code>, <code>arched-window</code>, <code>balcony</code>, una façana de <code>BALCONY_FACES</code> o un portal configurable.</td></tr>
+  <tr><td>roof.type</td><td class="plain"><code>tile</code>, <code>shed</code>, <code>flat</code> o <code>attic</code>; <code>direction</code> va de 0 a 3.</td></tr>
+</table>
+<p><code>validateDesign()</code> és la frontera de seguretat: crida-la sempre abans de desar, importar o acceptar dades externes. <code>saveDesign()</code> ja la crida internament.</p>
+
+<h2 id="edificis">Recepta B · Un edifici o un monument amb geometria pròpia</h2>
 <p>És el cas més agraït: el joc té un registre únic d'<em>equipaments</em> (els <code>landmarks</code>) que ja resol la validació del terreny, el marc verd i vermell, l'esborrat sencer, el desfés, el desament al JSON i la selecció amb el ratolí. Afegir-ne un són cinc fitxers, i cap d'ells és gran.</p>
 <p>L'exemple: un <strong>molí de vent</strong> d'una sola cel·la.</p>
 
@@ -129,7 +220,7 @@
   <li>
     <b>Registra el tipus al model</b>
     <span class="file">model.js · LANDMARK_TYPES</span>
-    <pre><code>windmill:{name:<span class="s">'Molí de vent'</span>, sizes:[1], height:3.20},</code></pre>
+    <pre><code>windmill:{name:<span class="s">'Molí de vent'</span>, sizes:[1], height:3.00},</code></pre>
     <p><code>sizes</code> són les mides que podrà triar el jugador i <code>height</code> és <strong>l'alçada real de la geometria</strong>: el joc la fa servir per al volum de clic i perquè les façanes veïnes s'amaguin darrere l'edifici. Si menteixes aquí, el molí serà difícil de clicar.</p>
     <p>Afegeix <code>category:'monument'</code> si vol sortir a l'eina Monuments en comptes d'Edificis, i <code>flag:'senyera'</code> si és un pal de bandera.</p>
   </li>
@@ -138,21 +229,21 @@
     <span class="file">windmill-geometry.js (nou)</span>
     <pre><code><span class="k">export function</span> <span class="f">renderWindmill</span>(l, part, unit){
   <span class="k">const</span> stone=<span class="s">'#cbbd9d'</span>, trim=<span class="s">'#e4d5b5'</span>, wood=<span class="s">'#72563b'</span>, tiles=<span class="s">'#b87850'</span>;
-  <span class="k">const</span> box=(color,u,h,v,sx,sy,sz,rx=0,rz=0)=&gt;part(<span class="s">'box'</span>,color,u,h,v,sx,sy,sz,0,rx,rz);
+  <span class="k">const</span> box=(color,u,h,v,sx,sy,sz,ry=0,rx=0,rz=0)=&gt;part(<span class="s">'box'</span>,color,u,h,v,sx,sy,sz,ry,rx,rz);
   box(<span class="s">'#c1b291'</span>,0,.035,0,unit-.03,.07,unit-.03);        <span class="c">// base a ras de terra</span>
   part(<span class="s">'cylinder'</span>,stone,0,1.05,0,.86,2.10,.86);          <span class="c">// torre</span>
   <span class="k">for</span>(<span class="k">let</span> row=0;row&lt;12;row++){                            <span class="c">// filades de pedra</span>
     <span class="k">const</span> y=.16+row*.16;
     <span class="k">for</span>(<span class="k">let</span> i=0;i&lt;10;i++){
       <span class="k">const</span> a=i*Math.PI/5+(row%2)*.31;
-      box(row%3?stone:trim,Math.sin(a)*.44,y,Math.cos(a)*.44,.19,.066,.02,0,-a);
+      box(row%3?stone:trim,Math.sin(a)*.44,y,Math.cos(a)*.44,.19,.066,.02,-a);
     }
   }
   part(<span class="s">'cone'</span>,tiles,0,2.30,0,1.06,.52,1.06);              <span class="c">// coberta cònica</span>
   part(<span class="s">'arch'</span>,wood,0,.10,.44,.34,.58,.03);                <span class="c">// portal</span>
   <span class="k">for</span>(<span class="k">let</span> blade=0;blade&lt;4;blade++){                        <span class="c">// aspes</span>
     <span class="k">const</span> a=blade*Math.PI/2;
-    box(wood,Math.cos(a)*.62,2.44+Math.sin(a)*.62,.60,1.16,.10,.04,0,a);
+    box(wood,Math.cos(a)*.26,2.44+Math.sin(a)*.26,.60,.48,.08,.04,0,0,a);
   }
 }</code></pre>
     <p>Fixa't que tot queda dins la cel·la (±<code>unit/2</code>) i que l'alçada més alta coincideix amb el <code>height</code> declarat.</p>
@@ -163,7 +254,7 @@
     <pre><code><span class="k">import</span> {renderWindmill} <span class="k">from</span> <span class="s">'./windmill-geometry.js'</span>;
 <span class="c">// … dins del bucle de renderLandmarks, abans dels casos genèrics:</span>
 <span class="k">if</span>(l.type===<span class="s">'windmill'</span>){ renderWindmill(l,part,unit); <span class="k">continue</span>; }</code></pre>
-    <p>Si l'edifici té teulades inclinades que han de girar amb l'orientació, fes servir <code>civicPart</code> en comptes de <code>part</code>: compon el gir de l'edifici amb la inclinació local perquè les vessants no quedin torçades. Els edificis civils, les masies i els hotels ja hi passen.</p>
+    <p>Si l'edifici té teulades inclinades que han de girar amb l'orientació, inclou el tipus a la branca de <code>renderLandmarks()</code> que crea <code>civicPart</code> i crida el teu renderitzador des d'allà. <code>civicPart</code> compon el gir de l'edifici amb la inclinació local perquè les vessants no quedin torçades. L'ermita, els edificis civils, les masies i els hotels ja segueixen aquest patró.</p>
   </li>
   <li>
     <b>Posa-hi els textos de l'eina</b>
@@ -179,6 +270,24 @@
   </li>
 </ol>
 
+<h3>Variant ràpida · Un monument d'una cel·la</h3>
+<p>Per fer, per exemple, un obelisc, declara'l com a monument i intercepta'l <strong>abans</strong> de la branca genèrica que envia els monuments a <code>renderWall()</code>:</p>
+<span class="file">model.js · LANDMARK_TYPES</span>
+<pre><code>obelisk:{name:<span class="s">'Obelisc'</span>,sizes:[1],height:2.15,category:<span class="s">'monument'</span>},</code></pre>
+<span class="file">obelisk-geometry.js (nou)</span>
+<pre><code><span class="k">export function</span> <span class="f">renderObelisk</span>(l,part,unit){
+  part(<span class="s">'box'</span>,<span class="s">'#c9bea5'</span>,0,.06,0,unit*.72,.12,unit*.72);
+  part(<span class="s">'box'</span>,<span class="s">'#b6aa91'</span>,0,.22,0,.58,.22,.58);
+  part(<span class="s">'box'</span>,<span class="s">'#d4cab3'</span>,0,1.12,0,.28,1.65,.28);
+  part(<span class="s">'cone'</span>,<span class="s">'#c2b69d'</span>,0,2.00,0,.34,.25,.34,Math.PI/4);
+}</code></pre>
+<span class="file">landmark-geometry.js</span>
+<pre><code><span class="k">import</span> {renderObelisk} <span class="k">from</span> <span class="s">'./obelisk-geometry.js'</span>;
+
+<span class="c">// Dins de renderLandmarks(), abans de category === 'monument':</span>
+<span class="k">if</span>(l.type===<span class="s">'obelisk'</span>){renderObelisk(l,part,unit);<span class="k">continue</span>;}</code></pre>
+<p>El desplegable de Monuments i el text d'ajuda genèric es generen automàticament perquè hi ha <code>category:'monument'</code>. Si el monument necessita opcions especials, llavors sí que cal crear controls propis a <code>index.html</code> i llegir-los a <code>app.js</code>.</p>
+
 <h3>Mides i ocupació</h3>
 <p><code>landmarkDimensions()</code> tradueix el número de <code>sizes</code> a una superfície rectangular. Si el teu edifici necessita una mida que no hi és, aquesta funció és l'únic lloc on l'has d'ensenyar.</p>
 <table>
@@ -193,7 +302,7 @@
 <p>Amb <code>direction</code> senar (Est o Oest) l'amplada i la fondària s'intercanvien automàticament. La cel·la que clica el jugador sempre és la cantonada de coordenades X i Z menors.</p>
 <p>Si declares més d'una mida, l'eina necessita un selector: <code>app.js</code> reparteix avui entre <code>#farmhouse-size</code>, <code>#castle-size</code>, <code>#cemetery-size</code>, <code>#playground-size</code> i el genèric <code>#civic-size</code> (2 × 2 o 3 × 2). Reaprofita <code>#civic-size</code> si les teves mides són 4 i 6; si no, afegeix un selector nou a <code>index.html</code> i tracta'l a <code>landmarkOptions()</code> i a <code>editWorld()</code>.</p>
 
-<h2>Recepta B · Un terreny</h2>
+<h2 id="terrenys">Recepta C · Un terreny</h2>
 <p>Aquí hi ha dos camins, i el barat és clarament millor.</p>
 <h3>El camí curt: un terreny agrícola</h3>
 <p>Els conreus tenen un registre propi. Afegir-ne un són <strong>dues línies i una branca de dibuix</strong>, i automàticament hereta el desplegable, el pintat amb <kbd>Alt</kbd>, els pendents, la clonació, la validació i el desament. Així és com es va afegir la pastura de cabres de la v80.</p>
@@ -201,7 +310,7 @@
 <pre><code>lavender:{name:<span class="s">'Lavanda'</span>, color:<span class="s">'#9a8fa8'</span>, height:.40,
   description:<span class="s">'Fileres de mates lilàs amb tiges florides.'</span>},</code></pre>
 <span class="file">agricultural-terrain.js</span>
-<pre><code><span class="k">if</span>(t.kind===<span class="s">'lavender'</span>){
+<pre><code><span class="k">else if</span>(t.kind===<span class="s">'lavender'</span>){
   <span class="k">for</span>(<span class="k">const</span> u <span class="k">of</span> [-.32,0,.32]){          <span class="c">// tres fileres per cel·la</span>
     <span class="k">for</span>(<span class="k">let</span> i=0;i&lt;6;i++){
       <span class="k">const</span> v=-.42+i*.17, p=root(u,v,.06); <span class="k">if</span>(!p) <span class="k">continue</span>;
@@ -209,7 +318,7 @@
       emit(p,<span class="s">'rock'</span>,<span class="s">'#8d7fae'</span>,0,.125,0,.13,.12,.13);
     }
   }
-}<span class="k">else if</span>(t.kind===<span class="s">'vineyard'</span>){ …</code></pre>
+}</code></pre>
 <p><code>color</code> és el to de la superfície de la cel·la; <code>height</code> l'alçada aproximada de la plantació. Dins del mòdul, <code>root(u,v,radi)</code> et dona el punt damunt la superfície real —respectant el pendent— i retorna <code>null</code> si aquell tros està reservat per un edifici, un pont o una terrassa; <code>emit()</code> hi dibuixa a sobre.</p>
 
 <h3>El camí llarg: un terreny bàsic</h3>
@@ -222,7 +331,18 @@
 </ul>
 <p>Recomanació: si el que vols és una textura o una vegetació nova, fes-ho com a terreny agrícola encara que no sigui un conreu —la pastura de cabres ja ho és— i estalvia't set fitxers.</p>
 
-<h2>Recepta C · Un arbre o una planta</h2>
+<h3>Quan el sòl no ha de canviar: una capa superposada</h3>
+<p>Una barana, una tanca, un marge o una decoració no són necessàriament un <code>kind</code> nou. La v87 en dona un patró complet: <code>tile.terrainRailing</code> conserva el sòl de sota i només afegeix dades opcionals.</p>
+<ul>
+  <li><code>terrain-railings.js</code> defineix i valida l'objecte desat.</li>
+  <li><code>editWorld()</code> l'afegeix o el retira de la casella.</li>
+  <li><code>app.js</code> recull material i costats dels controls.</li>
+  <li><code>terrain-railing-geometry.js</code> el dibuixa sobre l'alçada real del terreny.</li>
+  <li><code>validateWorld()</code> conserva la propietat quan importa una vila.</li>
+</ul>
+<p>Fes servir aquest patró si l'element ha de conviure amb terra, carrer, pendent o conreu. Com que introdueix un camp nou al JSON, sí que requereix una migració del format de vila.</p>
+
+<h2 id="arbres">Recepta D · Un arbre o una planta</h2>
 <p>Tres passos. El selector d'espècies es genera sol.</p>
 <ol class="steps">
   <li>
@@ -256,7 +376,7 @@
   </li>
 </ol>
 
-<h2>Recepta D · Un negoci</h2>
+<h2 id="negocis">Recepta E · Un negoci</h2>
 <p>Els comerços amb aparador comparteixen una façana genèrica: n'hi ha prou amb declarar-ne els colors i el contingut de l'aparador.</p>
 <ol class="steps">
   <li>
@@ -280,17 +400,24 @@
   </li>
 </ol>
 
-<h2>Versions i compatibilitat</h2>
+<h2 id="versions">Versions i compatibilitat</h2>
 <p>Tres numeracions independents conviuen al projecte. Saber quina toques —i quina no— evita trencar les viles que la gent ja té desades.</p>
 <table>
   <tr><th>Numeració</th><th>Ara</th><th>Quan s'incrementa i on</th></tr>
-  <tr><td>Format de vila</td><td>60</td><td class="plain"><b>Només si el JSON guanya un camp nou.</b> A <code>model.js</code>: el <code>version:</code> de <code>createWorld()</code>, el de l'objecte de <code>validateWorld()</code> i la llista de versions acceptades. A <code>app.js</code>: <code>STORAGE_KEY</code> puja i l'anterior passa al davant de <code>LEGACY_STORAGE_KEYS</code>.</td></tr>
+  <tr><td>Format de vila</td><td>65</td><td class="plain"><b>Només si el JSON guanya o canvia un camp.</b> A <code>model.js</code>: el <code>version:</code> de <code>createWorld()</code>, el resultat normalitzat de <code>validateWorld()</code> i la llista de versions acceptades. A <code>app.js</code>: <code>STORAGE_KEY</code> puja i l'anterior passa al davant de <code>LEGACY_STORAGE_KEYS</code>.</td></tr>
   <tr><td>Format de dissenys</td><td>4</td><td class="plain">Si els edificis de l'editor guanyen una opció nova. A <code>designs.js</code>: <code>newDesign()</code>, <code>validateDesign()</code> i <code>catalogFile()</code>.</td></tr>
-  <tr><td>Versió del joc</td><td>80</td><td class="plain"><b>Sempre que publiques.</b> <code>version.json</code>, la metaetiqueta <code>game-version</code> i els <code>?v=</code> dels CSS a <code>index.html</code>, l'etiqueta <code>#game-version-label</code>, l'enllaç del ZIP, i <code>VERSIO.txt</code>.</td></tr>
+  <tr><td>Versió del joc</td><td>87</td><td class="plain"><b>Sempre que publiques.</b> <code>version.json</code>, la metaetiqueta <code>game-version</code> i els <code>?v=</code> dels recursos d'entrada, l'etiqueta <code>#game-version-label</code>, l'enllaç i el nom real del ZIP, <code>VERSIO.txt</code> i les notes de <code>LLEGEIX-ME.md</code>.</td></tr>
 </table>
 <div class="rule">
-  <p><b>Regla pràctica:</b> un edifici nou no canvia el format de vila —els <code>landmarks</code> ja s'hi desaven—, però sí que el canvia un camp nou dins d'una casella, com va passar amb <code>treeGround</code> o <code>stairRailing</code>. Quan el canviïs, <code>validateWorld()</code> ha de saber llegir els formats antics i omplir el camp nou amb un valor per defecte: aquesta és la línia que manté obertes les viles de fa cinquanta versions.</p>
+  <p><b>Regla pràctica:</b> un edifici nou no canvia el format de vila —els <code>landmarks</code> ja s'hi desaven—, però sí que el canvia un camp nou dins d'una casella, com <code>treeGround</code>, <code>stairRailing</code> o <code>terrainRailing</code>. Quan el canviïs, <code>validateWorld()</code> ha de saber llegir els formats antics i omplir el camp nou amb un valor per defecte: aquesta és la línia que manté obertes les viles de fa cinquanta versions.</p>
 </div>
+
+<h3>Proves tècniques mínimes</h3>
+<p>Des de PowerShell, comprova primer que tots els mòduls es poden analitzar:</p>
+<pre><code>Get-ChildItem -Filter *.js | ForEach-Object { node --check $_.FullName }</code></pre>
+<p>Després arrenca <code>node server.mjs</code>, força una recàrrega amb <kbd>Ctrl</kbd> + <kbd>F5</kbd> i mira la consola del navegador. Una prova útil per a un tipus registrat és importar només el model:</p>
+<pre><code>node --input-type=module -e "import('./model.js').then(m =&gt; console.log(m.LANDMARK_TYPES))"</code></pre>
+<p>Aquesta ordre confirma la sintaxi i els imports del model, però no substitueix la prova visual: la geometria depèn de WebGL i s'ha de revisar al joc.</p>
 
 <h2>Abans de publicar</h2>
 <ul class="check">
@@ -302,6 +429,7 @@
   <li>Comprova que <strong>no travessa</strong> les cel·les veïnes ni les cases del costat.</li>
   <li>Si té parts animades, que quedin quietes amb la <strong>reducció de moviment</strong> del sistema activada.</li>
   <li>Documenta la novetat a <code>LLEGEIX-ME.md</code> i actualitza <code>VERSIO.txt</code>.</li>
+  <li>Obre el <strong>ZIP de publicació</strong> i comprova que conté el mòdul nou i que el nom coincideix amb l'enllaç de descàrrega.</li>
 </ul>
 
 <h2>Errors típics</h2>
@@ -310,9 +438,9 @@
 <p class="pitfall"><b>Oblidar el pendent.</b> Si poses la decoració a <code>terrainY()</code> en comptes de <code>terrainSurfaceY()</code>, quedarà flotant o enterrada en les cel·les inclinades.</p>
 <p class="pitfall"><b>Colors nous a dojo.</b> Cada color nou és un material més. Si en necessites una família, mira si ja existeix un to prou semblant a la paleta d'un altre edifici.</p>
 <p class="pitfall"><b>Importar l'escena des del model.</b> Trenca la separació de capes i fa que el model deixi de poder-se provar sol. Si el model necessita una dada geomètrica, se li passa com a paràmetre.</p>
-<p class="pitfall"><b>Afegir el tipus i oblidar <code>instructions</code>.</b> L'eina apareix al desplegable i el joc peta en seleccionar-la.</p>
+<p class="pitfall"><b>Afegir un edifici i oblidar <code>instructions</code>.</b> Els monuments reben un text genèric automàtic; un edifici normal no. Sense entrada a <code>instructions</code>, l'eina apareix al desplegable però falla en seleccionar-la.</p>
 
-<footer>Vila Mediterrània v80 · format de vila 60 · dissenys 4. Manual escrit a partir del codi d'aquesta còpia del projecte: si canvia l'estructura, les receptes s'han de revisar. Recorda que <code>config.js</code> ja permet ajustar límits (plantes, nivells, mides de quadrícula, ponts, desfés) sense tocar el codi.</footer>
+<footer>Vila Mediterrània v87 · format de vila 65 · dissenys 4. Manual contrastat amb el codi d'aquesta còpia del projecte. <code>config.js</code> permet ajustar límits globals —com les 9 plantes màximes actuals, l'elevació, les mides de quadrícula, els ponts i el desfés— sense modificar el model.</footer>
 </div>
 
 </body>

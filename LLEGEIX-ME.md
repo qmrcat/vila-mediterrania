@@ -12,6 +12,8 @@ Alternativament, obre aquesta carpeta amb VS Code i executa `index.html` amb Liv
 
 No cal executar `npm install`, compilar ni configurar Vite. El joc no utilitza cap framework. Three.js 0.180.0 s’inclou a `vendor/`, amb la seva llicència MIT. Un cop descarregat i amb un servidor local, no necessita Internet, cap compte ni clau d’API. El navegador ha de tenir WebGL 2 disponible.
 
+Per crear cases, edificis, monuments, terrenys, arbres o negocis nous, consulta **[MANUAL-AMPLIAR-EL-JOC.html](MANUAL-AMPLIAR-EL-JOC.html)**. Inclou exemples amb l'editor, amb JSON i amb mòduls de geometria JavaScript.
+
 ## Jugar
 
 - **Casa (1):** crea una casa o afegeix-hi un pis (màxim 5). El color i l’acabat seleccionats s’apliquen a tota la casa. A l’alçada màxima, un color/acabat diferent la repinta sense afegir-hi pisos.
