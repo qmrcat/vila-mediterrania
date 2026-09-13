@@ -1,3 +1,5 @@
+import {AGRICULTURAL_TERRAINS,isAgricultural} from './agricultural-types.js';
+import {renderAgriculturalTerrain} from './agricultural-terrain.js';
 import {designFloor} from './designs.js';
 import {renderAtticRoof,ATTIC_ROOF_HEIGHT} from './attic-roof.js';
 import {createHotelStarGeometry} from './lodging-geometry.js';
@@ -96,8 +98,8 @@ export function createPickingGeometry(world,pickingMaterial){
       push(t,t.floors-1,base+t.floors*FLOOR,t.roof==='attic'?ATTIC_ROOF_HEIGHT:t.roof==='tile'?.46:t.roof==='shed'?.60:.56);
     }else {
       const treeBase=isTree(t.kind)?treeGroundY(t):base;
-      push(t,null,0,treeBase+(TREE_SPECIES.find(s=>s.id===t.kind)?.height??(t.kind==='stairs'?(t.stairRailing==='iron'?.87:.44):.05)));
-      if(hasSlope(t)&&isFirmGround(t.kind))transforms.at(-1).premultiply(slopeShearMatrix(t,UNIT));
+      push(t,null,0,treeBase+(TREE_SPECIES.find(s=>s.id===t.kind)?.height??AGRICULTURAL_TERRAINS[t.kind]?.height??(t.kind==='stairs'?(t.stairRailing==='iron'?.87:.44):.05)));
+      if(hasSlope(t)&&isFirmGround(t.kind)&&!isAgricultural(t.kind))transforms.at(-1).premultiply(slopeShearMatrix(t,UNIT));
     }
   }
   for(const l of world.landmarks??[]){
@@ -611,8 +613,8 @@ export function createVillageGeometry(world){
     box(soil,x,low/2-.09,z,UNIT+.008,low+.18,UNIT+.008);
     if(sloping){
       add('ramp',soil,x,low,z,UNIT,.42,UNIT,t.slopeDirection*Math.PI/2);
-      surfaceBox(groundKind==='rocky'?ROCKY_SURFACE:groundKind==='meadow'?MEADOW_GREEN:'#d6cfb4',x,y+.002,z,UNIT,.014,UNIT);
-    }else box(groundKind==='rocky'?ROCKY_SURFACE:groundKind==='meadow'?MEADOW_GREEN:sand?'#ead39b':'#d6cfb4',x,y-.035,z,UNIT+.01,.09,UNIT+.01);
+      surfaceBox(AGRICULTURAL_TERRAINS[groundKind]?.color??(groundKind==='rocky'?ROCKY_SURFACE:groundKind==='meadow'?MEADOW_GREEN:'#d6cfb4'),x,y+.002,z,UNIT,.014,UNIT);
+    }else box(AGRICULTURAL_TERRAINS[groundKind]?.color??(groundKind==='rocky'?ROCKY_SURFACE:groundKind==='meadow'?MEADOW_GREEN:sand?'#ead39b':'#d6cfb4'),x,y-.035,z,UNIT+.01,.09,UNIT+.01);
     const landmark=landmarkAt(world,t.x,t.z),flagPole=isFlagpole(landmark)?landmark:null,exclude=flagPole?poleExclusion(flagPole,UNIT):t.treeGround?treeBedExclusion(t,UNIT):null;
     const reserved=(landmark&&!flagPole)||customAt(world,t.x,t.z)||townHallAt(world,t.x,t.z)||churchAt(world,t.x,t.z)||marketAt(world,t.x,t.z)||patios.has(key(t.x,t.z));
     // Retaining foundations keep architecture and terrace furniture upright.
@@ -622,8 +624,10 @@ export function createVillageGeometry(world){
     }
     if(t.kind==='meadow'&&sloping&&(reserved||spaces.has(key(t.x,t.z))))box(MEADOW_GREEN,x,y+.009,z,UNIT,.018,UNIT);
     if(t.kind==='rocky'&&sloping&&(reserved||spaces.has(key(t.x,t.z))))box(ROCKY_SURFACE,x,y+.009,z,UNIT,.018,UNIT);
+    if(isAgricultural(groundKind)&&sloping&&(reserved||spaces.has(key(t.x,t.z))))box(AGRICULTURAL_TERRAINS[groundKind].color,x,y+.009,z,UNIT,.018,UNIT);
     if(reserved)continue;
     if(groundKind==='rocky'&&!spaces.has(key(t.x,t.z))&&!bridgeAt(world,t.x,t.z))renderRockyTerrain(ground,add,UNIT,exclude);
+    if(isAgricultural(groundKind)&&!spaces.has(key(t.x,t.z))&&!bridgeAt(world,t.x,t.z))renderAgriculturalTerrain(ground,add,surfaceBox,UNIT,exclude,branch);
     if(groundKind==='meadow'&&!spaces.has(key(t.x,t.z))&&!bridgeAt(world,t.x,t.z))renderMeadowFlowers(ground,add,UNIT,exclude);
     if(coast&&!sloping)for(let d=0;d<4;d++)if(!neighbours[d]){
       const [dx,dz]=DIRECTIONS[d];

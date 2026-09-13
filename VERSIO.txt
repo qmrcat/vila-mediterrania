@@ -1,4 +1,4 @@
-Vila Mediterrània v76 · Clonar
-Joc complet amb totes les funcions de la v75.
-Clonar cases, grups de cases, terrenys i estètica. Crear una còpia editable d’una casa amb plantes individuals.
-Format de vila: 56; dissenys: 3.
+Vila Mediterrània — versió 78
+Masia catalana: 1 × 1, 1 × 2 i 2 × 2; quatre orientacions i rètol editable.
+Inclou totes les funcions de la v77.
+Format de vila 58 (importa 1–57); dissenys 3.

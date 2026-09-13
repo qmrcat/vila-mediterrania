@@ -28,7 +28,7 @@ No cal executar `npm install`, compilar ni configurar Vite. El joc no utilitza c
 
 Cada canvi es desa al `localStorage` d’aquest navegador i d’aquest origen web. El desament no se sincronitza entre dispositius i pot desaparèixer si es netegen les dades del navegador. El servidor inclòs utilitza el port 3000 o el primer disponible a partir d’aquest: conserva la mateixa adreça per recuperar el desament local.
 
-A **La meva vila → Desa una còpia (.json)** pots exportar la vila. Obre-la amb **Obre una vila…**. El format 56 guarda els edificis del jugador amb els seus dissenys, els ajuntaments, les esglésies, les cases amb pati, la mida de la quadrícula, els mercats, els negocis de planta baixa, els ponts, la costa, totes les construccions, els buits entre pisos cada espècie plantada i les caselles de platja. S’importen també fitxers dels formats 1–55, convertits automàticament; els pins existents continuen sent pins. El desament anterior es conserva separadament al navegador; la càmera, la llum i l’historial de desfer no es guarden al fitxer.
+A **La meva vila → Desa una còpia (.json)** pots exportar la vila. Obre-la amb **Obre una vila…**. El format 58 guarda els edificis del jugador amb els seus dissenys, els ajuntaments, les esglésies, les cases amb pati, la mida de la quadrícula, els mercats, els negocis de planta baixa, els ponts, la costa, totes les construccions, els buits entre pisos cada espècie plantada i les caselles de platja. S’importen també fitxers dels formats 1–57, convertits automàticament; els pins existents continuen sent pins. El desament anterior es conserva separadament al navegador; la càmera, la llum i l’historial de desfer no es guarden al fitxer.
 
 **Fes una fotografia** exporta una imatge PNG de la vista 3D sense els controls.
 
@@ -850,6 +850,36 @@ La nova eina **Clona** ofereix cinc accions:
 La cantonada nord-oest del conjunt copiat és l’ancoratge de destinació. El marc verd indica una zona seleccionada o un destí lliure; el vermell indica un destí ocupat o fora del mapa. Es pot enganxar diverses vegades. **Esc**, clic dret o **Nova selecció** permeten tornar a triar l’origen. Les còpies són independents i no alteren l’original. No se substitueixen construccions existents. Si una còpia no compleix les regles de la vila, no es col·loca cap fragment. **Desfés** retira la còpia sencera.
 
 El format de vila és el **56** i el dels dissenys és el **3**, amb importació dels formats anteriors. L’estètica de les cases clonades es conserva en desar i recuperar la vila, independentment de la ubicació. Aquesta versió inclou totes les funcions de la v75.
+
+## v77 · Terrenys agrícoles
+
+A **Terreny → Terrenys agrícoles** hi ha cinc acabats nous:
+
+- **Vinya:** fileres de ceps amb fulles, raïms i pals amb fils.
+- **Oliverar:** petites oliveres ordenades, amb capçades de verd grisós i olives.
+- **Cereals:** fileres d’espigues daurades.
+- **Fruiters:** arbres amb fruita vermella i taronja.
+- **Horta:** bancals amb tomaqueres, cols i pastanagues.
+
+Cada acabat ocupa una cel·la; ajunta’n diverses per formar un camp. Conserva el nivell i el pendent existents. També es pot escollir com a acabat del terreny amb pendent, pintar mantenint Alt i arrossegant, i copiar amb Clona. Terra ferma l’eleva; Esborra retira el conreu i deixa terra ferma. Es pot construir i pavimentar com als altres terrenys. Els conreus es retiren de l’espai reservat als edificis, ponts i terrasses. Si plantes un arbre de l’eina Arbres, se’n conserva el terreny agrícola al voltant del parterre, i es recupera en retirar l’arbre.
+
+Les plantes i els arbres dels conreus són decoració del terreny: no es compten ni s’esborren individualment com els arbres de l’eina Arbres. Es guarden al navegador i al JSON. El format de vila és el **57**, compatible amb els formats anteriors; es mantenen totes les funcions de la v76, inclosa l’eina Clona. Els dissenys continuen en format 3.
+
+
+## Masia catalana — v78
+
+A **Edificis → Masia catalana**, escull una de les tres mides:
+
+- **1 × 1:** masia compacta de pedra, amb planta baixa, pis i golfes.
+- **1 × 2:** masia allargada, amb finestres als laterals.
+- **2 × 2:** masia gran, amb porxada de teula davant de l’entrada.
+
+Totes tenen portal adovellat, porticons de fusta, teulada a dues aigües i xemeneia. La façana es pot orientar als quatre punts cardinals; girar la masia allargada també gira la seva ocupació. El marc de construcció mostra l’espai necessari.
+
+Cal tenir totes les cel·les lliures i a la mateixa alçada. Es poden col·locar sobre terrenys agrícoles, que es conserven a sota. **Edificis → Canviar un rètol existent** permet posar nom a la masia. Esborra sobre qualsevol cel·la retira tot l’edifici i conserva el terreny; Desfés permet recuperar-lo.
+
+Es mantenen totes les funcions de la v77. Format de vila **58**, amb importació dels formats 1–57, i dissenys de l’editor en format **3**.
+
 
 ## Credits
 **Direcció, producció i disseny:** Quim Miralles
