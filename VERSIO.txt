@@ -1,4 +1,5 @@
-Vila Mediterrània — versió 78
-Masia catalana: 1 × 1, 1 × 2 i 2 × 2; quatre orientacions i rètol editable.
-Inclou totes les funcions de la v77.
-Format de vila 58 (importa 1–57); dissenys 3.
+Vila Mediterrània — versió 79
+Balcons individuals, balcó i finestra a esquerra/dreta i dos balcons separats.
+Disponibles a les cases, a l’editor i en clonar.
+Masies sense rètol per defecte; noms personalitzats conservats.
+Inclou totes les funcions de la v78. Format de vila 59; dissenys 4.

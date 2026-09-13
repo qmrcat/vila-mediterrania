@@ -1,3 +1,4 @@
+import {BALCONY_FACES} from './balcony-facades.js';
 import {defaultEntrance} from './entrances.js';
 import {newDesign,validateDesign,resizeDesign,loadDesigns,saveDesign,writeDesigns,importDesigns,catalogFile,DESIGN_KEY,designId} from './designs.js';
 import {createWorld,editWorld,COLORS} from './model.js';
@@ -26,7 +27,7 @@ function reloadLibrary(){
 }
 for(let d=0;d<4;d++){
   const wrapper=document.createElement('div'),label=document.createElement('label'),select=document.createElement('select');label.htmlFor='face-'+d;label.textContent=faceLabels[d];select.id=label.htmlFor;
-  for(const [value,name] of [['blank','Mur sense obertura'],['door','Porta d’arc clàssica'],['entrance','Portal configurable'],['window','Finestres rectangulars'],['arched-window','Finestres amb arc'],['balcony','Balcó']])select.add(new Option(name,value));
+  for(const [value,name] of [['blank','Mur sense obertura'],['door','Porta d’arc clàssica'],['entrance','Portal configurable'],['window','Finestres rectangulars'],['arched-window','Finestres amb arc'],['balcony','Balcó ample'],...Object.entries(BALCONY_FACES)])select.add(new Option(name,value));
   select.addEventListener('change',readCell);wrapper.append(label,select);wrapper.className='face-card';
   const details=document.createElement('div');details.id='entrance-'+d;details.hidden=true;
   for(const [key,title,options] of [

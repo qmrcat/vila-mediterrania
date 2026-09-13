@@ -28,7 +28,7 @@ No cal executar `npm install`, compilar ni configurar Vite. El joc no utilitza c
 
 Cada canvi es desa al `localStorage` d’aquest navegador i d’aquest origen web. El desament no se sincronitza entre dispositius i pot desaparèixer si es netegen les dades del navegador. El servidor inclòs utilitza el port 3000 o el primer disponible a partir d’aquest: conserva la mateixa adreça per recuperar el desament local.
 
-A **La meva vila → Desa una còpia (.json)** pots exportar la vila. Obre-la amb **Obre una vila…**. El format 58 guarda els edificis del jugador amb els seus dissenys, els ajuntaments, les esglésies, les cases amb pati, la mida de la quadrícula, els mercats, els negocis de planta baixa, els ponts, la costa, totes les construccions, els buits entre pisos cada espècie plantada i les caselles de platja. S’importen també fitxers dels formats 1–57, convertits automàticament; els pins existents continuen sent pins. El desament anterior es conserva separadament al navegador; la càmera, la llum i l’historial de desfer no es guarden al fitxer.
+A **La meva vila → Desa una còpia (.json)** pots exportar la vila. Obre-la amb **Obre una vila…**. El format 59 guarda els edificis del jugador amb els seus dissenys, els ajuntaments, les esglésies, les cases amb pati, la mida de la quadrícula, els mercats, els negocis de planta baixa, els ponts, la costa, totes les construccions, els buits entre pisos cada espècie plantada i les caselles de platja. S’importen també fitxers dels formats 1–58, convertits automàticament; els pins existents continuen sent pins. El desament anterior es conserva separadament al navegador; la càmera, la llum i l’historial de desfer no es guarden al fitxer.
 
 **Fes una fotografia** exporta una imatge PNG de la vista 3D sense els controls.
 
@@ -879,6 +879,24 @@ Totes tenen portal adovellat, porticons de fusta, teulada a dues aigües i xemen
 Cal tenir totes les cel·les lliures i a la mateixa alçada. Es poden col·locar sobre terrenys agrícoles, que es conserven a sota. **Edificis → Canviar un rètol existent** permet posar nom a la masia. Esborra sobre qualsevol cel·la retira tot l’edifici i conserva el terreny; Desfés permet recuperar-lo.
 
 Es mantenen totes les funcions de la v77. Format de vila **58**, amb importació dels formats 1–57, i dissenys de l’editor en format **3**.
+
+
+## Balcons individuals i masies sense rètol — v79
+
+Les masies ja no tenen placa ni text «MASIA» per defecte. Es conserven els noms personalitzats: es pot afegir un nom des d’**Edificis → Canviar un rètol existent** i deixar-lo buit per retirar la placa.
+
+Les façanes dels pisos de les cases incorporen quatre composicions noves:
+
+- **Balcó d’una porta:** un balcó individual centrat.
+- **Balcó esquerre i finestra dreta.**
+- **Finestra esquerra i balcó dret.**
+- **Dos balcons d’una porta:** dues plataformes separades amb baranes pròpies.
+
+Esquerra i dreta s’entenen mirant la façana des de fora. Els nous balcons tenen una porta alta d’una sola fulla i baranes de ferro; la finestra del costat conserva l’ampit. Es mantenen el balcó ample i les finestres existents.
+
+A les cases del joc, les composicions varien automàticament per façana i pis i es conserven en desar, recarregar o clonar l’estètica. A l’editor, es poden escollir i combinar al selector de cada façana. Clonar una casa cap a l’editor conserva aquestes composicions en les plantes editables. Els accessos i negocis que donen a terreny de la mateixa alçada continuen tenint prioritat sobre les composicions dels pisos.
+
+Format de vila **59**, compatible amb els formats 1–58. Dissenys i col·leccions de l’editor en format **4**, amb lectura dels formats 1–3. Es mantenen totes les funcions de la v78.
 
 
 ## Credits

@@ -46,9 +46,11 @@ export function renderFarmhouse(l,part,unit){
   box('#b9a37b',0,.33,front+.078,.013,.46,.012);
   for(const x of [-doorWidth*.25,doorWidth*.25])for(const y of [.25,.45])box('#4b5147',x,y,front+.083,doorWidth*.39,.022,.017);
   box(trim,0,.085,front+.055,doorWidth+.20,.07,.12);
-  const labelWidth=large?.67:.48,labelY=large?1.08:.86;
-  box('#ece2c9',0,labelY,front+.033,labelWidth+.06,.14,.026);
-  for(const p of businessSignPixels(l.signName??'MASIA',labelWidth,.08))box('#48665b',p.x,labelY+p.y,front+.053,p.size,p.size,.012);
+  if(l.signName){
+    const labelWidth=large?.67:.48,labelY=large?1.08:.86;
+    box('#ece2c9',0,labelY,front+.033,labelWidth+.06,.14,.026);
+    for(const p of businessSignPixels(l.signName,labelWidth,.08))box('#48665b',p.x,labelY+p.y,front+.053,p.size,p.size,.012);
+  }
   // Gables close the roof, with a small attic opening on the principal front.
   part('gable',wall,0,top,zc,w,rise/.42,depth);
   part('arch',trim,0,top+.055,front+.015,.17,.16,.025);

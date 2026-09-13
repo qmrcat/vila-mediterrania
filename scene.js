@@ -1,3 +1,4 @@
+import {BALCONY_FACES,upperFaceType,renderBalconyFacade} from './balcony-facades.js';
 import {AGRICULTURAL_TERRAINS,isAgricultural} from './agricultural-types.js';
 import {renderAgriculturalTerrain} from './agricultural-terrain.js';
 import {designFloor} from './designs.js';
@@ -756,7 +757,12 @@ export function createVillageGeometry(world){
             festiveOpening(u,bottom+.33);
           }
         }else{
-          const balcony=(floor===1&&randomAt(t.appearance?.x??t.x,t.appearance?.z??t.z,d+6)>.57);
+          const type=upperFaceType(floor,randomAt(t.appearance?.x??t.x,t.appearance?.z??t.z,d+6+(floor-1)*17));
+          if(Object.hasOwn(BALCONY_FACES,type)){
+            renderBalconyFacade(type,(shape,color,u,h,depth,sx,sy,sz)=>face(shape,color,t,d,u,bottom+h,depth,sx,sy,sz),{shutter,opening:(u,h,depth,mount)=>festiveOpening(u,bottom+h,depth,mount)});
+            continue;
+          }
+          const balcony=type==='balcony';
           for(const u of [-.29,.29]){
             face('box','#eee5d2',t,d,u,bottom+.43,.64,.29,.48,.04);
             face('box','#3d6469',t,d,u,bottom+.44,.669,.20,.37,.025);

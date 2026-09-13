@@ -1,19 +1,20 @@
+import {BALCONY_FACES} from './balcony-facades.js';
 import {CONFIG} from './config.js';
 import {validateEntrance} from './entrances.js';
 /** Portable building blueprints. No renderer or framework dependency. */
-export const DESIGN_KEY='vila-mediterrania:designs:v3';
-export const FACE_TYPES=['blank','door','window','arched-window','balcony'];
+export const DESIGN_KEY='vila-mediterrania:designs:v4';
+export const FACE_TYPES=['blank','door','window','arched-window','balcony',...Object.keys(BALCONY_FACES)];
 export const designId=()=>crypto.randomUUID?.()??Array.from(crypto.getRandomValues(new Uint8Array(16)),n=>n.toString(16).padStart(2,'0')).join('');
 const hex=c=>typeof c==='string'&&/^#[0-9a-f]{6}$/i.test(c);
 const integer=(n,min,max)=>Number.isInteger(n)&&n>=min&&n<=max;
 export function newDesign(){
-  return {version:3,id:designId(),name:'El meu edifici',width:1,depth:1,middleCount:1,
+  return {version:4,id:designId(),name:'El meu edifici',width:1,depth:1,middleCount:1,
     ground:[{color:'#f5eee0',style:'solid',faces:['door','window','window','window']}],
     middle:[{color:'#f5eee0',style:'solid',faces:['balcony','window','window','window']}],
     roof:[{type:'tile',color:'#bf7957',direction:0}]};
 }
 export function validateDesign(d){
-  if(!d||![1,2,3].includes(d.version)||typeof d.id!=='string'||! /^[a-zA-Z0-9_-]{1,80}$/.test(d.id)||typeof d.name!=='string'||!d.name.trim()||d.name.length>60||!integer(d.width,1,3)||!integer(d.depth,1,3)||!integer(d.middleCount,0,d.upperFloors?CONFIG.houses.maxFloors-1:3))throw new Error('El disseny ha de tenir un nom, una mida d’1 a 3 cel·les i de 0 a 3 plantes intermèdies.');
+  if(!d||![1,2,3,4].includes(d.version)||typeof d.id!=='string'||! /^[a-zA-Z0-9_-]{1,80}$/.test(d.id)||typeof d.name!=='string'||!d.name.trim()||d.name.length>60||!integer(d.width,1,3)||!integer(d.depth,1,3)||!integer(d.middleCount,0,d.upperFloors?CONFIG.houses.maxFloors-1:3))throw new Error('El disseny ha de tenir un nom, una mida d’1 a 3 cel·les i de 0 a 3 plantes intermèdies.');
   const n=d.width*d.depth;
   if(!['ground','middle','roof'].every(k=>Array.isArray(d[k])&&d[k].length===n))throw new Error('Les tres plantes han de coincidir amb la mida del disseny.');
   const cell=(c,optional)=>{
@@ -26,7 +27,7 @@ export function validateDesign(d){
     if(!Array.isArray(d.upperFloors)||d.upperFloors.length!==d.middleCount||!d.upperFloors.every(f=>Array.isArray(f)&&f.length===n))throw new Error('Les plantes individuals no coincideixen amb el disseny.');
     upperFloors=d.upperFloors.map(f=>Array.from(f,c=>cell(c,true)));
   }
-  return {...(upperFloors?{upperFloors}:{}),version:3,id:d.id,name:d.name.trim(),width:d.width,depth:d.depth,middleCount:d.middleCount,
+  return {...(upperFloors?{upperFloors}:{}),version:4,id:d.id,name:d.name.trim(),width:d.width,depth:d.depth,middleCount:d.middleCount,
     ground:Array.from(d.ground,c=>cell(c,false)),middle:Array.from(d.middle,c=>cell(c,true)),roof:Array.from(d.roof,c=>{
       if(!c||!['tile','shed','flat','attic'].includes(c.type)||!hex(c.color)||!integer(c.direction,0,3))throw new Error('Hi ha una coberta no vàlida.');
       return {type:c.type,color:c.color.toLowerCase(),direction:c.direction};
@@ -42,12 +43,12 @@ export function resizeDesign(design,width,depth){
   return validateDesign(next);
 }
 export function validateCatalog(data){
-  if(!data||data.format!=='vila-buildings'||![1,2,3].includes(data.version)||!Array.isArray(data.designs)||data.designs.length>100)throw new Error('Aquest fitxer no és una col·lecció de dissenys compatible (màxim 100).');
+  if(!data||data.format!=='vila-buildings'||![1,2,3,4].includes(data.version)||!Array.isArray(data.designs)||data.designs.length>100)throw new Error('Aquest fitxer no és una col·lecció de dissenys compatible (màxim 100).');
   const designs=Array.from(data.designs,validateDesign);if(new Set(designs.map(d=>d.id)).size!==designs.length)throw new Error('El fitxer conté identificadors repetits.');
   return designs;
 }
-export const catalogFile=designs=>({format:'vila-buildings',version:3,designs:designs.map(validateDesign)});
-export function loadDesigns(storage){const raw=storage.getItem(DESIGN_KEY)??storage.getItem('vila-mediterrania:designs:v2')??storage.getItem('vila-mediterrania:designs:v1');return raw===null?[]:validateCatalog(JSON.parse(raw));}
+export const catalogFile=designs=>({format:'vila-buildings',version:4,designs:designs.map(validateDesign)});
+export function loadDesigns(storage){const raw=storage.getItem(DESIGN_KEY)??storage.getItem('vila-mediterrania:designs:v3')??storage.getItem('vila-mediterrania:designs:v2')??storage.getItem('vila-mediterrania:designs:v1');return raw===null?[]:validateCatalog(JSON.parse(raw));}
 export function writeDesigns(storage,designs){const data=catalogFile(designs);validateCatalog(data);storage.setItem(DESIGN_KEY,JSON.stringify(data));return data.designs;}
 export function saveDesign(storage,design){
   const d=validateDesign(design),all=loadDesigns(storage),i=all.findIndex(c=>c.id===d.id);if(i<0)all.push(d);else all[i]=d;

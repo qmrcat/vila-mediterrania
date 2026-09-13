@@ -1,3 +1,4 @@
+import {upperFaceType} from './balcony-facades.js';
 import {validateWorld,worldLimit,isFirmGround,isTree,patioAt,patioCell,marketAt,churchAt,townHallAt,landmarkAt,bridgeAt,businessSpaces,COLORS,randomAt} from './model.js';
 import {customAt,customCells,newDesign,validateDesign,designFloor} from './designs.js';
 import {residentialEntrance} from './entrances.js';
@@ -84,7 +85,7 @@ export function houseToDesign(world,p){
   }
   const t=at(world,p);if(t?.kind!=='house')throw new Error('Selecciona una casa per crear-ne un disseny editable.');
   const seed=appearance(t),d=newDesign();d.name='Casa clonada';d.middleCount=t.floors-1;
-  const cell=level=>({color:COLORS[t.floorColors?.[level]??t.color].hex,style:t.levels[level]?'solid':'arcade',faces:Array.from({length:4},(_,side)=>level===0?residentialEntrance(seed.x,seed.z,side)??'door':level===1&&randomAt(seed.x,seed.z,side+6)>.57?'balcony':'window')});
+  const cell=level=>({color:COLORS[t.floorColors?.[level]??t.color].hex,style:t.levels[level]?'solid':'arcade',faces:Array.from({length:4},(_,side)=>level===0?residentialEntrance(seed.x,seed.z,side)??'door':upperFaceType(level,randomAt(seed.x,seed.z,side+6+(level-1)*17)))});
   d.ground=[cell(0)];d.middle=[cell(Math.min(1,t.floors-1))];
   d.upperFloors=Array.from({length:d.middleCount},(_,i)=>[cell(i+1)]);
   d.roof=[{type:t.roof,color:t.roof==='flat'?'#eee4ce':randomAt(seed.x,seed.z)>.5?'#bf7957':'#c9825c',direction:t.roofDirection}];

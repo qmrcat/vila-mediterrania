@@ -1,3 +1,4 @@
+import {BALCONY_FACES,renderBalconyFacade} from './balcony-facades.js';
 import {designFloor} from './designs.js';
 import {renderAtticRoof} from './attic-roof.js';
 import {createEntranceSupport,createEntranceSteps,renderEntranceSteps} from './entrance-access.js';
@@ -50,6 +51,8 @@ export function renderCustomBuildings(world,add,UNIT,FLOOR,entranceSteps=createE
               renderRaisedEntrance(typeof type==='object'?type:null,(shape,color,u,h,depth,sx,sy,sz)=>face(shape,color,d,u,bottom+h,depth,sx,sy,sz),{trim:'#ded0b5',shutter:'#466e68'});
             }else if(typeof type==='object'){
               renderEntrance(type,(shape,color,u,h,depth,sx,sy,sz)=>face(shape,color,d,u,bottom+h,depth,sx,sy,sz),{trim:'#ded0b5',shutter:'#466e68'});
+            }else if(Object.hasOwn(BALCONY_FACES,type)){
+              renderBalconyFacade(type,(shape,color,u,h,depth,sx,sy,sz)=>face(shape,color,d,u,bottom+h,depth,sx,sy,sz));
             }else if(type==='arched-window'){
               for(const u of [-.30,.30])renderEntranceWindow('arch',(shape,color,x,h,depth,sx,sy,sz)=>face(shape,color,d,x,bottom+h,depth,sx,sy,sz),u);
             }else if(type==='door'){
