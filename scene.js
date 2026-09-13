@@ -1,3 +1,4 @@
+import {renderTerrainRailings} from './terrain-railing-geometry.js';
 import {createGoatGeometry,createSheepGeometry,createCowGeometry,createPoultryGeometry} from './goat-geometry.js';
 import {BALCONY_FACES,upperFaceType,renderBalconyFacade} from './balcony-facades.js';
 import {AGRICULTURAL_TERRAINS,isAgricultural} from './agricultural-types.js';
@@ -93,6 +94,7 @@ export function createPickingGeometry(world,pickingMaterial){
   };
   for(const t of world.tiles){
     const base=terrainY(t);
+    if(t.terrainRailing)push(t,t.kind==='house'?0:null,base,.41);
     if(t.kind==='beach'){if(t.beachBar)push(t,null,.26,BEACH_BAR_TOP-.26);continue;}
     if(t.kind==='house'){
       push(t,null,0,base);
@@ -1025,6 +1027,7 @@ export function createVillageGeometry(world){
     const flag=createSenyera();flag.position.set(cx+c*(-.32)+s*(front+.13),y+2.08,cz-s*(-.32)+c*(front+.13));flag.rotation.y=a;flags.push(flag);
   }
   renderLandmarks(world,add,UNIT,flags);
+  renderTerrainRailings(world,add,branch,UNIT);
   renderBeachBars(world,add,UNIT);
   renderCustomBuildings(world,add,UNIT,FLOOR,entranceSteps,renderBusinessFacade);
   for(const placement of chooseFestiveFlags(festiveCandidates)){

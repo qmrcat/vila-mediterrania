@@ -1,4 +1,4 @@
-Vila Mediterrània — versió 84
-Terreny de gallines i oques: galliner de fusta, quatre o cinc gallines i una o dues oques per zona connectada.
-Descàrregues a la subcarpeta descarregues.
-Inclou totes les funcions de la v83. Format de vila 63; dissenys 4.
+Vila Mediterrània — versió 87
+Baranes Nord + Sud i Est + Oest.
+Inclou totes les funcions de la versió 86.
+Format de vila 65; dissenys de l’editor 4.

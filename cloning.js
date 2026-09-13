@@ -10,7 +10,7 @@ const appearance=t=>structuredClone(t.appearance??{x:t.x,z:t.z});
 const occupied=(w,p)=>marketAt(w,p.x,p.z)||churchAt(w,p.x,p.z)||townHallAt(w,p.x,p.z)||landmarkAt(w,p.x,p.z)||customAt(w,p.x,p.z)||patioAt(w,p.x,p.z)||bridgeAt(w,p.x,p.z);
 function groundCopy(t){
   const kind=isTree(t.kind)?t.treeGround??'land':t.kind==='house'?'land':t.kind;
-  return {x:t.x,z:t.z,kind,elevation:t.elevation,floors:0,levels:[],color:0,roof:'tile',roofDirection:0,rotation:t.rotation??0,business:null,...(t.slopeDirection!==undefined?{slopeDirection:t.slopeDirection}:{}),...(kind==='stairs'&&t.stairRailing?{stairRailing:t.stairRailing}:{})};
+  return {...(t.terrainRailing?{terrainRailing:structuredClone(t.terrainRailing)}:{}),x:t.x,z:t.z,kind,elevation:t.elevation,floors:0,levels:[],color:0,roof:'tile',roofDirection:0,rotation:t.rotation??0,business:null,...(t.slopeDirection!==undefined?{slopeDirection:t.slopeDirection}:{}),...(kind==='stairs'&&t.stairRailing?{stairRailing:t.stairRailing}:{})};
 }
 /** Immutable clipboard, independent of later changes to the source village. */
 export function captureClone(world,mode,a,b=a){

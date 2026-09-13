@@ -27,8 +27,9 @@ export function pastureGraph(world,kind='goatPasture'){
       for(const obstacle of near?.shrubs??[])node.obstacles.push({x:near.tile.x+obstacle.u,z:near.tile.z+obstacle.v,clearance:obstacle.clearance??.21});
     }
   }
-  for(const node of graph.values())for(const [dx,dz] of DIRECTIONS){
+  for(const node of graph.values())for(const [d,[dx,dz]] of DIRECTIONS.entries()){
     const other=graph.get(key(node.tile.x+dx,node.tile.z+dz));if(!other)continue;
+    if(node.tile.terrainRailing?.sides.includes(d)||other.tile.terrainRailing?.sides.includes((d+2)%4))continue;
     // Require the entire narrow crossing corridor to meet; cliffs are not passages.
     if([-.20,0,.20].every(s=>Math.abs(terrainSurfaceY(node.tile,dx*.5+dz*s,dz*.5+dx*s)-terrainSurfaceY(other.tile,-dx*.5+dz*s,-dz*.5+dx*s))<.001))node.neighbours.push(other);
   }

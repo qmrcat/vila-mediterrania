@@ -28,7 +28,7 @@ No cal executar `npm install`, compilar ni configurar Vite. El joc no utilitza c
 
 Cada canvi es desa al `localStorage` d’aquest navegador i d’aquest origen web. El desament no se sincronitza entre dispositius i pot desaparèixer si es netegen les dades del navegador. El servidor inclòs utilitza el port 3000 o el primer disponible a partir d’aquest: conserva la mateixa adreça per recuperar el desament local.
 
-A **La meva vila → Desa una còpia (.json)** pots exportar la vila. Obre-la amb **Obre una vila…**. El format 63 guarda els edificis del jugador amb els seus dissenys, els ajuntaments, les esglésies, les cases amb pati, la mida de la quadrícula, els mercats, els negocis de planta baixa, els ponts, la costa, totes les construccions, els buits entre pisos cada espècie plantada i les caselles de platja. S’importen també fitxers dels formats 1–62, convertits automàticament; els pins existents continuen sent pins. El desament anterior es conserva separadament al navegador; la càmera, la llum i l’historial de desfer no es guarden al fitxer.
+A **La meva vila → Desa una còpia (.json)** pots exportar la vila. Obre-la amb **Obre una vila…**. El format 65 guarda els edificis del jugador amb els seus dissenys, els ajuntaments, les esglésies, les cases amb pati, la mida de la quadrícula, els mercats, els negocis de planta baixa, els ponts, la costa, totes les construccions, els buits entre pisos cada espècie plantada i les caselles de platja. S’importen també fitxers dels formats 1–64, convertits automàticament; els pins existents continuen sent pins. El desament anterior es conserva separadament al navegador; la càmera, la llum i l’historial de desfer no es guarden al fitxer.
 
 **Fes una fotografia** exporta una imatge PNG de la vista 3D sense els controls.
 
@@ -957,6 +957,35 @@ Cada zona connectada té **quatre o cinc gallines i una o dues oques**. Les gall
 El botó **Descarrega el joc i el codi** apunta ara a **descarregues/vila-mediterrania-v84-gallines-oques.zip**. També hi ha una còpia amb el nom estable **descarregues/vila-mediterrania.zip** al servidor. Els ZIP no s’inclouen dins d’altres ZIP. En una instal·lació pròpia, posa el ZIP descarregable en aquesta subcarpeta.
 
 Es mantenen totes les funcions de la v83. Format de vila **63**, compatible amb els formats 1–62; dissenys de l’editor en format **4**.
+
+
+## Ermita romànica catalana — v85
+
+A **Edificis → Ermita romànica**, escull **1 × 1** o **1 × 2 cel·les** i l’orientació de l’entrada. La mida allargada gira la seva ocupació amb la façana.
+
+Les dues variants tenen una nau de pedra, absis arrodonit, finestres estretes amb arc, portal de mig punt i teulada a dues aigües. La petita té una espadanya amb una campana; l’allargada en té dues. Els arcs del campanar són oberts i les campanes són visibles a dins.
+
+Cal preparar tot l’espai lliure a la mateixa alçada. Es conserva el terreny de sota, inclosos els terrenys agrícoles. Esborrar sobre qualsevol cel·la retira l’ermita sencera; Desfés la recupera. S’inclou al desament del navegador i al JSON de la vila.
+
+El ZIP complet és a **descarregues/vila-mediterrania-v85-ermita-romanica.zip**. Es mantenen totes les funcions de la v84. Format de vila **64**, compatible amb els formats 1–63; dissenys de l’editor en format **4**.
+
+
+## Baranes als terrenys — v86
+
+A **Terreny → Baranes de terreny**, escull **Ferro**, **Fusta** o **Pedra**, i el costat: **Nord**, **Sud**, **Est**, **Oest**, **Nord + Oest**, **Nord + Est**, **Est + Sud** o **Sud + Oest**. Les direccions corresponen al compàs, encara que giris la càmera.
+
+Clica una cel·la existent per aplicar-hi la configuració seleccionada. Substitueix totes les baranes anteriors de la cel·la; **Sense baranes · retirar-les** les elimina. També funciona amb **Alt + arrossegar**, amb una sola operació de desfer per passada. El terreny i les construccions es conserven.
+
+Les baranes segueixen les vores, l’alçada i els pendents del terreny, incloses les platges. Els trams compartits a la mateixa alçada no es dupliquen. Es desen al JSON, es recuperen amb Desfés i es copien amb la clonació de terrenys. Les cabres, ovelles, vaques, gallines i oques no travessen els costats tancats.
+
+El ZIP complet és a **descarregues/vila-mediterrania-v86-baranes-terreny.zip**. Es mantenen totes les funcions de la v85. Format de vila **65**, compatible amb els formats 1–64; dissenys de l’editor en format **4**.
+
+
+## Baranes en costats oposats — v87
+
+A **Terreny → Baranes de terreny → Costats de la cel·la** s’afegeixen **Nord + Sud** i **Est + Oest**. Es poden utilitzar amb ferro, fusta o pedra, també en terrenys amb pendent. Es mantenen les vuit opcions anteriors i el desament, la clonació i el desfer.
+
+El ZIP complet és a **descarregues/vila-mediterrania-v87-baranes-oposades.zip**. Format de vila **65**; dissenys de l’editor **4**.
 
 
 ## Credits

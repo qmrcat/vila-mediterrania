@@ -44,4 +44,4 @@ Si abaixes un límit i el desament del navegador el supera, el joc s’atura amb
 
 Aquesta configuració controla les regles generals indicades a la taula. Les proporcions dels models 3D, les plantes fixes dels equipaments —com l’ajuntament— i el format dels dissenys de l’editor mantenen les seves regles pròpies. Augmentar molt la quadrícula o les alçades comporta més feina per al renderitzador.
 
-El format de vila és el **63**, compatible amb els formats **1–62** quan compleixen els límits configurats.
+El format de vila és el **65**, compatible amb els formats **1–64** quan compleixen els límits configurats.
