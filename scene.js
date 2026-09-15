@@ -1,4 +1,5 @@
 import {renderTerrainRailings} from './terrain-railing-geometry.js';
+import {PERSONAL_TREE_RENDERERS} from './personal-renderers.js';
 import {createGoatGeometry,createSheepGeometry,createCowGeometry,createPoultryGeometry} from './goat-geometry.js';
 import {BALCONY_FACES,upperFaceType,renderBalconyFacade} from './balcony-facades.js';
 import {AGRICULTURAL_TERRAINS,isAgricultural} from './agricultural-types.js';
@@ -187,7 +188,16 @@ export function createVillageGeometry(world){
   function shopSign(t,d,y,color,depth,width,offset=0){
     for(const p of businessSignPixels(businessSignName(t.business),width))face('box',color,t,d,p.x+offset,y+.765+p.y,depth,p.size,p.size,.011);
   }
-  function face(shape,color,t,d,u,v,depth,sx,sy,sz){const a=d*Math.PI/2;add(shape,color,t.x*UNIT+Math.cos(a)*u+Math.sin(a)*depth,v,t.z*UNIT-Math.sin(a)*u+Math.cos(a)*depth,sx,sy,sz,a);}
+  function face(shape,color,t,d,u,v,depth,sx,sy,sz,ry=0,rx=0,rz=0){
+    const a=d*Math.PI/2;
+    let angle=a,tiltX=0,tiltZ=0;
+    if(ry||rx||rz){
+      const rotation=new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz));
+      rotation.premultiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),a));
+      const e=new THREE.Euler().setFromQuaternion(rotation);angle=e.y;tiltX=e.x;tiltZ=e.z;
+    }
+    add(shape,color,t.x*UNIT+Math.cos(a)*u+Math.sin(a)*depth,v,t.z*UNIT-Math.sin(a)*u+Math.cos(a)*depth,sx,sy,sz,angle,tiltX,tiltZ);
+  }
   function pine(x,y,z,seed=0){
     const h=1.12+seed*.35;
     add('cylinder','#80654a',x,y+h*.5,z,.105,h,.105,.16);
@@ -602,7 +612,7 @@ export function createVillageGeometry(world){
       }
     }
   }
-  function renderBusinessFacade(shop,bottom){const d=shop.business.direction;if(Object.hasOwn(SPECIAL_SHOPS,shop.business.type))renderSpecialShop(shop.business,(shape,color,u,h,depth,sx,sy,sz)=>face(shape,color,shop,d,u,bottom+h,depth,sx,sy,sz));else if(shop.business.type==='greengrocer')fruitFacade(shop,d,bottom);else if(shop.business.type==='grocery')groceryFacade(shop,d,bottom);else if(shop.business.type==='butcher')butcherFacade(shop,d,bottom);else if(shop.business.type==='bakery')bakeryFacade(shop,d,bottom);else if(shop.business.type==='fishmonger')fishmongerFacade(shop,d,bottom);else if(shop.business.type==='pharmacy')pharmacyFacade(shop,d,bottom);else if(shop.business.type==='florist')floristFacade(shop,d,bottom);else if(shop.business.type==='newsstand')newsstandFacade(shop,d,bottom);else if(shop.business.type==='restaurant')restaurantFacade(shop,d,bottom);else barFacade(shop,d,bottom);}
+  function renderBusinessFacade(shop,bottom){const d=shop.business.direction;if(Object.hasOwn(SPECIAL_SHOPS,shop.business.type))renderSpecialShop(shop.business,(shape,color,u,h,depth,sx,sy,sz,ry=0,rx=0,rz=0)=>face(shape,color,shop,d,u,bottom+h,depth,sx,sy,sz,ry,rx,rz));else if(shop.business.type==='greengrocer')fruitFacade(shop,d,bottom);else if(shop.business.type==='grocery')groceryFacade(shop,d,bottom);else if(shop.business.type==='butcher')butcherFacade(shop,d,bottom);else if(shop.business.type==='bakery')bakeryFacade(shop,d,bottom);else if(shop.business.type==='fishmonger')fishmongerFacade(shop,d,bottom);else if(shop.business.type==='pharmacy')pharmacyFacade(shop,d,bottom);else if(shop.business.type==='florist')floristFacade(shop,d,bottom);else if(shop.business.type==='newsstand')newsstandFacade(shop,d,bottom);else if(shop.business.type==='restaurant')restaurantFacade(shop,d,bottom);else barFacade(shop,d,bottom);}
   for(const owner of terraces.values())barTerrace(owner);
   for(const t of world.tiles){
     if(t.kind==='beach')continue;
@@ -676,6 +686,8 @@ export function createVillageGeometry(world){
     }
     if(isTree(t.kind))renderTreeBed(t,surfaceBox,add,UNIT);
     const treeY=treeGroundY(t);
+    const personalTreeRenderer=PERSONAL_TREE_RENDERERS[t.kind];
+    if(personalTreeRenderer)personalTreeRenderer(t,{x,y:treeY,z,seed:n,unit:UNIT,add,branch,randomAt});
     if(t.kind==='pine')pine(x,treeY,z,n);
     if(t.kind==='palm')palm(x,treeY,z,n);
     if(t.kind==='oak')oak(x,treeY,z,n);
@@ -1041,10 +1053,10 @@ export function createVillageGeometry(world){
     matrices.forEach((m,i)=>mesh.setMatrixAt(i,m));
     mesh.instanceMatrix.needsUpdate=true;mesh.castShadow=true;mesh.receiveShadow=true;mesh.computeBoundingSphere();group.add(mesh);
   }
-  const goats=createGoatGeometry(world,UNIT,geometries,material);group.userData.goats=goats;group.add(...goats.meshes);
-  const sheep=createSheepGeometry(world,UNIT,geometries,material);group.userData.sheep=sheep;group.add(...sheep.meshes);
-  const cows=createCowGeometry(world,UNIT,geometries,material);group.userData.cows=cows;group.add(...cows.meshes);
-  const poultry=createPoultryGeometry(world,UNIT,geometries,material);group.userData.poultry=poultry;group.add(...poultry.meshes);
+  const goats=createGoatGeometry(world,UNIT,geometries,material);group.userData.goats=goats;if(goats.meshes.length)group.add(...goats.meshes);
+  const sheep=createSheepGeometry(world,UNIT,geometries,material);group.userData.sheep=sheep;if(sheep.meshes.length)group.add(...sheep.meshes);
+  const cows=createCowGeometry(world,UNIT,geometries,material);group.userData.cows=cows;if(cows.meshes.length)group.add(...cows.meshes);
+  const poultry=createPoultryGeometry(world,UNIT,geometries,material);group.userData.poultry=poultry;if(poultry.meshes.length)group.add(...poultry.meshes);
   const beach=createBeachMesh(world);if(beach)group.add(beach);
   return group;
 }

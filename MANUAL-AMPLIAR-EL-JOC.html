@@ -91,7 +91,9 @@
   <b>Contingut</b>
   <ol>
     <li><a href="#tria-cami">Tria el camí adequat</a></li>
+    <li><a href="#mods">Treballar sense conflictes</a></li>
     <li><a href="#arquitectura">Arquitectura i unitats</a></li>
+    <li><a href="#funcio-part">La funció part()</a></li>
     <li><a href="#cases">Cases personalitzades</a></li>
     <li><a href="#edificis">Edificis i monuments</a></li>
     <li><a href="#terrenys">Terrenys nous</a></li>
@@ -106,19 +108,31 @@
 <table>
   <tr><th>Vull crear…</th><th>Camí recomanat</th><th>Fitxers principals</th></tr>
   <tr><td>Casa pròpia</td><td class="plain">Editor visual; o un objecte de disseny creat amb JavaScript.</td><td class="plain"><code>editor.html</code>, <code>designs.js</code></td></tr>
-  <tr><td>Edifici singular</td><td class="plain">Un <code>landmark</code> nou i un mòdul de geometria.</td><td class="plain"><code>model.js</code>, <code>landmark-geometry.js</code></td></tr>
-  <tr><td>Monument</td><td class="plain">Com un edifici singular, amb <code>category:'monument'</code>.</td><td class="plain"><code>model.js</code>, mòdul de geometria</td></tr>
-  <tr><td>Conreu o vegetació de sòl</td><td class="plain">Terreny agrícola: el selector i la validació s'actualitzen sols.</td><td class="plain"><code>agricultural-types.js</code>, <code>agricultural-terrain.js</code></td></tr>
+  <tr><td>Edifici singular</td><td class="plain">Un <code>landmark</code> nou i un mòdul de geometria.</td><td class="plain"><code>mods-personals/catalog.js</code> i <code>renderers.js</code></td></tr>
+  <tr><td>Monument</td><td class="plain">Com un edifici singular, amb <code>category:'monument'</code>.</td><td class="plain"><code>mods-personals/</code></td></tr>
+  <tr><td>Conreu o vegetació de sòl</td><td class="plain">Terreny agrícola: el selector i la validació s'actualitzen sols.</td><td class="plain"><code>mods-personals/catalog.js</code> i <code>renderers.js</code></td></tr>
   <tr><td>Nou sòl amb regles pròpies</td><td class="plain">Tipus bàsic de terreny; cal tocar model, interfície i escena.</td><td class="plain"><code>model.js</code>, <code>app.js</code>, <code>index.html</code>, <code>scene.js</code></td></tr>
 </table>
 <div class="rule">
   <p><b>Abans de començar:</b> conserva una còpia dels fitxers que tocaràs i obre el projecte amb el servidor local. A PowerShell: <code>node server.mjs</code>. Després entra a l'adreça que mostra la terminal; no obris <code>index.html</code> directament amb <code>file://</code>, perquè els mòduls JavaScript poden quedar bloquejats.</p>
 </div>
 
+<h2 id="mods">Treballar sense conflictes amb la IA</h2>
+<p>La versió actual té una API de mods personals. Per afegir contingut nou, treballa normalment només dins de <code>mods-personals/</code>:</p>
+<div class="layers">
+  <div><b>catalog.js</b><small>Nom, mida, alçada, descripció, colors i categoria. És només dades i el poden llegir el model i la interfície.</small></div>
+  <div><b>renderers.js</b><small>Relaciona cada identificador personal amb la funció que dibuixa la seva geometria.</small></div>
+  <div><b>Un fitxer per element</b><small>Per exemple <code>torre-guaita.js</code> o <code>lavanda.js</code>. Així cada modificació queda aïllada.</small></div>
+</div>
+<p>El nucli combina automàticament aquests registres amb els oficials. <code>personal-content.js</code> valida les dades i <code>personal-renderers.js</code> valida la geometria. Executa <code>node mods-personals/check.mjs</code> després de cada canvi.</p>
+<div class="rule">
+  <p><b>Contracte actual: MOD_API_VERSION 1.</b> La IA pot continuar modificant el nucli, però ha de respectar les signatures documentades a <code>MODIFICACIONS-PER-A-LA-IA.md</code> i no tocar <code>mods-personals/</code> sense permís explícit.</p>
+</div>
+
 <h2 id="arquitectura">Les tres capes</h2>
 <p>Tot el projecte està partit en tres capes amb una frontera molt estricta. Entendre-la és el 80 % de la feina: si poses el codi a la capa correcta, la validació, el desament, el desfés i la selecció amb el ratolí et surten de franc.</p>
 <div class="layers">
-  <div><b>El model</b><small><code>model.js</code>, <code>config.js</code>, <code>designs.js</code>. Quines peces existeixen, on es poden posar i què es desa al JSON. No sap res de Three.js ni del navegador.</small></div>
+  <div><b>El model</b><small><code>model.js</code>, <code>config.js</code>, <code>designs.js</code> i <code>personal-content.js</code>. Quines peces existeixen, on es poden posar i què es desa al JSON. No sap res de Three.js ni del navegador.</small></div>
   <div><b>La geometria</b><small><code>scene.js</code> i una trentena de mòduls petits (<code>farmhouse-geometry.js</code>, <code>wall-geometry.js</code>…). Només dibuixen: reben dades i emeten formes.</small></div>
   <div><b>La interfície</b><small><code>app.js</code> i <code>index.html</code>. Eines, panells, textos d'ajuda, teclat i desament al navegador.</small></div>
 </div>
@@ -146,6 +160,76 @@
 <p>Dins d'un edifici treballes amb <code>part()</code>, que és el mateix però <strong>en el sistema local de la peça</strong>: ja aplica la posició de la cel·la, l'alçada del terreny i el gir de l'orientació escollida. Així dibuixes sempre com si l'edifici mirés al sud.</p>
 <pre><code><span class="f">part</span>(shape, color, u, h, v, sx, sy, sz, ry, rx, rz)
 <span class="c">// u = esquerra/dreta, h = alçada sobre la base, v = davant/darrere</span></code></pre>
+
+<h3 id="funcio-part">Entendre <code>part()</code> paràmetre per paràmetre</h3>
+<p><code>part()</code> col·loca una forma respecte del centre i la base de l'edifici. Les coordenades són <strong>locals</strong>: si després el jugador gira l'edifici, el nucli gira automàticament la posició i l'orientació de la peça.</p>
+<table>
+  <tr><th>Paràmetre</th><th>Què controla</th><th>Exemple</th></tr>
+  <tr><td>shape</td><td class="plain">La forma geomètrica que s'ha d'emetre. Ha d'existir a <code>geometries</code>.</td><td class="plain"><code>'box'</code>, <code>'cylinder'</code>, <code>'cone'</code>, <code>'arch'</code></td></tr>
+  <tr><td>color</td><td class="plain">El color de la peça en format hexadecimal CSS. Reutilitzar colors redueix el nombre de materials.</td><td class="plain"><code>'#cbbd9d'</code></td></tr>
+  <tr><td>u</td><td class="plain">Desplaçament horitzontal: negatiu cap a l'esquerra i positiu cap a la dreta, mirant la façana principal.</td><td class="plain"><code>-.30</code>, <code>0</code>, <code>.30</code></td></tr>
+  <tr><td>h</td><td class="plain">Alçada de l'origen de la forma sobre la base de l'edifici. No és sempre l'alçada de la vora inferior.</td><td class="plain"><code>.50</code></td></tr>
+  <tr><td>v</td><td class="plain">Profunditat: positiu cap al davant i negatiu cap al darrere. <code>0</code> és el centre de l'edifici.</td><td class="plain"><code>.44</code> per posar una porta al davant</td></tr>
+  <tr><td>sx</td><td class="plain">Escala o amplada de la forma sobre el seu eix X local.</td><td class="plain"><code>.60</code></td></tr>
+  <tr><td>sy</td><td class="plain">Escala o alçada de la forma sobre el seu eix Y local.</td><td class="plain"><code>1.10</code></td></tr>
+  <tr><td>sz</td><td class="plain">Escala o fondària de la forma sobre el seu eix Z local.</td><td class="plain"><code>.08</code></td></tr>
+  <tr><td>ry</td><td class="plain">Gir al voltant de l'eix vertical Y. Serveix per orientar una peça cap a un costat.</td><td class="plain"><code>Math.PI/2</code> = 90°</td></tr>
+  <tr><td>rx</td><td class="plain">Inclinació al voltant de l'eix X local.</td><td class="plain"><code>Math.PI/6</code> = 30°</td></tr>
+  <tr><td>rz</td><td class="plain">Inclinació o gir al voltant de l'eix Z local.</td><td class="plain"><code>-Math.PI/4</code> = −45°</td></tr>
+</table>
+
+<div class="rule">
+  <p><b>On és la base d'una forma?</b> Les formes estàndard com <code>box</code>, <code>cylinder</code>, <code>cone</code>, <code>sphere</code> i <code>rock</code> tenen l'origen al centre. Perquè una caixa de <code>sy=1</code> reposi a terra, posa <code>h=.5</code>. En canvi, formes arquitectòniques extrudides com <code>arch</code> comencen a la seva base: una porta amb arc pot començar directament a <code>h=.10</code>.</p>
+</div>
+
+<h4>Com llegir una crida completa</h4>
+<pre><code><span class="f">part</span>(
+  <span class="s">'box'</span>, <span class="s">'#e4d5b5'</span>,  <span class="c">// forma i color</span>
+  0, .55, .42,           <span class="c">// u, h, v: centrada, elevada i al davant</span>
+  .50, 1.10, .08,        <span class="c">// sx, sy, sz: amplada, alçada i fondària</span>
+  0, 0, 0                <span class="c">// ry, rx, rz: sense rotació</span>
+);</code></pre>
+<p>Com que és una caixa centrada i fa <code>1.10</code> d'alçada, posar el centre a <code>h=.55</code> fa que la vora inferior quedi exactament a <code>0</code>: <code>.55 − 1.10/2 = 0</code>.</p>
+
+<h4>Exemples habituals</h4>
+<p><b>Una base que ocupa el 80 % d'una cel·la:</b></p>
+<pre><code><span class="f">part</span>(<span class="s">'box'</span>, <span class="s">'#c1b291'</span>, 0, .06, 0, unit*.80, .12, unit*.80);
+<span class="c">// h és .12/2: la caixa descansa sobre el terreny.</span></code></pre>
+
+<p><b>Dues finestres simètriques a la façana:</b></p>
+<pre><code><span class="k">for</span>(<span class="k">const</span> u <span class="k">of</span> [-.24, .24])
+  <span class="f">part</span>(<span class="s">'box'</span>, <span class="s">'#486b72'</span>, u, .85, .43, .16, .28, .025);
+<span class="c">// Només canvia u: una finestra queda a l'esquerra i l'altra a la dreta.</span></code></pre>
+
+<p><b>Una porta de fusta amb un marc de pedra:</b></p>
+<pre><code><span class="f">part</span>(<span class="s">'arch'</span>, <span class="s">'#e4d5b5'</span>, 0, .08, .438, .46, .68, .028); <span class="c">// marc exterior</span>
+<span class="f">part</span>(<span class="s">'arch'</span>, <span class="s">'#72563b'</span>, 0, .10, .458, .34, .58, .022); <span class="c">// porta al davant</span>
+<span class="c">// La porta és més petita i té un v lleugerament superior; així no parpelleja amb el marc.</span></code></pre>
+
+<p><b>Deu pedres seguint una paret circular:</b></p>
+<pre><code><span class="k">for</span>(<span class="k">let</span> i=0; i&lt;10; i++){
+  <span class="k">const</span> angle=i*Math.PI/5;
+  <span class="k">const</span> u=Math.sin(angle)*.432;
+  <span class="k">const</span> v=Math.cos(angle)*.432;
+  <span class="f">part</span>(<span class="s">'box'</span>, <span class="s">'#cbbd9d'</span>, u, .50, v, .17, .038, .012, angle);
+}</code></pre>
+<p><code>sin()</code> i <code>cos()</code> reparteixen les pedres al voltant del cercle; passar el mateix <code>angle</code> a <code>ry</code> fa que la cara ampla de cada pedra segueixi la tangent de la paret.</p>
+
+<h4>Rotacions en radians</h4>
+<table>
+  <tr><th>Graus</th><th>Radians</th><th>Expressió recomanada</th></tr>
+  <tr><td>30°</td><td>0.524</td><td class="plain"><code>Math.PI/6</code></td></tr>
+  <tr><td>45°</td><td>0.785</td><td class="plain"><code>Math.PI/4</code></td></tr>
+  <tr><td>90°</td><td>1.571</td><td class="plain"><code>Math.PI/2</code></td></tr>
+  <tr><td>180°</td><td>3.142</td><td class="plain"><code>Math.PI</code></td></tr>
+  <tr><td>270°</td><td>4.712</td><td class="plain"><code>Math.PI*1.5</code></td></tr>
+</table>
+<p>Per convertir qualsevol angle: <code>radians=graus*Math.PI/180</code>. Els valors negatius giren en el sentit contrari.</p>
+
+<p>El quart argument del renderitzador personal també ofereix <code>orientedPart()</code>. Té la mateixa signatura i s'ha d'utilitzar per a teulades o altres peces inclinades que han de conservar correctament la inclinació quan gira tot l'edifici.</p>
+<pre><code><span class="c">// Biga inclinada 30° sobre l'eix Z i ben orientada en girar l'edifici:</span>
+<span class="f">orientedPart</span>(<span class="s">'box'</span>, <span class="s">'#72563b'</span>, 0, 1.35, 0, .90, .08, .12, 0, 0, Math.PI/6);</code></pre>
+<p>Fes servir <code>part()</code> per a peces sense inclinació o amb només <code>ry</code>. Si utilitzes <code>rx</code> o <code>rz</code> i l'edifici pot mirar en quatre direccions, prefereix <code>orientedPart()</code>, que compon correctament la inclinació local amb el gir general.</p>
 <h4>Formes disponibles</h4>
 <ul class="chips">
   <li>box</li><li>cylinder</li><li>cone</li><li>sphere</li><li>rock</li><li>ring</li><li>ramp</li><li>arch</li><li>gable</li><li>shedWall</li><li>arcade</li><li>fan</li><li>carrot</li><li>churchCap</li><li>hotelStar</li><li>stoneBridgeArch</li><li>wallGate</li><li>barberPoleRed</li><li>barberPoleBlue</li>
@@ -213,20 +297,23 @@ saveDesign(localStorage,casa);
 <p><code>validateDesign()</code> és la frontera de seguretat: crida-la sempre abans de desar, importar o acceptar dades externes. <code>saveDesign()</code> ja la crida internament.</p>
 
 <h2 id="edificis">Recepta B · Un edifici o un monument amb geometria pròpia</h2>
-<p>És el cas més agraït: el joc té un registre únic d'<em>equipaments</em> (els <code>landmarks</code>) que ja resol la validació del terreny, el marc verd i vermell, l'esborrat sencer, el desfés, el desament al JSON i la selecció amb el ratolí. Afegir-ne un són cinc fitxers, i cap d'ells és gran.</p>
+<p>És el cas més agraït: el joc té un registre únic d'<em>equipaments</em> (els <code>landmarks</code>) que ja resol la validació del terreny, el marc verd i vermell, l'esborrat sencer, el desfés, el desament al JSON i la selecció amb el ratolí. Amb l'API personal només cal tocar el catàleg, crear la geometria i registrar-la.</p>
 <p>L'exemple: un <strong>molí de vent</strong> d'una sola cel·la.</p>
 
 <ol class="steps">
   <li>
-    <b>Registra el tipus al model</b>
-    <span class="file">model.js · LANDMARK_TYPES</span>
-    <pre><code>windmill:{name:<span class="s">'Molí de vent'</span>, sizes:[1], height:3.00},</code></pre>
+    <b>Registra el tipus al catàleg personal</b>
+    <span class="file">mods-personals/catalog.js · PERSONAL_LANDMARKS</span>
+    <pre><code>windmill:{
+  name:<span class="s">'Molí de vent'</span>,sizes:[1],height:2.60,
+  help:<span class="s">'Ocupa una cel·la lliure. Tria cap on mira el portal.'</span>
+},</code></pre>
     <p><code>sizes</code> són les mides que podrà triar el jugador i <code>height</code> és <strong>l'alçada real de la geometria</strong>: el joc la fa servir per al volum de clic i perquè les façanes veïnes s'amaguin darrere l'edifici. Si menteixes aquí, el molí serà difícil de clicar.</p>
-    <p>Afegeix <code>category:'monument'</code> si vol sortir a l'eina Monuments en comptes d'Edificis, i <code>flag:'senyera'</code> si és un pal de bandera.</p>
+    <p>Afegeix <code>category:'monument'</code> si ha de sortir a l'eina Monuments en comptes d'Edificis. Les banderes animades són una funcionalitat especial del nucli i no formen part de l'API personal 1.</p>
   </li>
   <li>
     <b>Escriu el mòdul de geometria</b>
-    <span class="file">windmill-geometry.js (nou)</span>
+    <span class="file">mods-personals/windmill-geometry.js (nou)</span>
     <pre><code><span class="k">export function</span> <span class="f">renderWindmill</span>(l, part, unit){
   <span class="k">const</span> stone=<span class="s">'#cbbd9d'</span>, trim=<span class="s">'#e4d5b5'</span>, wood=<span class="s">'#72563b'</span>, tiles=<span class="s">'#b87850'</span>;
   <span class="k">const</span> box=(color,u,h,v,sx,sy,sz,ry=0,rx=0,rz=0)=&gt;part(<span class="s">'box'</span>,color,u,h,v,sx,sy,sz,ry,rx,rz);
@@ -236,56 +323,60 @@ saveDesign(localStorage,casa);
     <span class="k">const</span> y=.16+row*.16;
     <span class="k">for</span>(<span class="k">let</span> i=0;i&lt;10;i++){
       <span class="k">const</span> a=i*Math.PI/5+(row%2)*.31;
-      box(row%3?stone:trim,Math.sin(a)*.44,y,Math.cos(a)*.44,.19,.066,.02,-a);
+      box(row%3?stone:trim,Math.sin(a)*.432,y,Math.cos(a)*.432,.17,.038,.012,a);
     }
   }
   part(<span class="s">'cone'</span>,tiles,0,2.30,0,1.06,.52,1.06);              <span class="c">// coberta cònica</span>
-  part(<span class="s">'arch'</span>,wood,0,.10,.44,.34,.58,.03);                <span class="c">// portal</span>
+  part(<span class="s">'arch'</span>,trim,0,.08,.438,.46,.68,.028);              <span class="c">// marc de pedra</span>
+  part(<span class="s">'arch'</span>,wood,0,.10,.458,.34,.58,.022);              <span class="c">// porta</span>
+  <span class="k">const</span> axleY=1.83,bladeZ=.64;
+  part(<span class="s">'cylinder'</span>,trim,0,axleY,.53,.15,.22,.15,0,Math.PI/2); <span class="c">// eix de les aspes</span>
   <span class="k">for</span>(<span class="k">let</span> blade=0;blade&lt;4;blade++){                        <span class="c">// aspes</span>
     <span class="k">const</span> a=blade*Math.PI/2;
-    box(wood,Math.cos(a)*.26,2.44+Math.sin(a)*.26,.60,.48,.08,.04,0,0,a);
+    box(wood,Math.cos(a)*.26,axleY+Math.sin(a)*.26,bladeZ,.48,.08,.04,0,0,a);
   }
 }</code></pre>
     <p>Fixa't que tot queda dins la cel·la (±<code>unit/2</code>) i que l'alçada més alta coincideix amb el <code>height</code> declarat.</p>
   </li>
   <li>
-    <b>Connecta'l al dibuix dels equipaments</b>
-    <span class="file">landmark-geometry.js</span>
+    <b>Registra el renderitzador</b>
+    <span class="file">mods-personals/renderers.js</span>
     <pre><code><span class="k">import</span> {renderWindmill} <span class="k">from</span> <span class="s">'./windmill-geometry.js'</span>;
-<span class="c">// … dins del bucle de renderLandmarks, abans dels casos genèrics:</span>
-<span class="k">if</span>(l.type===<span class="s">'windmill'</span>){ renderWindmill(l,part,unit); <span class="k">continue</span>; }</code></pre>
-    <p>Si l'edifici té teulades inclinades que han de girar amb l'orientació, inclou el tipus a la branca de <code>renderLandmarks()</code> que crea <code>civicPart</code> i crida el teu renderitzador des d'allà. <code>civicPart</code> compon el gir de l'edifici amb la inclinació local perquè les vessants no quedin torçades. L'ermita, els edificis civils, les masies i els hotels ja segueixen aquest patró.</p>
+
+<span class="k">export const</span> PERSONAL_LANDMARK_RENDERERS={
+  windmill:renderWindmill
+};</code></pre>
+    <p>No cal tocar <code>landmark-geometry.js</code>: el punt d'extensió crida el renderitzador personal abans dels casos oficials. <code>part()</code> ja aplica la posició, l'alçada i el gir de l'edifici.</p>
   </li>
   <li>
-    <b>Posa-hi els textos de l'eina</b>
-    <span class="file">app.js · instructions</span>
-    <pre><code>windmill:[<span class="s">'El molí de vent'</span>,<span class="s">'Ocupa una cel·la de terra ferma o conreu, lliure i anivellada. Tria cap on mira el portal.'</span>],</code></pre>
-    <p>Aquest pas <strong>no és opcional</strong>: en seleccionar l'eina, <code>app.js</code> llegeix <code>instructions[tool]</code> i peta si no hi és. En canvi, el desplegable d'Edificis o de Monuments s'omple sol a partir de <code>LANDMARK_TYPES</code>: no has de tocar <code>index.html</code>.</p>
+    <b>Valida'l</b>
+    <span class="file">PowerShell</span>
+    <pre><code>node mods-personals/check.mjs</code></pre>
+    <p>El nom, l'ajuda, el selector, la validació i el desament surten automàticament del catàleg. Si falta una dada o un renderitzador, la comprovació indica quin identificador has de corregir.</p>
   </li>
   <li>
     <b>Opcional: rètol editable</b>
     <span class="file">building-signs.js · SIGNED_LANDMARKS</span>
     <pre><code><span class="k">export const</span> SIGNED_LANDMARKS=[<span class="s">'farmhouse'</span>,…,<span class="s">'windmill'</span>];</code></pre>
-    <p>Amb això, <em>Edificis → Canviar un rètol existent</em> ja hi funciona. Al mòdul de geometria, dibuixa el text quan <code>l.signName</code> existeixi, amb <code>businessSignPixels()</code> de <code>business-signs.js</code> (com fa la masia).</p>
+    <p>Això encara és una extensió del nucli. Si vols evitar conflictes, deixa el rètol fix dins de la geometria personal. Si necessites que sigui editable, demana a la IA que afegeixi el tipus a <code>SIGNED_LANDMARKS</code> conservant l'API de mods.</p>
   </li>
 </ol>
 
 <h3>Variant ràpida · Un monument d'una cel·la</h3>
-<p>Per fer, per exemple, un obelisc, declara'l com a monument i intercepta'l <strong>abans</strong> de la branca genèrica que envia els monuments a <code>renderWall()</code>:</p>
-<span class="file">model.js · LANDMARK_TYPES</span>
-<pre><code>obelisk:{name:<span class="s">'Obelisc'</span>,sizes:[1],height:2.15,category:<span class="s">'monument'</span>},</code></pre>
-<span class="file">obelisk-geometry.js (nou)</span>
+<p>Per fer, per exemple, un obelisc, declara'l amb <code>category:'monument'</code>. El punt d'extensió personal evita que entri al renderitzador genèric de muralles:</p>
+<span class="file">mods-personals/catalog.js · PERSONAL_LANDMARKS</span>
+<pre><code>obelisk:{name:<span class="s">'Obelisc'</span>,sizes:[1],height:2.15,
+  category:<span class="s">'monument'</span>,help:<span class="s">'Monument d’una cel·la.'</span>},</code></pre>
+<span class="file">mods-personals/obelisk-geometry.js (nou)</span>
 <pre><code><span class="k">export function</span> <span class="f">renderObelisk</span>(l,part,unit){
   part(<span class="s">'box'</span>,<span class="s">'#c9bea5'</span>,0,.06,0,unit*.72,.12,unit*.72);
   part(<span class="s">'box'</span>,<span class="s">'#b6aa91'</span>,0,.22,0,.58,.22,.58);
   part(<span class="s">'box'</span>,<span class="s">'#d4cab3'</span>,0,1.12,0,.28,1.65,.28);
   part(<span class="s">'cone'</span>,<span class="s">'#c2b69d'</span>,0,2.00,0,.34,.25,.34,Math.PI/4);
 }</code></pre>
-<span class="file">landmark-geometry.js</span>
+<span class="file">mods-personals/renderers.js</span>
 <pre><code><span class="k">import</span> {renderObelisk} <span class="k">from</span> <span class="s">'./obelisk-geometry.js'</span>;
-
-<span class="c">// Dins de renderLandmarks(), abans de category === 'monument':</span>
-<span class="k">if</span>(l.type===<span class="s">'obelisk'</span>){renderObelisk(l,part,unit);<span class="k">continue</span>;}</code></pre>
+<span class="k">export const</span> PERSONAL_LANDMARK_RENDERERS={obelisk:renderObelisk};</code></pre>
 <p>El desplegable de Monuments i el text d'ajuda genèric es generen automàticament perquè hi ha <code>category:'monument'</code>. Si el monument necessita opcions especials, llavors sí que cal crear controls propis a <code>index.html</code> i llegir-los a <code>app.js</code>.</p>
 
 <h3>Mides i ocupació</h3>
@@ -300,17 +391,17 @@ saveDesign(localStorage,casa);
   <tr><td>16</td><td>4 × 4</td><td class="plain">Parlament</td></tr>
 </table>
 <p>Amb <code>direction</code> senar (Est o Oest) l'amplada i la fondària s'intercanvien automàticament. La cel·la que clica el jugador sempre és la cantonada de coordenades X i Z menors.</p>
-<p>Si declares més d'una mida, l'eina necessita un selector: <code>app.js</code> reparteix avui entre <code>#farmhouse-size</code>, <code>#castle-size</code>, <code>#cemetery-size</code>, <code>#playground-size</code> i el genèric <code>#civic-size</code> (2 × 2 o 3 × 2). Reaprofita <code>#civic-size</code> si les teves mides són 4 i 6; si no, afegeix un selector nou a <code>index.html</code> i tracta'l a <code>landmarkOptions()</code> i a <code>editWorld()</code>.</p>
+<p>Els landmarks personals amb més d'una mida reutilitzen automàticament el selector genèric. Les mides admeses per l'API 1 són 1, 2, 4, 6, 9 i 16. Si necessites una petjada irregular o una altra mida, això ja és una mecànica nova i cal ampliar <code>landmarkDimensions()</code>.</p>
 
 <h2 id="terrenys">Recepta C · Un terreny</h2>
 <p>Aquí hi ha dos camins, i el barat és clarament millor.</p>
 <h3>El camí curt: un terreny agrícola</h3>
 <p>Els conreus tenen un registre propi. Afegir-ne un són <strong>dues línies i una branca de dibuix</strong>, i automàticament hereta el desplegable, el pintat amb <kbd>Alt</kbd>, els pendents, la clonació, la validació i el desament. Així és com es va afegir la pastura de cabres de la v80.</p>
-<span class="file">agricultural-types.js</span>
+<span class="file">mods-personals/catalog.js · PERSONAL_TERRAINS</span>
 <pre><code>lavender:{name:<span class="s">'Lavanda'</span>, color:<span class="s">'#9a8fa8'</span>, height:.40,
   description:<span class="s">'Fileres de mates lilàs amb tiges florides.'</span>},</code></pre>
-<span class="file">agricultural-terrain.js</span>
-<pre><code><span class="k">else if</span>(t.kind===<span class="s">'lavender'</span>){
+<span class="file">mods-personals/lavender.js</span>
+<pre><code><span class="k">export function</span> <span class="f">renderLavender</span>(t,{root,emit}){
   <span class="k">for</span>(<span class="k">const</span> u <span class="k">of</span> [-.32,0,.32]){          <span class="c">// tres fileres per cel·la</span>
     <span class="k">for</span>(<span class="k">let</span> i=0;i&lt;6;i++){
       <span class="k">const</span> v=-.42+i*.17, p=root(u,v,.06); <span class="k">if</span>(!p) <span class="k">continue</span>;
@@ -319,6 +410,9 @@ saveDesign(localStorage,casa);
     }
   }
 }</code></pre>
+<span class="file">mods-personals/renderers.js</span>
+<pre><code><span class="k">import</span> {renderLavender} <span class="k">from</span> <span class="s">'./lavender.js'</span>;
+<span class="k">export const</span> PERSONAL_TERRAIN_RENDERERS={lavender:renderLavender};</code></pre>
 <p><code>color</code> és el to de la superfície de la cel·la; <code>height</code> l'alçada aproximada de la plantació. Dins del mòdul, <code>root(u,v,radi)</code> et dona el punt damunt la superfície real —respectant el pendent— i retorna <code>null</code> si aquell tros està reservat per un edifici, un pont o una terrassa; <code>emit()</code> hi dibuixa a sobre.</p>
 
 <h3>El camí llarg: un terreny bàsic</h3>
@@ -347,15 +441,15 @@ saveDesign(localStorage,casa);
 <ol class="steps">
   <li>
     <b>Declara l'espècie</b>
-    <span class="file">model.js · TREE_SPECIES</span>
+    <span class="file">mods-personals/catalog.js · PERSONAL_TREES</span>
     <pre><code>{id:<span class="s">'carob'</span>, name:<span class="s">'Garrofer'</span>, scientific:<span class="s">'Ceratonia siliqua'</span>, height:2.40,
  description:<span class="s">'Capçada ampla i densa, tronc gruixut i garrofes fosques.'</span>},</code></pre>
     <p><code>height</code> és el volum de clic de l'arbre: mesura la teva geometria i posa-hi el valor real.</p>
   </li>
   <li>
     <b>Dibuixa-la</b>
-    <span class="file">mediterranean-trees.js (o un mòdul nou)</span>
-    <pre><code><span class="k">if</span>(kind===<span class="s">'carob'</span>){
+    <span class="file">mods-personals/carob.js (nou)</span>
+    <pre><code><span class="k">export function</span> <span class="f">renderCarob</span>(t,{x,y,z,seed,add,branch}){
   branch(<span class="s">'#7d7161'</span>,[x,y,z],[x,y+.95,z],.17);        <span class="c">// tronc</span>
   <span class="k">for</span>(<span class="k">let</span> i=0;i&lt;5;i++){
     <span class="k">const</span> a=seed*6.28+i*1.26, u=Math.cos(a), v=Math.sin(a);
@@ -369,10 +463,10 @@ saveDesign(localStorage,casa);
   </li>
   <li>
     <b>Encaminta-la des de l'escena</b>
-    <span class="file">scene.js · dins del bucle de caselles</span>
-    <pre><code><span class="k">if</span>([<span class="s">'olive'</span>,<span class="s">'vine'</span>,…,<span class="s">'carob'</span>].includes(t.kind))
-  renderMediterraneanTree(t.kind,x,treeY,z,n,add,branch);</code></pre>
-    <p>L'alçada de plantat és sempre <code>treeGroundY(t)</code>, que ja té en compte el pendent i el paviment de sota. El parterre amb vorada te'l posa <code>renderTreeBed()</code>.</p>
+    <span class="file">mods-personals/renderers.js</span>
+    <pre><code><span class="k">import</span> {renderCarob} <span class="k">from</span> <span class="s">'./carob.js'</span>;
+<span class="k">export const</span> PERSONAL_TREE_RENDERERS={carob:renderCarob};</code></pre>
+    <p>No cal tocar <code>scene.js</code>. El punt de plantat <code>y</code> ja ve de <code>treeGroundY(t)</code> i respecta el pendent i el paviment. El nucli també dibuixa el parterre abans de cridar el teu arbre.</p>
   </li>
 </ol>
 
@@ -381,22 +475,28 @@ saveDesign(localStorage,casa);
 <ol class="steps">
   <li>
     <b>Nom del rètol</b>
-    <span class="file">business-signs.js · BUSINESS_NAMES</span>
-    <pre><code>icecream:<span class="s">'Gelateria'</span>,</code></pre>
-    <p>Aquest objecte és la llista mestra: <code>BUSINESS_TYPES</code> en surt, i amb ell la validació del JSON i els negocis dels edificis del jugador.</p>
+    <span class="file">mods-personals/catalog.js · PERSONAL_BUSINESSES</span>
+    <pre><code>icecream:{name:<span class="s">'Gelateria'</span>,accent:<span class="s">'#c98aa0'</span>,frame:<span class="s">'#e6d8c2'</span>,
+  awning:<span class="s">'#d9a3b4'</span>,description:<span class="s">'Gelateria amb aparadors clars.'</span>,
+  door:0,neutral:<span class="k">true</span>},</code></pre>
+    <p>Amb <code>neutral:true</code> ja tens una botiga funcional amb aparadors buits. El nom s'incorpora a <code>BUSINESS_TYPES</code>, de manera que la validació i el desament el reconeixen.</p>
   </li>
   <li>
     <b>Estil de la façana</b>
-    <span class="file">special-shops.js · SPECIAL_SHOPS</span>
-    <pre><code>icecream:{accent:<span class="s">'#c98aa0'</span>, frame:<span class="s">'#e6d8c2'</span>, awning:<span class="s">'#d9a3b4'</span>,
-  description:<span class="s">'Gelateria amb cubells de gelat de colors i cucurutxos.'</span>},</code></pre>
-    <p>Amb això ja tens porta, marc, tendal i rètol. <code>door:-.36</code> o <code>.36</code> desplaça l'entrada; <code>neutral:true</code> deixa els aparadors buits. Per omplir-los amb objectes propis, afegeix una branca a <code>renderRetailDisplay()</code> de <code>retail-displays.js</code>.</p>
+    <span class="file">mods-personals/icecream.js (opcional)</span>
+    <pre><code><span class="k">export function</span> <span class="f">renderIceCream</span>({u,box}){
+  box(<span class="s">'#ead7bd'</span>,u,.18,.77,.30,.025,.12);
+  <span class="k">for</span>(<span class="k">const</span> [offset,color] <span class="k">of</span> [[-.08,<span class="s">'#d98c9f'</span>],[0,<span class="s">'#efe0ae'</span>],[.08,<span class="s">'#8fb58c'</span>]])
+    box(color,u+offset,.24,.79,.065,.085,.06);
+}</code></pre>
+    <p>Per tenir productes propis, elimina <code>neutral:true</code> i registra aquesta funció a <code>PERSONAL_RETAIL_RENDERERS</code>. El nucli la crida per a cada aparador.</p>
   </li>
   <li>
-    <b>Opció al desplegable</b>
-    <span class="file">index.html · select #business-type</span>
-    <pre><code>&lt;option value="icecream"&gt;Gelateria&lt;/option&gt;</code></pre>
-    <p>Aquesta llista sí que és manual. Si el negoci ha de poder tenir terrassa, afegeix-lo a la comprovació <code>['bar','restaurant']</code> d'<code>app.js</code> i de <code>model.js</code>.</p>
+    <b>Registra i comprova</b>
+    <span class="file">mods-personals/renderers.js</span>
+    <pre><code><span class="k">import</span> {renderIceCream} <span class="k">from</span> <span class="s">'./icecream.js'</span>;
+<span class="k">export const</span> PERSONAL_RETAIL_RENDERERS={icecream:renderIceCream};</code></pre>
+    <p>El selector s'omple automàticament. Executa <code>node mods-personals/check.mjs</code>. Les terrasses continuen reservades als tipus oficials <code>bar</code> i <code>restaurant</code>; ampliar aquesta regla requereix un canvi explícit al model.</p>
   </li>
 </ol>
 
@@ -413,6 +513,8 @@ saveDesign(localStorage,casa);
 </div>
 
 <h3>Proves tècniques mínimes</h3>
+<p>Valida primer la correspondència entre els catàlegs i els renderitzadors personals:</p>
+<pre><code>node mods-personals/check.mjs</code></pre>
 <p>Des de PowerShell, comprova primer que tots els mòduls es poden analitzar:</p>
 <pre><code>Get-ChildItem -Filter *.js | ForEach-Object { node --check $_.FullName }</code></pre>
 <p>Després arrenca <code>node server.mjs</code>, força una recàrrega amb <kbd>Ctrl</kbd> + <kbd>F5</kbd> i mira la consola del navegador. Una prova útil per a un tipus registrat és importar només el model:</p>
@@ -438,7 +540,7 @@ saveDesign(localStorage,casa);
 <p class="pitfall"><b>Oblidar el pendent.</b> Si poses la decoració a <code>terrainY()</code> en comptes de <code>terrainSurfaceY()</code>, quedarà flotant o enterrada en les cel·les inclinades.</p>
 <p class="pitfall"><b>Colors nous a dojo.</b> Cada color nou és un material més. Si en necessites una família, mira si ja existeix un to prou semblant a la paleta d'un altre edifici.</p>
 <p class="pitfall"><b>Importar l'escena des del model.</b> Trenca la separació de capes i fa que el model deixi de poder-se provar sol. Si el model necessita una dada geomètrica, se li passa com a paràmetre.</p>
-<p class="pitfall"><b>Afegir un edifici i oblidar <code>instructions</code>.</b> Els monuments reben un text genèric automàtic; un edifici normal no. Sense entrada a <code>instructions</code>, l'eina apareix al desplegable però falla en seleccionar-la.</p>
+<p class="pitfall"><b>Catàleg i renderitzadors no coincideixen.</b> Cada edifici, terreny o arbre personal necessita una funció amb el mateix identificador a <code>renderers.js</code>. <code>node mods-personals/check.mjs</code> ho detecta abans d'obrir el joc.</p>
 
 <footer>Vila Mediterrània v87 · format de vila 65 · dissenys 4. Manual contrastat amb el codi d'aquesta còpia del projecte. <code>config.js</code> permet ajustar límits globals —com les 9 plantes màximes actuals, l'elevació, les mides de quadrícula, els ponts i el desfés— sense modificar el model.</footer>
 </div>

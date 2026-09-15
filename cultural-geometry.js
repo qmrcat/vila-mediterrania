@@ -1,8 +1,10 @@
+import {COMMUNITY_TYPES,renderCommunityBuilding} from './community-geometry.js';
 import {businessSignPixels} from './business-signs.js';
-export const CULTURAL_TYPES=['museum','monastery'];
+export const CULTURAL_TYPES=['museum','monastery',...COMMUNITY_TYPES];
 
 /** Compact Catalan-inspired stone architecture, with an open cloister rather than a solid block. */
 export function renderCulturalBuilding(l,part,unit){
+  if(COMMUNITY_TYPES.includes(l.type)){renderCommunityBuilding(l,part,unit);return;}
   const monastery=l.type==='monastery',w=(monastery?3:2)*unit-.12;
   const stone=monastery?'#c3b28e':'#d8c9ac',trim='#e7d9b9',shade='#a59577',glass='#557987',wood='#795d41';
   const box=(color,x,y,z,sx,sy,sz,rx=0,rz=0)=>part('box',color,x,y,z,sx,sy,sz,0,rx,rz);

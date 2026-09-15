@@ -1,3 +1,4 @@
+import {PERSONAL_TERRAIN_RENDERERS} from './personal-renderers.js';
 import {COOP,renderCoop} from './poultry-geometry.js';
 import {pastureShrubs,pastureBales} from './goat-pasture.js';
 import {terrainY,terrainSurfaceY,randomAt} from './model.js';
@@ -15,6 +16,8 @@ export function renderAgriculturalTerrain(t,add,surfaceBox,unit,exclude,branch){
       surfaceBox(color,p.x,soil+.020,p.z,width*unit,.030,.20*unit);
     }
   };
+  const personalRenderer=PERSONAL_TERRAIN_RENDERERS[t.kind];
+  if(personalRenderer){personalRenderer(t,{add,surfaceBox,unit,exclude,branch,root,emit,row,soil,ox,oz});return;}
   if(t.kind==='poultryYard'){
     const shelter=root(COOP.u,COOP.v,.26);if(shelter)renderCoop(shelter,add);
     for(let i=0;i<19;i++){

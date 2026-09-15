@@ -12,8 +12,6 @@ Alternativament, obre aquesta carpeta amb VS Code i executa `index.html` amb Liv
 
 No cal executar `npm install`, compilar ni configurar Vite. El joc no utilitza cap framework. Three.js 0.180.0 s’inclou a `vendor/`, amb la seva llicència MIT. Un cop descarregat i amb un servidor local, no necessita Internet, cap compte ni clau d’API. El navegador ha de tenir WebGL 2 disponible.
 
-Per crear cases, edificis, monuments, terrenys, arbres o negocis nous, consulta **[MANUAL-AMPLIAR-EL-JOC.html](MANUAL-AMPLIAR-EL-JOC.html)**. Inclou exemples amb l'editor, amb JSON i amb mòduls de geometria JavaScript.
-
 ## Jugar
 
 - **Casa (1):** crea una casa o afegeix-hi un pis (màxim 5). El color i l’acabat seleccionats s’apliquen a tota la casa. A l’alçada màxima, un color/acabat diferent la repinta sense afegir-hi pisos.
@@ -30,7 +28,7 @@ Per crear cases, edificis, monuments, terrenys, arbres o negocis nous, consulta 
 
 Cada canvi es desa al `localStorage` d’aquest navegador i d’aquest origen web. El desament no se sincronitza entre dispositius i pot desaparèixer si es netegen les dades del navegador. El servidor inclòs utilitza el port 3000 o el primer disponible a partir d’aquest: conserva la mateixa adreça per recuperar el desament local.
 
-A **La meva vila → Desa una còpia (.json)** pots exportar la vila. Obre-la amb **Obre una vila…**. El format 65 guarda els edificis del jugador amb els seus dissenys, els ajuntaments, les esglésies, les cases amb pati, la mida de la quadrícula, els mercats, els negocis de planta baixa, els ponts, la costa, totes les construccions, els buits entre pisos cada espècie plantada i les caselles de platja. S’importen també fitxers dels formats 1–64, convertits automàticament; els pins existents continuen sent pins. El desament anterior es conserva separadament al navegador; la càmera, la llum i l’historial de desfer no es guarden al fitxer.
+A **La meva vila → Desa una còpia (.json)** pots exportar la vila. Obre-la amb **Obre una vila…**. El format 66 guarda els edificis del jugador amb els seus dissenys, els ajuntaments, les esglésies, les cases amb pati, la mida de la quadrícula, els mercats, els negocis de planta baixa, els ponts, la costa, totes les construccions, els buits entre pisos cada espècie plantada i les caselles de platja. S’importen també fitxers dels formats 1–65, convertits automàticament; els pins existents continuen sent pins. El desament anterior es conserva separadament al navegador; la càmera, la llum i l’historial de desfer no es guarden al fitxer.
 
 **Fes una fotografia** exporta una imatge PNG de la vista 3D sense els controls.
 
@@ -988,3 +986,25 @@ El ZIP complet és a **descarregues/vila-mediterrania-v86-baranes-terreny.zip**.
 A **Terreny → Baranes de terreny → Costats de la cel·la** s’afegeixen **Nord + Sud** i **Est + Oest**. Es poden utilitzar amb ferro, fusta o pedra, també en terrenys amb pendent. Es mantenen les vuit opcions anteriors i el desament, la clonació i el desfer.
 
 El ZIP complet és a **descarregues/vila-mediterrania-v87-baranes-oposades.zip**. Format de vila **65**; dissenys de l’editor **4**.
+
+
+## Teatre, Cinema i Biblioteca — v88
+
+Tres nous equipaments dins d’**Edificis**, cadascun de **2 × 2 cel·les**, amb entrada orientable als quatre costats:
+
+- **Teatre**: façana clàssica, porxada de columnes, balcó amb barana de ferro, cartells d’espectacles i teulada de teula.
+- **Cinema**: marquesina amb bombetes decoratives, taquilla central, cartelleres i un fris de pel·lícula.
+- **Biblioteca**: finestrals amb prestatgeries i llibres de colors, bancs a l’entrada i una claraboia al terrat.
+
+Prepara les quatre cel·les lliures a la mateixa alçada. El conjunt respecta l’elevació del terreny i es retira sencer en esborrar qualsevol cel·la, conservant el terra. S’inclou al desament, l’exportació JSON i l’historial. A **Edificis → Canviar un rètol existent**, escriu el nom i clica l’edifici; un nom buit recupera el rètol original.
+
+El ZIP complet és a **descarregues/vila-mediterrania-v88-teatre-cinema-biblioteca.zip**. Inclou totes les funcions de la v87. Format de vila **66**, compatible amb els formats 1–65; dissenys de l’editor **4**.
+
+
+## Integració dels mods personals — v89
+
+La capa de mods de l’usuari queda unificada amb la versió 88. Es conserva íntegra la carpeta **mods-personals/**, inclòs el **Molí de vent** actiu a **Edificis**, d’una cel·la i orientable. El Teatre, el Cinema i la Biblioteca continuen disponibles.
+
+Es completen les connexions dels terrenys i negocis personals, es reforcen les comprovacions d’identificadors, es conserven les rotacions de les peces dels aparadors i es corregeix el selector de mides perquè mantingui la selecció. Consulta **GUIA-MODS.md**; a més del comprovador original, pots executar **node check-mods.mjs** per comprovar la integració real sense modificar el contingut personal.
+
+API dels mods **1**, format de vila **66** i dissenys de l’editor **4**. El JSON no inclou el codi dels mods: conserva’n els fitxers per importar les viles que els utilitzen. El ZIP complet és **descarregues/vila-mediterrania-v89-mods-personals.zip**.

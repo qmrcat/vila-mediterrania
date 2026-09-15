@@ -1,5 +1,9 @@
+import {PERSONAL_BUSINESSES,assertNoKeyCollisions} from './personal-content.js';
+
 /** Shared, DOM-free lettering for business façades. Catalan accents stay visible. */
-export const BUSINESS_NAMES={bar:'Bar',greengrocer:'Fruiteria',restaurant:'Restaurant',grocery:'Queviures',newsstand:'Premsa',florist:'Floristeria',pharmacy:'Farmàcia',fishmonger:'Peixateria',bakery:'Fleca',butcher:'Carnisseria',bookshop:'Llibreria',patisserie:'Pastisseria',hardware:'Ferreteria',hairdresser:'Perruqueria',barber:'Barberia',souvenir:'Records',vegetables:'Verduleria',optician:'Òptica',charcuterie:'Xarcuteria',clothing:'Botiga de roba',bank:'Banc',shoeshop:'Sabateria',commerce:'Comerç',commerceLeft:'Comerç',commerceRight:'Comerç',toyshop:'Jogueteria'};
+const CORE_BUSINESS_NAMES={bar:'Bar',greengrocer:'Fruiteria',restaurant:'Restaurant',grocery:'Queviures',newsstand:'Premsa',florist:'Floristeria',pharmacy:'Farmàcia',fishmonger:'Peixateria',bakery:'Fleca',butcher:'Carnisseria',bookshop:'Llibreria',patisserie:'Pastisseria',hardware:'Ferreteria',hairdresser:'Perruqueria',barber:'Barberia',souvenir:'Records',vegetables:'Verduleria',optician:'Òptica',charcuterie:'Xarcuteria',clothing:'Botiga de roba',bank:'Banc',shoeshop:'Sabateria',commerce:'Comerç',commerceLeft:'Comerç',commerceRight:'Comerç',toyshop:'Jogueteria'};
+assertNoKeyCollisions(CORE_BUSINESS_NAMES,PERSONAL_BUSINESSES,'PERSONAL_BUSINESSES');
+export const BUSINESS_NAMES={...CORE_BUSINESS_NAMES,...Object.fromEntries(Object.entries(PERSONAL_BUSINESSES).map(([key,value])=>[key,value.name]))};
 export const MAX_BUSINESS_NAME=24;
 const FONT={
  A:'010/101/111/101/101',B:'110/101/110/101/110',C:'111/100/100/100/111',D:'110/101/101/101/110',E:'111/100/110/100/111',F:'111/100/110/100/100',

@@ -1,4 +1,4 @@
-Vila Mediterrània — versió 87
-Baranes Nord + Sud i Est + Oest.
-Inclou totes les funcions de la versió 86.
-Format de vila 65; dissenys de l’editor 4.
+Vila Mediterrània — versió 89
+Integració de mods personals; Molí de vent de l’usuari conservat.
+Inclou totes les funcions de la versió 88.
+API dels mods 1; format de vila 66; dissenys de l’editor 4.

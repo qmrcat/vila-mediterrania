@@ -1,5 +1,6 @@
 import {validateTerrainRailing} from './terrain-railings.js';
 import {AGRICULTURAL_TYPES,isAgricultural} from './agricultural-types.js';
+import {PERSONAL_LANDMARKS,PERSONAL_TREES,assertNoKeyCollisions,assertNoIdCollisions} from './personal-content.js';
 import {SIGNED_LANDMARKS,normalizeBuildingSign} from './building-signs.js';
 import {CONFIG} from './config.js';
 import {normalizeBusinessName,BUSINESS_NAMES} from './business-signs.js';
@@ -21,7 +22,7 @@ export const MAX_TERRAIN_LEVEL = CONFIG.terrain.maxElevation;
 export const MAX_PATIO_FLOORS = CONFIG.houses.maxPatioFloors;
 export const FLOOR_HEIGHT = .86;
 export const BUSINESS_TYPES = Object.keys(BUSINESS_NAMES);
-export const TREE_SPECIES = [
+const CORE_TREE_SPECIES = [
   {id:'pine',name:'Pi mediterrani',height:1.9,description:'Capçada en para-sol i tronc esvelt.'},
   {id:'palm',name:'Margalló',scientific:'Chamaerops humilis',height:1.55,description:'Mata baixa amb diversos troncs i fulles en ventall.'},
   {id:'oak',name:'Alzina',scientific:'Quercus ilex',height:2.25,description:'Capçada arrodonida i densa, de verd fosc.'},
@@ -34,6 +35,10 @@ export const TREE_SPECIES = [
   {id:'mimosa',name:'Mimosa',scientific:'Acacia baileyana',height:2.30,description:'Fullatge gris verdós amb abundants grups de flors grogues.'},
   {id:'cypress',name:'Xiprer',scientific:'Cupressus sempervirens',height:2.85,description:'Silueta alta i estreta, acabada en punta, amb fullatge verd fosc.'},
 ];
+assertNoIdCollisions(CORE_TREE_SPECIES,PERSONAL_TREES,'PERSONAL_TREES');
+export const TREE_SPECIES=[...CORE_TREE_SPECIES,...PERSONAL_TREES];
+const treeTerrainCollision=TREE_SPECIES.find(tree=>AGRICULTURAL_TYPES.includes(tree.id));
+if(treeTerrainCollision)throw new Error(`mods-personals: «${treeTerrainCollision.id}» no pot ser alhora arbre i terreny.`);
 export const isTree = kind => TREE_SPECIES.some(s=>s.id===kind);
 export const TREE_GROUNDS=['meadow','rocky','cobble','dirt','asphalt',...AGRICULTURAL_TYPES];
 export const treeGroundY=t=>(t.kind==='vine'?terrainY(t):terrainSurfaceY(t))+(isRoad(t.treeGround)?.043:0);
@@ -59,7 +64,7 @@ export const DIRECTIONS = [[0,1],[1,0],[0,-1],[-1,0]];
 export const floorCount = tile => tile.levels.filter(Boolean).length;
 export function createWorld(region='brava',preset='village',gridSize=CONFIG.grid.defaultSize) {
   if(!GRID_SIZES.includes(gridSize))throw new Error('Mida de quadrícula no vàlida.');
-  const world={version:65,diada:CONFIG.flags.enabledByDefault,gridSize,region,tiles:[],bridges:[],markets:[],churches:[],townHalls:[],customBuildings:[],landmarks:[]};
+  const world={version:66,diada:CONFIG.flags.enabledByDefault,gridSize,region,tiles:[],bridges:[],markets:[],churches:[],townHalls:[],customBuildings:[],landmarks:[]};
   if(preset==='empty') return world;
   if(preset==='coast80'){
     const limit=worldLimit(world),target=Math.round(gridSize*gridSize*.80);
@@ -106,7 +111,7 @@ export function validateWorld(input) {
   const gridSize=input?.version<13?33:input?.gridSize;
   if(!GRID_SIZES.includes(gridSize))throw new Error('Mida de quadrícula no vàlida.');
   const limit=(gridSize-1)/2;
-  if(!input||![1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65].includes(input.version)||!['brava','daurada'].includes(input.region)||!Array.isArray(input.tiles)||input.tiles.length>gridSize**2) throw new Error('Aquest fitxer no és una vila compatible (formats 1–65).');
+  if(!input||![1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66].includes(input.version)||!['brava','daurada'].includes(input.region)||!Array.isArray(input.tiles)||input.tiles.length>gridSize**2) throw new Error('Aquest fitxer no és una vila compatible (formats 1–66).');
   const diada=input.version<40?false:input.diada;
   if(typeof diada!=='boolean')throw new Error('L’opció de banderes de la Diada no és vàlida.');
   const seen=new Set();
@@ -137,7 +142,7 @@ export function validateWorld(input) {
     if(patio!=null&&(t.kind!=='house'||t.floors>MAX_PATIO_FLOORS||!['front','back'].includes(patio.position)||!Number.isInteger(patio.direction)||patio.direction<0||patio.direction>3))throw new Error(`La casa amb pati ha de tenir d’1 a ${MAX_PATIO_FLOORS} plantes i una posició i orientació vàlides.`);
     return {...(t.terrainRailing!==undefined?{terrainRailing:validateTerrainRailing(t.terrainRailing)}:{}),...(t.appearance?{appearance:{x:t.appearance.x,z:t.appearance.z}}:{}),...(stairRailing?{stairRailing}:{}),...(t.treeGround?{treeGround:t.treeGround}:{}),...(t.floorColors?{floorColors:[...t.floorColors]}:{}),...(upperBusinesses.length?{upperBusinesses}:{}),...(slopeDirection!==undefined?{slopeDirection}:{}),...(beachBarData?{beachBar:beachBarData}:{}),...(patio!=null?{patio:{position:patio.position,direction:patio.direction}}:{}),business:business===null?null:{type:business.type,direction:business.direction,terrace:business.terrace,...(business.name!==undefined&&normalizeBusinessName(business.name)?{name:normalizeBusinessName(business.name)}:{})},x:t.x,z:t.z,elevation:t.elevation,kind:t.kind,floors:t.floors,levels:[...levels],color:t.color,roof:t.roof,roofDirection,rotation:t.rotation};
   });
-  const world={version:65,diada,gridSize,region:input.region,tiles,bridges:[],markets:[],churches:[],townHalls:[],customBuildings:[],landmarks:[]};
+  const world={version:66,diada,gridSize,region:input.region,tiles,bridges:[],markets:[],churches:[],townHalls:[],customBuildings:[],landmarks:[]};
   const bridges=input.version<7?[]:input.bridges;
   if(!Array.isArray(bridges)||bridges.length>CONFIG.limits.objectsPerCategory)throw new Error('La llista de ponts no és vàlida.');
   for(const b of bridges){
@@ -505,13 +510,16 @@ export function checkCustomBuilding(world,b){
 }
 
 /** Fixed footprint amenities, removable as a whole while preserving their terrain. */
-export const LANDMARK_TYPES={
+const CORE_LANDMARK_TYPES={
   hermitage:{name:'Ermita romànica',sizes:[1,2],height:1.90},
   farmhouse:{name:'Masia catalana',sizes:[1,2,4],height:2.55},
   parliament:{name:'Parlament',sizes:[16],height:3.70},
   institution:{name:'Edifici institucional',sizes:[6],height:2.80},
   barracksSenyera:{name:'Caserna militar amb senyera',sizes:[9],height:2.76},
   barracksEstelada:{name:'Caserna militar amb estelada',sizes:[9],height:2.76},
+  theatre:{name:'Teatre',sizes:[4],height:2.55},
+  cinema:{name:'Cinema',sizes:[4],height:2.40},
+  library:{name:'Biblioteca',sizes:[4],height:2.40},
   museum:{name:'Museu',sizes:[4],height:2.56},
   monastery:{name:'Monestir',sizes:[9],height:3.13},
   hotel3:{name:'Hotel de 3 estrelles',sizes:[4],height:2.86},
@@ -536,6 +544,12 @@ export const LANDMARK_TYPES={
   school:{name:'Escola',sizes:[4,6],height:2.28},
   police:{name:'Comissaria',sizes:[2],height:2.12},
 };
+assertNoKeyCollisions(CORE_LANDMARK_TYPES,PERSONAL_LANDMARKS,'PERSONAL_LANDMARKS');
+export const LANDMARK_TYPES={...CORE_LANDMARK_TYPES,...PERSONAL_LANDMARKS};
+const personalLandmarkToolCollision=Object.keys(PERSONAL_LANDMARKS).find(id=>isTree(id)||AGRICULTURAL_TYPES.includes(id)||['house','land','meadow','rocky','beach','plaza','stairs',...ROAD_TYPES].includes(id));
+if(personalLandmarkToolCollision)throw new Error(`mods-personals: el landmark «${personalLandmarkToolCollision}» repeteix una eina o un tipus de casella.`);
+const personalGroundToolCollision=[...PERSONAL_TREES.map(t=>t.id),...AGRICULTURAL_TYPES].find(id=>Object.hasOwn(LANDMARK_TYPES,id));
+if(personalGroundToolCollision)throw new Error(`mods-personals: «${personalGroundToolCollision}» no pot ser alhora edifici i arbre o terreny.`);
 export function landmarkDimensions(l){
   const width=['farmhouse','hermitage'].includes(l.type)&&l.size===2?1:l.size===16?4:l.size===1?1:[6,9].includes(l.size)?3:2,depth=l.size/width;
   return l.direction%2?{width:depth,depth:width}:{width,depth};

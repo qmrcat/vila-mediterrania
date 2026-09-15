@@ -1,6 +1,7 @@
+import {PERSONAL_BUSINESSES,assertNoKeyCollisions} from './personal-content.js';
 import {renderRetailDisplay} from './retail-displays.js';
 import {businessSignName,businessSignPixels} from './business-signs.js';
-export const SPECIAL_SHOPS={
+const CORE_SPECIAL_SHOPS={
   commerce:{accent:'#527b78',frame:'#d4c7ae',awning:'#8ca6a0',neutral:true,door:0,description:'Comerç neutre amb porta al centre i un aparador buit a cada costat.'},
   commerceLeft:{accent:'#527b78',frame:'#d4c7ae',awning:'#8ca6a0',neutral:true,door:-.36,description:'Comerç neutre amb porta a l’esquerra i un aparador ampli a la dreta, mirant des del carrer.'},
   commerceRight:{accent:'#527b78',frame:'#d4c7ae',awning:'#8ca6a0',neutral:true,door:.36,description:'Comerç neutre amb porta a la dreta i un aparador ampli a l’esquerra, mirant des del carrer.'},
@@ -18,6 +19,9 @@ export const SPECIAL_SHOPS={
   hardware:{accent:'#546b5b',frame:'#b4b69a',awning:'#879b77',description:'Ferreteria amb eines penjades, pots de pintura i capses.'},
   hairdresser:{accent:'#785c87',frame:'#cebfd6',awning:'#a28bb1',description:'Perruqueria amb miralls, cadires, productes i un distintiu de tisores.'},
 };
+
+assertNoKeyCollisions(CORE_SPECIAL_SHOPS,PERSONAL_BUSINESSES,'PERSONAL_BUSINESSES');
+export const SPECIAL_SHOPS={...CORE_SPECIAL_SHOPS,...PERSONAL_BUSINESSES};
 
 /** Shallow shop façades, shared by ground floors and accessible upper floors. */
 export function renderSpecialShop(business,face){

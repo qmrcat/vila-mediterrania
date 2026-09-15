@@ -1,5 +1,12 @@
+import {PERSONAL_RETAIL_RENDERERS} from './personal-renderers.js';
+
 /** Products inside shallow display bays; usable on any accessible storey. */
 export function renderRetailDisplay(type,side,u,face){
+  const personalRenderer=PERSONAL_RETAIL_RENDERERS[type];
+  if(personalRenderer){
+    const box=(color,x,y,z,sx,sy,sz)=>face('box',color,x,y,z,sx,sy,sz);
+    personalRenderer({type,side,u,face,box});return true;
+  }
   if(!['charcuterie','clothing','bank','shoeshop','toyshop'].includes(type))return false;
   const box=(color,x,y,z,sx,sy,sz)=>face('box',color,x,y,z,sx,sy,sz);
   if(type==='toyshop'){
