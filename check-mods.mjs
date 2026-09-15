@@ -2,7 +2,7 @@
 try{
   const content=await import('./personal-content.js');
   await import('./personal-renderers.js');
-  const m=await import('./model.js'),{createVillageGeometry}=await import('./scene.js');
+  const m=await import('./model.js'),{createVillageGeometry,GEOMETRY_NAMES}=await import('./scene.js');
   const verify=(world,label)=>{
     m.validateWorld(JSON.parse(JSON.stringify(world)));
     try{
@@ -29,5 +29,5 @@ try{
     const r=m.editWorld(w,0,0,'business',{businessType:type,businessDirection:0,businessTerrace:false});if(!r.changed)throw new Error(`${type}: ${r.message}`);verify(w,type);
   }
   console.log(`Integració de mods correcta · API ${content.MOD_API_VERSION} · format de vila ${m.createWorld('brava','empty').version}`);
-  console.log('Catàlegs, col·lisions, renderitzadors, col·locació i recuperació JSON verificats.');
+  console.log(`Formes disponibles: ${GEOMETRY_NAMES.length}. Catàlegs, geometries, col·lisions, renderitzadors, col·locació i recuperació JSON verificats.`);
 }catch(error){console.error(`No s'han validat els mods: ${error.message}`);process.exitCode=1;}

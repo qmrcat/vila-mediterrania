@@ -132,3 +132,44 @@ export function renderIceCream({u,box}){
 - Cada color nou crea un material: reutilitza una paleta petita.
 - No eliminis un mod mentre una vila desada encara utilitzi els seus identificadors.
 - Afegir contingut amb aquests registres no canvia el format de vila.
+
+
+## Formes geomètriques pròpies (des de la v91)
+
+`geometries.js` exporta **PERSONAL_GEOMETRIES**, un objecte de funcions síncrones. Cada funció rep el Three.js que ja utilitza el joc i retorna una `BufferGeometry` nova. `renderers.js` reexporta el registre:
+
+```js
+export {PERSONAL_GEOMETRIES} from './geometries.js';
+```
+
+El registre inclou una cúpula d’exemple, oberta per sota, de diàmetre 1 i alçada 1 amb la base a Y=0:
+
+```js
+export const PERSONAL_GEOMETRIES={
+  cupulaPersonal(THREE){
+    return new THREE.SphereGeometry(
+      .5, 16, 8, 0, Math.PI*2, 0, Math.PI/2
+    ).scale(1, 2, 1);
+  },
+};
+```
+
+Dins del renderitzador d’un edifici:
+
+```js
+part('cupulaPersonal', '#cbbd9d', 0, 2, 0, 1, .6, 1);
+```
+
+Això situa la base de la cúpula a l’alçada local 2, amb diàmetre 1 i alçada .6. El mateix nom es pot utilitzar amb `add()`, `face()` o `emit()` respectant les coordenades de cada funció. Si la peça ha d’inclinar-se i girar amb l’edifici, utilitza `orientedPart()`.
+
+- Els noms han de ser únics, de 2 a 40 lletres o números, amb inicial minúscula. No reutilitzis cap de les 20 formes oficials.
+- Les funcions es criden una vegada en carregar el motor, no per cada peça ni fotograma. Retorna geometria, **no** `Mesh`, materials, promeses ni funcions asíncrones.
+- La geometria ha de descriure triangles amb `position` de tres components i coordenades finites. Si hi ha índexs, han de referenciar vèrtexs existents. El motor calcula les normals quan falten, i també els límits.
+- El color es passa a `part()` o `add()`. Les formes utilitzen els materials i les instàncies del motor; aquesta API no afegeix materials propis, textures ni morph targets.
+- La geometria queda compartida: no la modifiquis ni cridis `dispose()` des dels renderitzadors. Per variar les dimensions o l’orientació, utilitza els arguments de dibuix.
+- Les formes no creen ocupacions ni volums de selecció nous: mantén-les dins de la mida i l’alçada declarades al catàleg.
+- Després d’editar una forma, recarrega la pàgina. El JSON de la vila no conté aquest codi: conserva també `geometries.js` i els mòduls que importi.
+
+Un mod antic sense l’exportació `PERSONAL_GEOMETRIES` funciona amb les 20 formes oficials, encara que no tingui `geometries.js`. Un registre buit també és vàlid. Si reexportes el registre, el fitxer ha d’existir; els errors de codi s’informen. L’API continua sent la **1**.
+
+Comprova el registre amb `node mods-personals/check.mjs` i la integració real dels renderitzadors amb `node check-mods.mjs`. La cúpula d’exemple queda disponible per utilitzar-la; no modifica l’aspecte del molí ni afegeix automàticament un edifici.

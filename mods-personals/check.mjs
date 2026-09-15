@@ -1,7 +1,9 @@
+import {GEOMETRY_NAMES} from '../scene.js';
 import {MOD_API_VERSION,PERSONAL_LANDMARKS,PERSONAL_TERRAINS,PERSONAL_TREES,PERSONAL_BUSINESSES} from '../personal-content.js';
 import {PERSONAL_LANDMARK_RENDERERS,PERSONAL_TERRAIN_RENDERERS,PERSONAL_TREE_RENDERERS,PERSONAL_RETAIL_RENDERERS} from '../personal-renderers.js';
 
 const counts={
+  formesDisponibles:GEOMETRY_NAMES.length,
   edificis:Object.keys(PERSONAL_LANDMARKS).length,
   terrenys:Object.keys(PERSONAL_TERRAINS).length,
   arbres:PERSONAL_TREES.length,

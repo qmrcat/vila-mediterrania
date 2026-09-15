@@ -26,3 +26,11 @@
 - `landmark-geometry.js`, `agricultural-terrain.js`, `scene.js` i `retail-displays.js`: deleguen primer als renderitzadors personals corresponents.
 
 Consulta `MODIFICACIONS-PER-A-LA-IA.md` abans d'una refactorització que afecti aquests fitxers.
+
+## Geometries opcionals — API 1, v91
+
+- `mods-personals/renderers.js` pot exportar `PERSONAL_GEOMETRIES`, normalment reexportant `mods-personals/geometries.js`.
+- Sense aquesta exportació, el mod antic segueix sent vàlid; no imposis una importació directa del fitxer opcional des del nucli.
+- `personal-geometries.js` valida les funcions síncrones `(THREE) => BufferGeometry`, els noms i les dades, i `scene.js` integra el resultat després de les formes oficials.
+- Les geometries es creen una vegada i són compartides; no les eliminis en reconstruir una vila.
+- `model.js` i `personal-content.js` no han d’importar aquest adaptador ni el registre de geometries.

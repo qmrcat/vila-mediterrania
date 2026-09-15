@@ -1,3 +1,5 @@
+// Exportació opcional: els registres antics sense aquesta línia continuen funcionant.
+export {PERSONAL_GEOMETRIES} from './geometries.js';
 /**
  * Renderitzadors personals. Les claus han de coincidir amb catalog.js.
  * No modifiquis les signatures: formen part de MOD_API_VERSION 1.

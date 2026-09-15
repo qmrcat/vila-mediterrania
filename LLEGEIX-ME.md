@@ -1008,3 +1008,23 @@ La capa de mods de l’usuari queda unificada amb la versió 88. Es conserva ín
 Es completen les connexions dels terrenys i negocis personals, es reforcen les comprovacions d’identificadors, es conserven les rotacions de les peces dels aparadors i es corregeix el selector de mides perquè mantingui la selecció. Consulta **GUIA-MODS.md**; a més del comprovador original, pots executar **node check-mods.mjs** per comprovar la integració real sense modificar el contingut personal.
 
 API dels mods **1**, format de vila **66** i dissenys de l’editor **4**. El JSON no inclou el codi dels mods: conserva’n els fitxers per importar les viles que els utilitzen. El ZIP complet és **descarregues/vila-mediterrania-v89-mods-personals.zip**.
+
+
+## Edificis agrupats per categories — v90
+
+A **Edificis**, escull primer la **Categoria** i després l’**Edifici**. La llista es redueix als elements del grup seleccionat i es recorda l’últim edifici escollit de cada grup durant la sessió. Les dreceres continuen seleccionant l’edifici i mostren automàticament la seva categoria.
+
+Categories: **Institucions i serveis**, **Cultura i educació**, **Religió i memòria**, **Allotjaments i masies**, **Comerç i lleure**, **Costa i banderes**, **Mods personals** i **Rètols**. Els grups buits no apareixen; els futurs edificis oficials sense classificació s’inclouran a **Altres edificis**. Els monuments mantenen la seva eina.
+
+El Molí de vent és a **Edificis → Mods personals**. Canviar un rètol existent és a **Edificis → Rètols**. La carpeta de mods no es modifica.
+
+El ZIP complet és **descarregues/vila-mediterrania-v90-edificis-categories.zip**. Es mantenen l’API dels mods **1**, el format de vila **66** i els dissenys de l’editor **4**.
+
+
+## Formes geomètriques per als mods — v91
+
+Els mods poden registrar geometries noves a **mods-personals/geometries.js**, reexportades per **mods-personals/renderers.js** com a **PERSONAL_GEOMETRIES**. Les funcions reben Three.js i retornen una BufferGeometry. Les formes es creen una vegada i s’utilitzen pel nom amb `part()`, `add()`, `face()` o `emit()`. El motor les agrupa en instàncies.
+
+S’inclou **cupulaPersonal**, una cúpula d’exemple, sense canviar l’aspecte dels edificis existents. El tutorial és a **mods-personals/README.md**. Els comprovadors detecten errors de registre, col·lisions i dades geomètriques invàlides; els noms desconeguts al dibuix produeixen un missatge explícit.
+
+Es manté la compatibilitat amb mods antics sense registre de geometries. API **1**, format de vila **66**, dissenys **4**. El ZIP complet és **descarregues/vila-mediterrania-v91-geometries-mods.zip**.

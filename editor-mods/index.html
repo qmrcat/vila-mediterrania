@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Taller de mods · Vila Mediterrània</title>
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<header class="bar">
+  <h1>Taller de mods</h1>
+  <span class="api" id="api-note">comprovant el joc…</span>
+  <label class="field inline"><span>Mod obert</span>
+    <select id="collection"></select>
+  </label>
+  <div class="bar-actions">
+    <button type="button" id="new-mod">Comença un mod</button>
+    <button type="button" id="save-mod" class="primary">Desa</button>
+    <button type="button" id="copy-mod">Desa com a còpia</button>
+    <button type="button" id="delete-mod">Elimina</button>
+    <button type="button" id="import-mod">Importa JSON…</button>
+    <button type="button" id="export-all">Exporta la col·lecció</button>
+    <a class="back" href="./MANUAL.html">Manual</a>
+    <a class="back" href="../index.html">Torna al joc</a>
+  </div>
+  <input type="file" id="file" accept="application/json,.json" hidden>
+</header>
+
+<main class="workbench">
+  <aside class="panel" id="left">
+    <section>
+      <h2>El mod</h2>
+      <label class="field"><span>Nom que veurà el jugador</span>
+        <input type="text" id="mod-name" maxlength="48" autocomplete="off"></label>
+      <label class="field"><span>Identificador al codi</span>
+        <input type="text" id="mod-id" maxlength="32" autocomplete="off" spellcheck="false"></label>
+      <div class="row">
+        <label class="field"><span>Eina</span>
+          <select id="mod-category">
+            <option value="building">Edificis</option>
+            <option value="monument">Monuments</option>
+          </select></label>
+        <label class="field"><span>Parcel·la que veus</span>
+          <select id="mod-preview-size"></select></label>
+      </div>
+      <fieldset class="sizes">
+        <legend>Mides que podrà triar el jugador</legend>
+        <div class="size-grid" id="mod-sizes"></div>
+      </fieldset>
+      <label class="field"><span>Alçada declarada</span>
+        <span class="height-row">
+          <input type="number" id="mod-height" step="0.01" min="0.1">
+          <label class="check"><input type="checkbox" id="mod-auto-height" checked> mesura-la sola</label>
+        </span></label>
+      <label class="field"><span>Text d’ajuda de l’eina · camp <code>help</code></span>
+        <textarea id="mod-help" rows="3" maxlength="400"></textarea></label>
+    </section>
+
+    <section class="grow">
+      <h2>Peces <span class="count" id="part-count"></span>
+        <span class="count sel" id="selection-count"></span></h2>
+      <div class="part-tools">
+        <button type="button" id="add-part">Afegeix una peça</button>
+        <button type="button" id="duplicate-part" disabled>Duplica</button>
+        <button type="button" id="mirror-part" disabled>Emmiralla</button>
+        <button type="button" id="rotate-part" disabled title="Gira la selecció un quart de volta">Gira 90°</button>
+        <button type="button" id="up-part" disabled>↑</button>
+        <button type="button" id="down-part" disabled>↓</button>
+        <button type="button" id="delete-part" disabled>Esborra</button>
+      </div>
+      <ol class="parts" id="parts"></ol>
+    </section>
+  </aside>
+
+  <section class="stage">
+    <div class="viewport">
+      <canvas id="canvas"></canvas>
+      <div class="views">
+        <button type="button" data-view="south">Sud</button>
+        <button type="button" data-view="east">Est</button>
+        <button type="button" data-view="north">Nord</button>
+        <button type="button" data-view="west">Oest</button>
+        <button type="button" data-view="top">Zenital</button>
+        <button type="button" id="frame">Enquadra</button>
+      </div>
+      <div class="toggles">
+        <label class="check"><input type="checkbox" id="show-heights" checked> Alçades</label>
+        <label class="check"><input type="checkbox" id="show-neighbours"> Cases veïnes</label>
+      </div>
+    </div>
+    <div class="readout" id="readout"></div>
+    <ul class="notes" id="notes"></ul>
+  </section>
+
+  <aside class="panel" id="right">
+    <section id="inspector">
+      <h2>Peça seleccionada</h2>
+      <p class="empty" id="inspector-empty">Clica una peça a la vista 3D o a la llista per editar-la.</p>
+      <div id="inspector-fields" hidden>
+        <label class="field"><span>Forma</span>
+          <select id="part-shape"></select></label>
+        <p class="hint" id="shape-hint"></p>
+        <label class="field"><span>Color</span>
+          <span class="color-row">
+            <input type="color" id="part-color">
+            <input type="text" id="part-color-hex" maxlength="7" spellcheck="false">
+          </span></label>
+        <div class="palette" id="palette"></div>
+        <h3>Posició dins la cel·la</h3>
+        <div class="triplet">
+          <label><span>u · est</span><input type="number" id="part-u" step="0.01"></label>
+          <label><span>h · alçada</span><input type="number" id="part-h" step="0.01"></label>
+          <label><span>v · sud</span><input type="number" id="part-v" step="0.01"></label>
+        </div>
+        <h3>Mida</h3>
+        <div class="triplet">
+          <label><span>sx</span><input type="number" id="part-sx" step="0.01"></label>
+          <label><span>sy</span><input type="number" id="part-sy" step="0.01"></label>
+          <label><span>sz</span><input type="number" id="part-sz" step="0.01"></label>
+        </div>
+        <h3>Gir en graus</h3>
+        <div class="triplet">
+          <label><span>Y</span><input type="number" id="part-ry" step="5"></label>
+          <label><span>X</span><input type="number" id="part-rx" step="5"></label>
+          <label><span>Z</span><input type="number" id="part-rz" step="5"></label>
+        </div>
+      </div>
+    </section>
+
+    <section id="library">
+      <h2>Biblioteca de peces</h2>
+      <label class="field"><span>Peces desades</span>
+        <select id="block-list"></select></label>
+      <p class="empty" id="block-empty" hidden>Encara no hi ha cap peça desada.</p>
+      <div class="part-tools">
+        <button type="button" id="block-insert" class="primary">Insereix</button>
+        <button type="button" id="block-save">Desa la selecció</button>
+        <button type="button" id="block-rename">Reanomena</button>
+        <button type="button" id="block-duplicate">Duplica</button>
+        <button type="button" id="block-delete">Elimina</button>
+        <button type="button" id="block-import">Importa…</button>
+        <button type="button" id="block-export">Exporta</button>
+      </div>
+      <p class="hint">Sense res seleccionat, <b>Desa la selecció</b> desa el mod sencer com a peça.</p>
+      <input type="file" id="block-file" accept="application/json,.json" hidden>
+    </section>
+
+    <section id="repeat" hidden>
+      <h2>Repeteix la peça</h2>
+      <div class="row">
+        <label class="field"><span>Com</span>
+          <select id="repeat-mode">
+            <option value="line">En filera</option>
+            <option value="ring">En cercle</option>
+          </select></label>
+        <label class="field"><span>Còpies</span>
+          <input type="number" id="repeat-count" min="1" max="60" value="4"></label>
+      </div>
+      <div class="triplet" id="repeat-line">
+        <label><span>pas u</span><input type="number" id="repeat-du" step="0.01" value="0.2"></label>
+        <label><span>pas h</span><input type="number" id="repeat-dh" step="0.01" value="0"></label>
+        <label><span>pas v</span><input type="number" id="repeat-dv" step="0.01" value="0"></label>
+      </div>
+      <div class="row" id="repeat-ring" hidden>
+        <label class="field"><span>Radi</span>
+          <input type="number" id="repeat-radius" step="0.01" value="0.44"></label>
+        <label class="check"><input type="checkbox" id="repeat-face" checked> gira cada còpia</label>
+      </div>
+      <button type="button" id="repeat-run">Crea les còpies</button>
+    </section>
+
+    <section class="grow">
+      <h2>Exporta</h2>
+      <label class="field"><span>Què vols copiar</span>
+        <select id="output">
+          <optgroup label="Camí A · renderitzador escrit">
+            <option value="module">El renderitzador</option>
+            <option value="register">Els registres de mods-personals</option>
+          </optgroup>
+          <optgroup label="Camí B · dades i runtime">
+            <option value="json">El JSON del mod</option>
+            <option value="runtime">Com connectar el runtime JSON</option>
+          </optgroup>
+        </select></label>
+      <pre class="code" id="code"></pre>
+      <div class="part-tools">
+        <button type="button" id="copy-code" class="primary">Copia</button>
+        <button type="button" id="download-code">Baixa el fitxer</button>
+      </div>
+      <p class="hint" id="output-note"></p>
+    </section>
+  </aside>
+</main>
+
+<p class="toast" id="toast" hidden></p>
+<script type="module" src="./editor.js"></script>
+</body>
+</html>

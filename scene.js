@@ -1,3 +1,4 @@
+import {createPersonalGeometries} from './personal-geometries.js';
 import {renderTerrainRailings} from './terrain-railing-geometry.js';
 import {PERSONAL_TREE_RENDERERS} from './personal-renderers.js';
 import {createGoatGeometry,createSheepGeometry,createCowGeometry,createPoultryGeometry} from './goat-geometry.js';
@@ -78,6 +79,9 @@ for(let i=0;i<18;i++){
   fanVertices.push(0,0,0,...edge(i),...edge(i+1));
 }
 geometries.fan=new THREE.BufferGeometry();geometries.fan.setAttribute('position',new THREE.Float32BufferAttribute(fanVertices,3));geometries.fan.computeVertexNormals();
+
+Object.assign(geometries,createPersonalGeometries(THREE,geometries));
+export const GEOMETRY_NAMES=Object.freeze(Object.keys(geometries));
 
 export function solidAtHeight(tile,height){
   if(!tile)return false;
@@ -179,6 +183,7 @@ export function createVillageGeometry(world){
   const patios=new Map(world.tiles.filter(t=>t.patio).map(t=>{const p=patioCell(t);return [key(p.x,p.z),t];}));
   const isBrava=world.region==='brava';
   function add(shape,color,x,y,z,sx=1,sy=1,sz=1,ry=0,rx=0,rz=0){
+    if(!Object.hasOwn(geometries,shape))throw new Error(`Forma desconeguda «${shape}». Revisa el nom i el registre PERSONAL_GEOMETRIES de mods-personals/renderers.js.`);
     const id=`${shape}:${color}`;
     if(!batches.has(id))batches.set(id,{shape,color,matrices:[]});
     helper.position.set(x,y,z);helper.rotation.set(rx,ry,rz);helper.scale.set(sx,sy,sz);helper.updateMatrix();

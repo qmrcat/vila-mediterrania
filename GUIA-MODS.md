@@ -34,3 +34,10 @@ Els terrenys personals aprofiten els pendents, les baranes, els carrers i la clo
 Els edificis i monuments poden oferir diverses mides; el selector conserva la mida escollida quan canvies l’orientació. Els identificadors que col·lideixin amb eines, arbres, terrenys o edificis oficials produeixen un missatge explícit.
 
 Amb registres buits, el joc conserva les regles i la geometria oficials. El Teatre, el Cinema i la Biblioteca continuen sent contingut del nucli.
+
+
+## Geometries personals — v91
+
+Afegeix formes a **mods-personals/geometries.js**, reexportades des de **mods-personals/renderers.js** com a **PERSONAL_GEOMETRIES**. Cada funció rep `THREE` i retorna una `BufferGeometry` nova, creada una vegada i compartida per totes les instàncies. El fitxer inclou **cupulaPersonal** com a exemple. Consulta el tutorial complet de **mods-personals/README.md**.
+
+Els mods antics sense aquesta exportació continuen funcionant. Es manté l’API 1 i el format 66. A partir d’aquesta versió, el comprovador original informa també del nombre de formes i valida les geometries registrades; el comprovador ampliat continua verificant-ne l’ús als renderitzadors.

@@ -1,3 +1,4 @@
+import {groupBuildings} from './building-categories.js';
 import {RAILING_SIDES} from './terrain-railings.js';
 import {AGRICULTURAL_TERRAINS} from './agricultural-types.js';
 import {PERSONAL_BUSINESSES,PERSONAL_LANDMARKS} from './personal-content.js';
@@ -22,6 +23,18 @@ const BUILDING_TOOLS=new Map([
   ...Object.entries(LANDMARK_TYPES).filter(([,definition])=>definition.category!=='monument').map(([id,definition])=>[id,definition.name]),
   ['building-sign','Canviar un rètol existent'],
 ]);
+const BUILDING_GROUPS=groupBuildings(BUILDING_TOOLS,PERSONAL_LANDMARKS);
+const lastBuildingByCategory=new Map();
+function syncBuildingPicker(type){
+  const group=BUILDING_GROUPS.find(g=>g.entries.some(([id])=>id===type));
+  if(!group)return;
+  const category=$('#building-category'),select=$('#building-type');
+  if(category.value!==group.id||!select.options.length){
+    category.value=group.id;
+    select.replaceChildren(...group.entries.map(([id,name])=>new Option(name,id)));
+  }
+  select.value=type;lastBuildingByCategory.set(group.id,type);
+}
 const MONUMENT_TOOLS=new Map(Object.entries(LANDMARK_TYPES).filter(([,definition])=>definition.category==='monument').map(([id,definition])=>[id,definition.name]));
 const LEGACY_STORAGE_KEYS=['vila-mediterrania:v65','vila-mediterrania:v64','vila-mediterrania:v63','vila-mediterrania:v62','vila-mediterrania:v61','vila-mediterrania:v60','vila-mediterrania:v59','vila-mediterrania:v58','vila-mediterrania:v57','vila-mediterrania:v56','vila-mediterrania:v55','vila-mediterrania:v54','vila-mediterrania:v53','vila-mediterrania:v52','vila-mediterrania:v51','vila-mediterrania:v50','vila-mediterrania:v49','vila-mediterrania:v48','vila-mediterrania:v47','vila-mediterrania:v46','vila-mediterrania:v45','vila-mediterrania:v44','vila-mediterrania:v43','vila-mediterrania:v42','vila-mediterrania:v41','vila-mediterrania:v40','vila-mediterrania:v39','vila-mediterrania:v38','vila-mediterrania:v37','vila-mediterrania:v36','vila-mediterrania:v35','vila-mediterrania:v34','vila-mediterrania:v33','vila-mediterrania:v32','vila-mediterrania:v31','vila-mediterrania:v30','vila-mediterrania:v29','vila-mediterrania:v28','vila-mediterrania:v27','vila-mediterrania:v26','vila-mediterrania:v25','vila-mediterrania:v24','vila-mediterrania:v23','vila-mediterrania:v22','vila-mediterrania:v21','vila-mediterrania:v20','vila-mediterrania:v19','vila-mediterrania:v18','vila-mediterrania:v17','vila-mediterrania:v16','vila-mediterrania:v15','vila-mediterrania:v14','vila-mediterrania:v13','vila-mediterrania:v12','vila-mediterrania:v11','vila-mediterrania:v10','vila-mediterrania:v9','vila-mediterrania:v8','vila-mediterrania:v7','vila-mediterrania:v6','vila-mediterrania:v5','vila-mediterrania:v4','vila-mediterrania:v3','vila-mediterrania:v2','vila-mediterrania:v1'];
 let bridgeStart=null,designs=[];
@@ -266,7 +279,7 @@ function selectTool(next){
   const buildingMode=BUILDING_TOOLS.has(tool),monumentMode=MONUMENT_TOOLS.has(tool);
   if(monumentMode)$('#monument-type').value=tool;
   $('#monument-options').hidden=!monumentMode;
-  if(buildingMode)$('#building-type').value=tool;
+  if(buildingMode)syncBuildingPicker(tool);
   $('#building-options').hidden=!buildingMode;
   $('#building-sign-options').hidden=tool!=='building-sign';
   for(const b of $$('[data-tool]'))b.setAttribute('aria-pressed',String(b.dataset.tool===(buildingMode?'buildings':monumentMode?'monuments':tool)));
@@ -360,7 +373,15 @@ async function init(){
   }
   $('#monument-type').replaceChildren(...[...MONUMENT_TOOLS].map(([id,name])=>new Option(name,id)));
   $('#monument-type').addEventListener('change',e=>selectTool(e.target.value));
-  $('#building-type').replaceChildren(...[...BUILDING_TOOLS].map(([id,name])=>new Option(name,id)));
+  $('#building-category').replaceChildren(...BUILDING_GROUPS.map(g=>new Option(g.name,g.id)));
+  syncBuildingPicker(BUILDING_GROUPS[0].entries[0][0]);
+  $('#building-category').addEventListener('change',e=>{
+    const group=BUILDING_GROUPS.find(g=>g.id===e.target.value);
+    const next=lastBuildingByCategory.get(group.id)??group.entries[0][0];
+    // The category has already changed; rebuild its list before selecting a tool.
+    $('#building-type').replaceChildren(...group.entries.map(([id,name])=>new Option(name,id)));
+    selectTool(next);
+  });
   $('#building-type').addEventListener('change',e=>selectTool(e.target.value));
   let storageWarning='',stored=null;
   try{stored=[STORAGE_KEY,...LEGACY_STORAGE_KEYS].map(key=>localStorage.getItem(key)).find(value=>value!==null);world=stored?validateWorld(JSON.parse(stored)):createWorld();}

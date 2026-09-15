@@ -162,3 +162,9 @@ He implementat una capa de modificacions personals separada del nucli del joc.
 
   No he incrementat la versió del joc ni regenerat el ZIP, perquè aquesta és una infraestructura interna sense contingut personal activat.
   El fitxer modificat prèviament music/Aigua i sol.mp3 no l’he tocat.
+
+# Ampliació integrada a la v91
+
+S’afegeix el registre opcional `PERSONAL_GEOMETRIES`, reexportat per `mods-personals/renderers.js` des de `mods-personals/geometries.js`. Cada entrada és una funció síncrona `(THREE) => BufferGeometry`. L’adaptador nou `personal-geometries.js` valida noms, col·lisions, triangles, índexs, normals i límits; `scene.js` el combina amb les 20 formes oficials. Els renderitzadors utilitzen el nom nou amb les signatures existents.
+
+Els mods antics sense aquesta exportació continuen sent vàlids, sense necessitar el fitxer opcional. Es mantenen API 1 i format de vila 66. El registre d’exemple inclou `cupulaPersonal`; no altera cap edifici. El model continua independent de Three.js.

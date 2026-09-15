@@ -1,4 +1,4 @@
-Vila Mediterrània — versió 89
-Integració de mods personals; Molí de vent de l’usuari conservat.
-Inclou totes les funcions de la versió 88.
+Vila Mediterrània — versió 91
+Geometries pròpies per als mods, amb cúpula d’exemple i validació.
+Inclou totes les funcions de la versió 90.
 API dels mods 1; format de vila 66; dissenys de l’editor 4.

@@ -18,10 +18,8 @@ export function renderWindmill(landmark,part,unit){
   // Coberta, portal i mecanisme frontal, encaixat a la torre sota el ràfec.
   part('cone',tiles,0,2.30,0,1.06,.52,1.06);
   // Arc exterior de pedra i porta lleugerament avançada perquè el marc sigui visible.
-  part('arch',trim,0,.08,.438,.46,.68,.028); // motllura de la porta
-  part('arch',wood,0,.10,.458,.34,.58,.022); // porta de fusta
-  // part('arch',trim,0,.08,.438,.46,.68,.028); // motllura de la porta
-  // part('arch',wood,0,.10,.458,.34,.58,.022); // porta de fusta
+  part('arch',trim,0,.08,.438,.46,.68,.028);
+  part('arch',wood,0,.10,.458,.34,.58,.022);
   // L'eix uneix la torre amb unes pales avançades, sense travessar la teulada.
   const axleY=1.83,bladeZ=.64;
   part('cylinder',trim,0,axleY,.53,.15,.22,.15,0,Math.PI/2);

@@ -114,10 +114,11 @@ static class Servidor
                     WriteHeaders(stream, "405 Method Not Allowed", "text/plain; charset=utf-8", 0, "no-cache", null, "Allow: GET, HEAD");
                     return;
                 }
-                string pathname = parts[1];
-                int query = pathname.IndexOf('?');
-                if (query >= 0) pathname = pathname.Substring(0, query);
-                pathname = Uri.UnescapeDataString(pathname);
+                string target = parts[1];
+                string query = "";
+                int mark = target.IndexOf('?');
+                if (mark >= 0) { query = target.Substring(mark); target = target.Substring(0, mark); }
+                string pathname = Uri.UnescapeDataString(target);
                 if (pathname == "/music/playlist.json") { RespondPlaylist(stream, head); return; }
                 if (pathname == "/") pathname = "/index.html";
                 string file;
@@ -126,6 +127,20 @@ static class Servidor
                 if (!file.StartsWith(root, StringComparison.OrdinalIgnoreCase))
                 {
                     RespondText(stream, "403 Forbidden", "Accés no permès.", head);
+                    return;
+                }
+                // Subpages such as /editor-mods/ serve their own index.html. Without the
+                // trailing slash their relative imports would resolve against the root.
+                if (Directory.Exists(file))
+                {
+                    if (!target.EndsWith("/")) { Redirect(stream, target + "/" + query); return; }
+                    string index = Path.Combine(file, "index.html");
+                    if (!File.Exists(index))
+                    {
+                        RespondText(stream, "404 Not Found", "Aquesta carpeta no té cap index.html.", head);
+                        return;
+                    }
+                    ServeFile(stream, index, head, rangeHeader);
                     return;
                 }
                 if (!File.Exists(file))
@@ -258,6 +273,20 @@ static class Servidor
             line.Append((char)b);
         }
         return line.ToString();
+    }
+
+    static void Redirect(Stream stream, string location)
+    {
+        location = location.Replace("\r", "").Replace("\n", "");
+        StringBuilder h = new StringBuilder();
+        h.Append("HTTP/1.1 302 Found\r\n");
+        h.Append("Location: ").Append(location).Append("\r\n");
+        h.Append("Content-Length: 0\r\n");
+        h.Append("Cache-Control: no-cache\r\n");
+        h.Append("Connection: close\r\n\r\n");
+        byte[] headers = Encoding.ASCII.GetBytes(h.ToString());
+        stream.Write(headers, 0, headers.Length);
+        stream.Flush();
     }
 
     static void RespondText(Stream stream, string status, string text, bool omitBody)

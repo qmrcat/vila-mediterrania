@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manual del taller de mods · Vila Mediterrània</title>
+<style>
+:root{
+  --ground:#f7f3e8; --surface:#fffdf7; --sunk:#efe9d9; --ink:#1b3239; --muted:#5c7074;
+  --sea:#1c565b; --terra:#b0553a; --olive:#6f8a5a; --gold:#a8802f;
+  --line:rgba(27,50,57,.16); --line-strong:rgba(27,50,57,.32); --chip:rgba(28,86,91,.09);
+  --display:Georgia,"Iowan Old Style",serif;
+  --body:system-ui,"Segoe UI",Roboto,sans-serif;
+  --mono:ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --ground:#101f23; --surface:#172f34; --sunk:#0b181b; --ink:#e9e1cd; --muted:#9fb4b2;
+    --sea:#84c3c7; --terra:#e2977a; --olive:#9dba86; --gold:#d7b269;
+    --line:rgba(233,225,205,.18); --line-strong:rgba(233,225,205,.36); --chip:rgba(132,195,199,.14);
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--body);font-size:15.5px;line-height:1.62}
+.shell{display:grid;grid-template-columns:232px minmax(0,1fr);gap:40px;max-width:1080px;margin:0 auto;padding:0 24px}
+nav{position:sticky;top:0;align-self:start;max-height:100vh;overflow-y:auto;padding:34px 0 40px;font-size:13.5px}
+nav strong{display:block;font-family:var(--display);font-size:15px;margin-bottom:10px}
+nav a{display:block;color:var(--muted);text-decoration:none;padding:3px 0}
+nav a:hover{color:var(--sea)}
+main{padding:34px 0 80px;min-width:0}
+header.top{border-bottom:1px solid var(--line-strong);padding-bottom:20px;margin-bottom:26px}
+h1{font-family:var(--display);font-size:32px;font-weight:600;margin:0 0 6px;letter-spacing:.005em}
+.sub{color:var(--muted);margin:0}
+h2{font-family:var(--display);font-size:23px;font-weight:600;margin:44px 0 12px;padding-top:8px}
+h3{font-family:var(--display);font-size:18px;font-weight:600;margin:28px 0 8px}
+h4{font-size:14px;font-weight:600;color:var(--muted);margin:20px 0 6px;text-transform:uppercase;letter-spacing:.05em}
+p{margin:0 0 13px}
+ul,ol{margin:0 0 13px;padding-left:22px}
+li{margin-bottom:5px}
+a{color:var(--sea)}
+code{font-family:var(--mono);font-size:.88em;background:var(--chip);border-radius:3px;padding:1px 4px}
+pre{font-family:var(--mono);font-size:12.8px;line-height:1.55;background:var(--sunk);border:1px solid var(--line);
+  border-radius:9px;padding:13px 15px;overflow-x:auto;margin:0 0 15px}
+pre code{background:none;padding:0;font-size:inherit}
+table{border-collapse:collapse;width:100%;margin:0 0 16px;font-size:13.5px}
+th,td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:12.5px;text-transform:uppercase;letter-spacing:.04em}
+td code{font-size:12.5px}
+.note{border-left:3px solid var(--sea);background:var(--surface);border-radius:0 9px 9px 0;padding:12px 16px;margin:0 0 16px}
+.note.warn{border-left-color:var(--terra)}
+.note.tip{border-left-color:var(--olive)}
+.note p:last-child{margin-bottom:0}
+.note b{font-family:var(--display);font-size:15px}
+figure{margin:0 0 18px;text-align:center}
+figcaption{color:var(--muted);font-size:13px;margin-top:7px}
+svg{max-width:100%;height:auto}
+.axis{stroke:var(--line-strong);stroke-width:1.2}
+.cell{fill:none;stroke:var(--sea);stroke-width:1.6}
+.grid{stroke:var(--line);stroke-width:1}
+.mark{fill:var(--terra)}
+.lbl{fill:var(--muted);color:var(--muted);font-family:var(--body);font-size:11.5px}
+.lbl.key{fill:var(--sea);font-weight:600}
+.steps{counter-reset:step;list-style:none;padding:0}
+.steps>li{counter-increment:step;position:relative;padding-left:38px;margin-bottom:18px}
+.steps>li::before{content:counter(step);position:absolute;left:0;top:1px;width:26px;height:26px;border-radius:50%;
+  background:var(--chip);color:var(--sea);font-size:13px;font-weight:600;display:grid;place-items:center}
+footer{border-top:1px solid var(--line);margin-top:56px;padding-top:18px;color:var(--muted);font-size:13px}
+@media (max-width:900px){
+  .shell{grid-template-columns:1fr;gap:0}
+  nav{position:static;max-height:none;padding:24px 0 0;border-bottom:1px solid var(--line);
+    display:flex;flex-wrap:wrap;gap:4px 14px}
+  nav strong{width:100%}
+}
+@media print{nav{display:none}.shell{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="shell">
+<nav>
+  <strong>Manual</strong>
+  <a href="#que">1 · Què és un mod</a>
+  <a href="#pantalla">2 · La pantalla</a>
+  <a href="#coordenades">3 · Les coordenades</a>
+  <a href="#fita">4 · La fita de terme</a>
+  <a href="#casa">5 · La casa de poble</a>
+  <a href="#pou">6 · El pou de la plaça</a>
+  <a href="#peces">7 · Peces reutilitzables</a>
+  <a href="#girs">8 · Girs i inclinacions</a>
+  <a href="#mides">9 · Diverses mides</a>
+  <a href="#colors">10 · Colors i materials</a>
+  <a href="#exportar">11 · Exportar i instal·lar</a>
+  <a href="#comprovar">12 · Comprovar</a>
+  <a href="#errors">13 · Errors freqüents</a>
+  <a href="#formes">14 · Taula de formes</a>
+  <a href="#dreceres">15 · Dreceres</a>
+</nav>
+
+<main>
+<header class="top">
+  <h1>Manual del taller de mods</h1>
+  <p class="sub">Com fer edificis i monuments nous per a Vila Mediterrània v89 · API de mods 1</p>
+</header>
+
+<p>Aquest manual et porta de la primera peça fins a tenir la teva casa dins del joc.
+Els tres exemples són reals: els pots importar amb <b>Importa JSON…</b> des de la carpeta
+<code>editor-mods/exemples/</code> i desmuntar-los peça a peça mentre llegeixes.</p>
+
+<h2 id="que">1 · Què és un mod, i què no</h2>
+
+<p>Un mod és un <b>edifici</b> o un <b>monument</b> nou: una peça que el jugador col·loca
+amb una eina del desplegable, que ocupa una parcel·la de cel·les, que es pot girar i esborrar,
+i que es desa dins del JSON de la vila. El taller els compon amb les mateixes primitives que fa
+servir el joc i te'n treu el codi per a la carpeta <code>mods-personals/</code>.</p>
+
+<p>El que <b>no</b> fa el taller: terrenys, arbres, negocis ni rètols. Tot això també es pot
+afegir per l'API de mods, però s'escriu a mà seguint els exemples de
+<code>mods-personals/README.md</code>.</p>
+
+<div class="note">
+  <p><b>Una peça no és una malla lliure.</b> No hi ha vèrtexs ni corbes: cada peça és una de les
+  dinou formes que el joc ja té a <code>scene.js</code>, col·locada, escalada i girada. Aquesta
+  limitació és el que fa que tot el poble sembli fet de la mateixa pasta.</p>
+</div>
+
+<h2 id="pantalla">2 · La pantalla</h2>
+
+<p>Obre el joc amb <code>node server.mjs</code> i ves a <code>/editor-mods/</code>. A dalt a la
+dreta del títol hi ha d'haver la insígnia <b>API de mods 1 · joc v89</b>; si diu «joc no detectat»,
+la carpeta <code>editor-mods/</code> no està al costat d'<code>index.html</code>.</p>
+
+<table>
+<tr><th>Zona</th><th>Per a què serveix</th></tr>
+<tr><td><b>Columna esquerra, a dalt</b></td><td>Les dades del mod: nom, identificador, si va a Edificis o a Monuments, les mides que podrà triar el jugador, l'alçada i el text d'ajuda.</td></tr>
+<tr><td><b>Columna esquerra, a baix</b></td><td>La llista de peces, en l'ordre en què es dibuixen. Clica-hi per seleccionar; els botons dupliquen, emmirallen, mouen i esborren.</td></tr>
+<tr><td><b>Vista 3D</b></td><td>Arrossega per girar, Majúscules+arrossega per desplaçar, roda per apropar. Clica una peça per seleccionar-la. Els botons Sud, Est, Nord, Oest i Zenital posen la càmera en angles exactes, molt útils per alinear.</td></tr>
+<tr><td><b>Barra de sota la vista</b></td><td>Quant ocupa el model, l'alçada real i quants materials gastes.</td></tr>
+<tr><td><b>Avisos</b></td><td>Vermell: el joc ho rebutjarà o quedarà malament. Groc: val la pena mirar-ho. Verd: informatiu.</td></tr>
+<tr><td><b>Columna dreta</b></td><td>La peça seleccionada, les eines de repetició i el codi per exportar.</td></tr>
+</table>
+
+<h2 id="coordenades">3 · Les coordenades</h2>
+
+<p>Cada peça és una crida com aquesta:</p>
+
+<pre><code>part(forma, color, u, h, v, sx, sy, sz, ry, rx, rz)</code></pre>
+
+<ul>
+  <li><b>u</b> va cap a l'<b>est</b>, <b>v</b> cap al <b>sud</b>, <b>h</b> és l'alçada des de la base.</li>
+  <li><b>sx, sy, sz</b> són la mida en unitats del joc. Un cub amb <code>1,1,1</code> fa exactament una unitat.</li>
+  <li><b>ry, rx, rz</b> són els girs. L'editor te'ls ensenya en graus i els desa en radians.</li>
+</ul>
+
+<p>Al desplegable de formes, cada opció porta l'identificador anglès i el nom en català separats
+per un guió: <code>gable - frontó</code>. El que va al codi generat sempre és l'identificador.</p>
+
+<p>Les mesures que has de tenir al cap:</p>
+
+<table>
+<tr><th>Mesura</th><th>Valor</th><th>Què és</th></tr>
+<tr><td>Cel·la</td><td><code>1,3</code></td><td>L'amplada d'una cel·la. Una parcel·la d'1 × 1 va de −0,65 a +0,65 en <code>u</code> i en <code>v</code>.</td></tr>
+<tr><td>Pis</td><td><code>0,86</code></td><td>L'alçada d'una planta de les cases del joc. Les línies vermelles de la vista.</td></tr>
+<tr><td>Esglaó de terreny</td><td><code>0,42</code></td><td>El desnivell entre dos nivells de terra. Les marques curtes de l'esquerra.</td></tr>
+</table>
+
+<figure>
+<svg viewBox="0 0 420 210" role="img" aria-label="Diagrama de la cel·la amb els eixos u i v">
+  <rect class="cell" x="130" y="35" width="160" height="160" rx="3"/>
+  <line class="grid" x1="210" y1="35" x2="210" y2="195"/>
+  <line class="grid" x1="130" y1="115" x2="290" y2="115"/>
+  <circle class="mark" cx="210" cy="115" r="4"/>
+  <line class="axis" x1="210" y1="115" x2="330" y2="115" marker-end=""/>
+  <polygon class="mark" points="330,115 322,111 322,119"/>
+  <text class="lbl key" x="336" y="112">+u</text>
+  <text class="lbl" x="336" y="126">est</text>
+  <line class="axis" x1="210" y1="115" x2="210" y2="205"/>
+  <polygon class="mark" points="210,205 206,197 214,197"/>
+  <text class="lbl key" x="218" y="203">+v · sud</text>
+  <text class="lbl" x="150" y="28">nord · −v</text>
+  <text class="lbl" x="86" y="119">oest · −u</text>
+  <text class="lbl" x="134" y="52">−0,65</text>
+  <text class="lbl" x="252" y="52">+0,65</text>
+  <text class="lbl" x="130" y="110">0</text>
+  <rect x="180" y="176" width="60" height="19" rx="2" fill="none" stroke="var(--terra)" stroke-width="1.4"/>
+  <text class="lbl" x="184" y="190" fill="var(--terra)">la façana</text>
+</svg>
+<figcaption>Una parcel·la d'1 × 1 vista des de dalt. El centre és sempre el (0, 0).</figcaption>
+</figure>
+
+<div class="note">
+  <p><b>Dibuixa sempre com si l'edifici mirés al sud.</b> El jugador el girarà amb les tecles, i el
+  joc ja s'encarrega de rotar-ho tot. Si poses la porta a <code>v</code> positiu, quedarà sempre
+  a la cara que el jugador ha triat com a façana.</p>
+</div>
+
+<h2 id="fita">4 · Primer exemple · la fita de terme</h2>
+
+<p>Tres peces, per agafar el tacte. Fa 0,90 d'alçada i no arriba ni a mig metre de la cel·la.</p>
+
+<ol class="steps">
+  <li><b>Comença un mod.</b> Posa-li de nom <i>Fita de terme</i> i d'identificador <code>fita</code>.
+  Tria l'eina <b>Monuments</b> i deixa marcada la mida 1 × 1.</li>
+  <li><b>La llosa.</b> Afegeix una peça i deixa-la en <code>box</code>. Posa-la a
+  <code>u 0 · h 0.05 · v 0</code> amb mida <code>0.52 × 0.10 × 0.52</code>. És la base plana que la
+  fa seure al terra.</li>
+  <li><b>El pilar.</b> Duplica la peça i canvia-la a <code>h 0.42</code> i mida
+  <code>0.26 × 0.66 × 0.26</code>. Fixa't que <code>h</code> és sempre el <b>centre</b> de la peça:
+  un pilar de 0,66 d'alt centrat a 0,42 va de 0,09 a 0,75.</li>
+  <li><b>La caputxa.</b> Afegeix una peça amb la forma <code>churchCap</code>, que és una piràmide de
+  base quadrada, a <code>h 0.82</code> amb mida <code>0.32 × 0.16 × 0.32</code>.</li>
+  <li><b>Comprova.</b> La barra de sota ha de dir alçada real <b>0.90</b>. El camp
+  <i>Text d'ajuda</i> és obligatori: escriu-hi on es pot posar.</li>
+</ol>
+
+<p>El codi que en surt:</p>
+
+<pre><code>export function renderFita(landmark, part, unit){
+  part('box','#b9ad92',0,.05,0,.52,.1,.52);
+  part('box','#d6cbb0',0,.42,0,.26,.66,.26);
+  part('churchCap','#c6bb9f',0,.82,0,.32,.16,.32);
+}</code></pre>
+
+<h2 id="casa">5 · Segon exemple · la casa de poble</h2>
+
+<p>Aquest és l'exemple important: setze peces, una teulada a dues aigües de veritat i una xemeneia.
+Ocupa una cel·la i fa 1,91 d'alt, una mica més de dos pisos.</p>
+
+<h3>El cos</h3>
+
+<ol class="steps">
+  <li><b>El sòcol.</b> <code>box</code> a <code>0 · 0.04 · 0</code>, mida <code>1.24 × 0.08 × 1.24</code>,
+  color <code>#bdae92</code>. Deixa'l dos centímetres per sota de l'amplada de la cel·la: així la casa
+  no frega la del costat.</li>
+  <li><b>Les parets.</b> <code>box</code> a <code>0 · 0.60 · 0</code>, mida
+  <code>1.16 × 1.04 × 1.16</code>, color <code>#ece0c4</code>. Van de 0,08 a 1,12, just damunt del
+  sòcol.</li>
+  <li><b>El ràfec.</b> <code>box</code> a <code>0 · 1.16 · 0</code>, mida
+  <code>1.28 × 0.08 × 1.28</code>, color <code>#c9b48f</code>. Sobresurt de les parets i és el que dona
+  la sensació de teulada catalana.</li>
+</ol>
+
+<h3>Les obertures</h3>
+
+<p>La cara sud és la façana, i és a <code>v = 0.58</code>: la paret acaba a 1,16/2 = 0,58. Les
+obertures s'hi enganxen a sobre, no s'hi encasten.</p>
+
+<ol class="steps" start="4">
+  <li><b>La porta.</b> <code>box</code> a <code>0 · 0.34 · 0.585</code>, mida
+  <code>0.30 × 0.52 × 0.03</code>, color <code>#6f5236</code>.</li>
+  <li><b>La llinda.</b> <code>box</code> a <code>0 · 0.63 · 0.585</code>, mida
+  <code>0.38 × 0.06 × 0.04</code>, color <code>#d8cba9</code>.</li>
+  <li><b>La finestra esquerra.</b> <code>box</code> a <code>−0.32 · 0.80 · 0.585</code>, mida
+  <code>0.22 × 0.26 × 0.03</code>, color <code>#41595e</code>. I l'ampit a sota:
+  <code>−0.32 · 0.65 · 0.585</code>, mida <code>0.28 × 0.04 × 0.05</code>.</li>
+  <li><b>La finestra dreta.</b> Selecciona la finestra, prem <b>Emmiralla</b> i tens la de l'altre
+  costat amb el signe de <code>u</code> canviat. Fes el mateix amb l'ampit.</li>
+</ol>
+
+<div class="note tip">
+  <p><b>Emmiralla</b> duplica la peça canviant <code>u</code> per <code>−u</code> i invertint els girs
+  en Y i en Z. Va perfecte per a tot el que sigui simètric d'esquerra a dreta, i no serveix quan la
+  simetria és de davant a darrere.</p>
+</div>
+
+<h3>La teulada</h3>
+
+<p>Aquí és on s'aprèn de debò. Volem un carener horitzontal d'est a oest, amb els dos vessants
+caient cap al nord i cap al sud. Les mides surten d'un triangle:</p>
+
+<ul>
+  <li>El vessant ha de cobrir de <code>v = 0</code> (el carener) fins a <code>v = 0.616</code> (la vora),
+  o sigui una base de <b>0,616</b>.</li>
+  <li>Volem que pugi <b>0,34</b> des del ràfec fins al carener.</li>
+  <li>El pendent és <code>atan(0,34 / 0,616)</code> = <b>28,9°</b>, i la llargada de la llosa és
+  <code>√(0,616² + 0,34²)</code> = <b>0,70</b>.</li>
+</ul>
+
+<ol class="steps" start="8">
+  <li><b>Els frontons.</b> Les parets d'est i oest han de pujar en triangle fins al carener. Fes servir
+  la forma <code>gable</code>, que ja és un triangle, però gira-la 90° perquè miri de cara:
+  <code>u −0.58 · h 1.20 · v 0</code>, mida <code>1.16 × 0.81 × 0.06</code>, gir <b>Y −90°</b>.
+  L'escala en Y és 0,81 perquè el triangle de base fa 0,42 d'alt i en volem 0,34: 0,34/0,42 = 0,81.
+  Emmiralla per tenir el de l'altra banda.</li>
+  <li><b>El vessant sud.</b> <code>box</code> a <code>0 · 1.39 · 0.308</code>, mida
+  <code>1.28 × 0.06 × 0.70</code>, gir <b>X 28,9°</b>, color <code>#b2603f</code>. El
+  <code>v 0.308</code> és la meitat de 0,616: la llosa queda centrada damunt del seu vessant.</li>
+  <li><b>El vessant nord.</b> Aquest no el pots emmirallar, perquè la simetria és en <code>v</code> i
+  no en <code>u</code>. Duplica el vessant sud i canvia-li el signe a dues coses: <code>v −0.308</code>
+  i gir <b>X −28,9°</b>.</li>
+  <li><b>El carener.</b> Una llosa plana que tapa la junta:
+  <code>0 · 1.57 · 0</code>, mida <code>1.28 × 0.05 × 0.12</code>.</li>
+</ol>
+
+<div class="note warn">
+  <p><b>Gira en X i te'n vas de la cel·la.</b> Una llosa de 0,70 inclinada continua ocupant 0,70 de
+  diagonal, però la seva ombra al terra només fa 0,616. Si l'allargues fins a 0,78 pensant que
+  arribarà més lluny, el que passa és que en surt pels dos costats. Mira sempre la barra
+  <i>Ocupa</i>: en aquesta casa diu 1.28 × 1.28, i el límit és 1,30.</p>
+</div>
+
+<h3>La xemeneia</h3>
+
+<ol class="steps" start="12">
+  <li><b>El tub.</b> <code>box</code> a <code>0.40 · 1.50 · −0.24</code>, mida
+  <code>0.16 × 0.70 × 0.16</code>. Travessa la teulada per la banda nord; no passa res que quedi
+  clavat a dins.</li>
+  <li><b>El barret.</b> <code>box</code> a <code>0.40 · 1.88 · −0.24</code>, mida
+  <code>0.22 × 0.06 × 0.22</code>, amb el to de teula. És la peça més alta i, per tant, la que marca
+  l'alçada del mod: <b>1,91</b>.</li>
+</ol>
+
+<p>El renderitzador que genera el taller. Fixa't que les dues lloses del teulat surten amb
+<code>orientedPart</code> i la resta amb <code>part</code>:</p>
+
+<pre><code>/** Casa de poble · 1 × 1 cel·les · alçada 1.91. */
+export function renderCasaDePoble(landmark, part, unit, {orientedPart}){
+  part('box','#bdae92',0,.04,0,1.24,.08,1.24);
+  part('box','#ece0c4',0,.6,0,1.16,1.04,1.16);
+  part('box','#c9b48f',0,1.16,0,1.28,.08,1.28);
+  part('box','#6f5236',0,.34,.585,.3,.52,.03);
+  part('box','#d8cba9',0,.63,.585,.38,.06,.04);
+  part('box','#41595e',-.32,.8,.585,.22,.26,.03);
+  part('box','#c9b48f',-.32,.65,.585,.28,.04,.05);
+  part('box','#41595e',.32,.8,.585,.22,.26,.03);
+  part('box','#c9b48f',.32,.65,.585,.28,.04,.05);
+  part('gable','#ece0c4',-.58,1.2,0,1.16,.81,.06,-1.5708);
+  part('gable','#ece0c4',.58,1.2,0,1.16,.81,.06,1.5708);
+  orientedPart('box','#b2603f',0,1.39,-.308,1.28,.06,.7,0,-.50434);
+  orientedPart('box','#b2603f',0,1.39,.308,1.28,.06,.7,0,.50434);
+  part('box','#c9b48f',0,1.57,0,1.28,.05,.12);
+  part('box','#c4b49a',.4,1.5,-.24,.16,.7,.16);
+  part('box','#a2553d',.4,1.88,-.24,.22,.06,.22);
+}</code></pre>
+
+<h3>Variacions per practicar</h3>
+<ul>
+  <li>Puja les parets a 1,90 i tindràs una casa de dos pisos: recorda moure amunt el ràfec, els
+  frontons, els vessants i la xemeneia la mateixa quantitat.</li>
+  <li>Canvia <code>#b2603f</code> per un to més gris i tindràs una casa de pissarra.</li>
+  <li>Afegeix una segona filera de finestres a <code>h 1.00</code> i mira com canvia el caràcter.</li>
+  <li>Treu el vessant nord, allarga el sud fins a cobrir tota la casa i inclina'l menys: ja tens una
+  caseta a una sola aigua.</li>
+</ul>
+
+<h2 id="pou">6 · Tercer exemple · el pou de la plaça</h2>
+
+<p>Deu peces, per practicar les formes rodones i una inclinació que no és de teulada. Fa 1,65 d'alt.</p>
+
+<table>
+<tr><th>Peça</th><th>Forma</th><th>Posició</th><th>Mida</th><th>Gir</th></tr>
+<tr><td>Brocal</td><td><code>cylinder</code></td><td>0 · 0.28 · 0</td><td>0.72 × 0.56 × 0.72</td><td>—</td></tr>
+<tr><td>Aigua</td><td><code>cylinder</code></td><td>0 · 0.54 · 0</td><td>0.60 × 0.02 × 0.60</td><td>—</td></tr>
+<tr><td>Cèrcol</td><td><code>ring</code></td><td>0 · 0.55 · 0</td><td>0.74 × 0.74 × 0.90</td><td>X 90°</td></tr>
+<tr><td>Muntants (×2)</td><td><code>cylinder</code></td><td>±0.28 · 0.90 · 0</td><td>0.10 × 1.10 × 0.10</td><td>—</td></tr>
+<tr><td>Travesser</td><td><code>box</code></td><td>0 · 1.42 · 0</td><td>0.70 × 0.09 × 0.09</td><td>—</td></tr>
+<tr><td>Corda</td><td><code>box</code></td><td>0 · 1.12 · 0</td><td>0.03 × 0.52 × 0.03</td><td>—</td></tr>
+<tr><td>Cubell</td><td><code>box</code></td><td>0 · 0.80 · 0</td><td>0.18 × 0.18 × 0.18</td><td>—</td></tr>
+<tr><td>Teuladeta (×2)</td><td><code>box</code></td><td>0 · 1.53 · ±0.17</td><td>0.76 × 0.05 × 0.40</td><td>X ±27,9°</td></tr>
+</table>
+
+<p>Dues coses per fixar-s'hi:</p>
+
+<ul>
+  <li>El <code>ring</code> està dret per defecte, com una roda. Per posar-lo pla cal girar-lo
+  <b>90° en X</b>. Com que és un gir en X, el taller l'exportarà amb <code>orientedPart</code>.</li>
+  <li>Un <code>cylinder</code> és sempre vertical: <code>sy</code> és l'alçada i <code>sx</code> amb
+  <code>sz</code> el diàmetre. Per fer-lo ovalat, posa <code>sx</code> i <code>sz</code> diferents.</li>
+</ul>
+
+<h2 id="peces">7 · Peces reutilitzables</h2>
+
+<h3>No es poden afegir formes noves</h3>
+
+<p>El catàleg de dinou formes és tancat: viu a <code>scene.js</code> i l'API de mods no permet
+registrar-hi geometries. Un mod pot posar una forma on vulgui, amb la mida i el gir que vulgui,
+però no en pot inventar cap. Tot el que facis, doncs, surt de combinar-ne.</p>
+
+<p>La bona notícia és que les combinacions es poden desar i reutilitzar. El taller té una
+<b>biblioteca de peces</b>: composes una galleda una vegada, li poses nom, i després la
+insereixes a tots els mods que vulguis.</p>
+
+<h3>Un cilindre buit, de dues maneres</h3>
+
+<p>És el cas que es demana més sovint, i n'hi ha dues solucions bones segons què busquis.</p>
+
+<h4>Amb cares planes</h4>
+
+<p>És com el joc fa les torres i els molins: <i>n</i> cubs prims posats en cercle. Tens control
+total sobre el gruix, l'alçada i el nombre de cares, i la textura de carreus queda bé de prop.
+L'amplada de cada cara surt de la trigonometria:</p>
+
+<pre><code>cara = 2 × radi × tan(180° / cares)</code></pre>
+
+<p>Per a 12 cares i un radi de 0,32 dona 0,171. Convé afegir-hi un 4 % perquè els cantons no
+s'obrin, i queda 0,178. A la biblioteca hi trobaràs aquest cilindre ja fet, de 12 cares, 0,70 de
+diàmetre exterior i 0,50 d'alt. Per fer-ne un a mida: posa un cub de
+<code>0.178 × 0.50 × 0.06</code> a <code>u 0 · h 0.25 · v 0.32</code> i fes servir
+<b>Repeteix → En cercle</b> amb 11 còpies i radi 0,32.</p>
+
+<h4>Amb una sola peça</h4>
+
+<p>La forma <code>ring</code> és un tor: una anella de secció rodona. Si l'estires per l'eix,
+la secció s'allarga i el que en surt és exactament una paret cilíndrica buida, d'una sola peça.</p>
+
+<table>
+<tr><th>Vols</th><th>Escala</th></tr>
+<tr><td>Radi exterior</td><td><code>sx</code> i <code>sy</code> = radi ÷ 0,56</td></tr>
+<tr><td>Alçada de la paret</td><td><code>sz</code> = alçada ÷ 0,12</td></tr>
+<tr><td>Que quedi dreta</td><td>gir <b>X 90°</b></td></tr>
+</table>
+
+<p>Per a una galleda de 0,16 de radi i 0,22 d'alt: <code>sx</code> i <code>sy</code> a 0,29,
+<code>sz</code> a 1,8 i gir X de 90°. Una peça en comptes de dotze. A canvi, la secció del tor té
+només cinc cares, i si l'estires molt s'hi noten les arestes verticals. Per a objectes petits
+—galledes, gerres, cèrcols de pou— no es veu; per a una torre, fes servir els cubs.</p>
+
+<h3>La biblioteca</h3>
+
+<p>El panell <b>Biblioteca de peces</b> és a la columna dreta. Les peces es desen al navegador,
+igual que la col·lecció de mods, i s'exporten a un fitxer a part.</p>
+
+<table>
+<tr><th>Botó</th><th>Què fa</th></tr>
+<tr><td><b>Insereix</b></td><td>Estampa la peça al centre de la parcel·la. Les peces inserides queden totes seleccionades: mou-les amb les fletxes fins on van.</td></tr>
+<tr><td><b>Desa la selecció</b></td><td>Desa les peces seleccionades com una peça nova. Sense res seleccionat, desa el mod sencer.</td></tr>
+<tr><td><b>Reanomena</b> · <b>Duplica</b> · <b>Elimina</b></td><td>Gestionen la biblioteca. Duplica't una peça abans de fer-ne una variant.</td></tr>
+<tr><td><b>Importa</b> · <b>Exporta</b></td><td>Un fitxer JSON amb tota la biblioteca, per compartir-la o guardar-la amb el projecte.</td></tr>
+</table>
+
+<div class="note">
+  <p><b>S'estampa, no s'enllaça.</b> En inserir una peça, els seus elements passen a ser peces
+  normals del mod, editables una a una. Si després canvies la peça de la biblioteca, els mods on ja
+  l'havies posada no canvien. És a posta: el joc només entén crides <code>part()</code>, i així el
+  codi que exportes no depèn de res.</p>
+</div>
+
+<p>Quan deses una peça, el taller la <b>centra en planta i li posa la base a zero</b>. Per això
+en inserir-la apareix al mig de la parcel·la i recolzada a terra, i no on la vas dibuixar.</p>
+
+<h3>Treballar amb diverses peces alhora</h3>
+
+<p>Per compondre grups et cal seleccionar-ne més d'una:</p>
+
+<table>
+<tr><th>Acció</th><th>Com</th></tr>
+<tr><td>Afegir o treure una peça de la selecció</td><td>Ctrl+clic (Cmd+clic al Mac), a la llista o a la vista 3D</td></tr>
+<tr><td>Seleccionar un tram sencer</td><td>Majúscules+clic a la llista</td></tr>
+<tr><td>Moure-les totes</td><td>Fletxes, Re Pàg i Av Pàg</td></tr>
+<tr><td>Girar el grup un quart de volta</td><td>El botó <b>Gira 90°</b></td></tr>
+<tr><td>Canviar el color o la forma de totes</td><td>Els camps de l'inspector de color i de forma</td></tr>
+<tr><td>Duplicar-les, emmirallar-les o esborrar-les</td><td>Els botons de sempre</td></tr>
+</table>
+
+<p>La peça amb la vora daurada és la <b>principal</b>: és la que veus a l'inspector, i els camps de
+posició, mida i gir només l'afecten a ella. Les fletxes, en canvi, mouen tot el grup. El color i la
+forma s'apliquen a tota la selecció, que és el que se sol voler.</p>
+
+<p><b>Gira 90°</b> gira el grup al voltant del seu centre en planta i composa el gir amb la
+inclinació que ja tingués cada peça, de la mateixa manera que ho fa <code>orientedPart</code> quan
+el jugador gira l'edifici. Una teulada girada continua sent una teulada.</p>
+
+<h3>Exemple · la galleda del pou</h3>
+
+<ol class="steps">
+  <li><b>Comença un mod</b> i digue-li <i>Galleda</i>. Tant se val el nom del mod: només el faràs
+  servir com a taller.</li>
+  <li><b>La paret.</b> Una peça <code>ring - anella</code> a <code>0 · 0.108 · 0</code>, mida
+  <code>0.29 × 0.29 × 1.80</code>, gir <b>X 90°</b>, color <code>#8a6a44</code>.</li>
+  <li><b>El fons.</b> Un <code>cylinder</code> a <code>0 · 0.015 · 0</code>, mida
+  <code>0.28 × 0.03 × 0.28</code>.</li>
+  <li><b>La nansa.</b> Un altre <code>ring</code>, aquest dret, a <code>0 · 0.25 · 0</code>, mida
+  <code>0.30 × 0.30 × 0.50</code>, sense cap gir.</li>
+  <li><b>Desa-la.</b> Sense res seleccionat, prem <b>Desa la selecció</b> i posa-li de nom
+  <i>Galleda</i>. Ja és a la biblioteca, amb els seus tres elements.</li>
+  <li><b>Fes-la servir.</b> Obre el mod del pou, prem <b>Insereix</b> i puja la galleda amb Re Pàg
+  fins a penjar-la de la corda. Les tres peces es mouen juntes.</li>
+</ol>
+
+<p>Si més endavant vols una galleda amb un cèrcol de ferro, duplica-la a la biblioteca, insereix la
+còpia en un mod qualsevol, afegeix-hi l'anella i torna a desar la selecció amb el nom nou. La
+galleda original queda intacta.</p>
+
+<h2 id="girs">8 · Girs i inclinacions</h2>
+
+<p>Hi ha dues menes de gir, i la diferència importa:</p>
+
+<table>
+<tr><th>Gir</th><th>Què fa</th><th>Com s'exporta</th></tr>
+<tr><td><b>Y</b></td><td>Fa pivotar la peça sobre el seu eix vertical. És el gir de les bigues en diagonal, dels merlets d'una torre, dels frontons girats de cara.</td><td>Amb <code>part</code>, normal.</td></tr>
+<tr><td><b>X o Z</b></td><td>Tomba la peça: vessants, rampes, pals inclinats, anelles esteses.</td><td>Amb <code>orientedPart</code>, el quart argument que passa el joc.</td></tr>
+</table>
+
+<p>Per què la distinció: quan el jugador gira l'edifici, el joc suma la rotació del terreny a la de
+la peça. Si la peça ja està tombada, sumar-hi un gir vertical la torça. <code>orientedPart</code>
+compon les dues rotacions com cal. El taller ho detecta sol i tria la funció; no has de fer res,
+però val la pena entendre per què el codi surt amb dues crides diferents.</p>
+
+<div class="note tip">
+  <p><b>Prova-ho sempre girant.</b> Al joc, col·loca el mod i canvia-li l'orientació amb les quatre
+  direccions. Una teulada mal composta es veu de seguida: el carener apunta on no toca.</p>
+</div>
+
+<h2 id="mides">9 · Diverses mides</h2>
+
+<p>Un mod pot oferir més d'una parcel·la. Marca-les totes a <i>Mides que podrà triar el jugador</i>
+i el selector del joc les mostrarà.</p>
+
+<p>Ara bé: el taller dibuixa <b>una sola geometria</b>. El renderitzador rep
+<code>landmark.size</code> i ets tu qui decideix què en fa. Tens tres sortides raonables:</p>
+
+<ol>
+  <li><b>Deixar-la centrada.</b> Una font petita al mig d'una plaça de 2 × 2 té tot el sentit.</li>
+  <li><b>Escalar-la.</b> Multiplica les mides i les posicions per un factor segons la mida.</li>
+  <li><b>Fer-ne dues versions</b> dins de la mateixa funció.</li>
+</ol>
+
+<pre><code>export function renderMasia(landmark, part, unit){
+  const wide = landmark.size >= 4;
+  const width = wide ? 2.46 : 1.16;
+  part('box','#ece0c4',0,.6,0,width,1.04,1.16);
+  …
+}</code></pre>
+
+<p>Recorda que la comprovació de si et surts de la parcel·la es fa contra la <b>mida més petita</b>
+que hagis declarat: és la que et pot fer mal.</p>
+
+<h2 id="colors">10 · Colors i materials</h2>
+
+<p>Cada parella de forma i color obre un lot de dibuix, i cada color nou crea un material. Amb deu
+o dotze colors en tens de sobra per a qualsevol edifici; passar de catorze és senyal que estàs
+matisant coses que no es veuran.</p>
+
+<p>La paleta de l'inspector et mostra primer els colors que ja fas servir en aquest mod: fes-hi clic
+en comptes de triar un to nou gairebé igual. Els tons que combinen bé amb el poble:</p>
+
+<table>
+<tr><th>Ús</th><th>Colors</th></tr>
+<tr><td>Parets</td><td><code>#f2eee3</code> <code>#ece0c4</code> <code>#d4cab3</code> <code>#cbbd9d</code></td></tr>
+<tr><td>Pedra i sòcols</td><td><code>#bdae92</code> <code>#b6aa91</code> <code>#b5a88d</code></td></tr>
+<tr><td>Teula</td><td><code>#b87850</code> <code>#b2603f</code> <code>#a2553d</code></td></tr>
+<tr><td>Fusta</td><td><code>#72563b</code> <code>#6f5236</code> <code>#8a6a44</code></td></tr>
+<tr><td>Obertures i mar</td><td><code>#41595e</code> <code>#45636a</code> <code>#1c565b</code></td></tr>
+<tr><td>Vegetació</td><td><code>#567043</code> <code>#4f6b3f</code> <code>#6f8a5a</code></td></tr>
+</table>
+
+<h2 id="exportar">11 · Exportar i instal·lar</h2>
+
+<h3>Camí A · un renderitzador escrit</h3>
+
+<p>És el camí del molí de vent que el joc ja porta. Un fitxer per mod, llegible i modificable.</p>
+
+<ol class="steps">
+  <li>A <b>Exporta → El renderitzador</b>, prem <b>Baixa el fitxer</b> i desa'l a
+  <code>mods-personals/</code>.</li>
+  <li>A <b>Exporta → Els registres de mods-personals</b>, enganxa l'entrada dins de
+  <code>PERSONAL_LANDMARKS</code> de <code>catalog.js</code>, i l'<code>import</code> més la línia de
+  registre a <code>renderers.js</code>.</li>
+  <li>Executa les comprovacions i recarrega el joc amb Ctrl+F5.</li>
+</ol>
+
+<h3>Camí B · el JSON i el renderitzador genèric</h3>
+
+<p>Si penses fer-ne uns quants i no vols un fitxer per cadascun.</p>
+
+<ol class="steps">
+  <li>Copia <code>json-mods.js</code> i <code>json-mods-data.js</code> d'aquesta carpeta a
+  <code>mods-personals/</code>.</li>
+  <li>Connecta'ls <b>una sola vegada</b> amb els retalls d'<b>Exporta → Com connectar el runtime
+  JSON</b>: un <code>import</code> i un spread a <code>catalog.js</code>, i un altre parell a
+  <code>renderers.js</code>.</li>
+  <li>A partir d'aquí, cada mod nou és copiar el seu JSON dins de l'array
+  <code>JSON_MODS</code>. Res més.</li>
+</ol>
+
+<p>Els dos camins conviuen sense problema: pots tenir el molí i la casa com a fitxers i la resta com
+a dades.</p>
+
+<h2 id="comprovar">12 · Comprovar</h2>
+
+<pre><code>node mods-personals/check.mjs
+node check-mods.mjs</code></pre>
+
+<p>El primer valida el catàleg. El segon és el bo: col·loca cada mod en <b>les quatre
+orientacions i en totes les mides</b> que hagis declarat, en construeix la geometria de veritat i
+comprova que la vila es recupera del JSON. Si passa, el mod no petarà.</p>
+
+<p>El que cap comprovació automàtica pot dir-te és si l'edifici fa goig. Això, al joc:</p>
+
+<ul>
+  <li>Posa'l sobre terreny pla i sobre terreny elevat i amb pendent.</li>
+  <li>Gira'l en les quatre direccions.</li>
+  <li>Posa-hi cases de veïnes i mira que no s'encavalquin. A l'editor, la casella
+  <i>Cases veïnes</i> te les ensenya abans.</li>
+  <li>Esborra'l i comprova que el terreny queda com estava. Prova Desfés i Refés.</li>
+  <li>Exporta la vila a JSON, comença'n una de nova i torna-la a importar.</li>
+</ul>
+
+<h2 id="errors">13 · Errors freqüents</h2>
+
+<table>
+<tr><th>Símptoma</th><th>Causa</th></tr>
+<tr><td>L'eina no surt al desplegable</td><td>Falta l'entrada a <code>catalog.js</code>, o la clau del catàleg i la del registre no s'escriuen igual.</td></tr>
+<tr><td>Es pot triar però no es dibuixa res</td><td>Falta el registre a <code>renderers.js</code>, o l'<code>import</code> apunta a un nom de fitxer que no existeix.</td></tr>
+<tr><td>El catàleg no carrega</td><td>Identificador repetit, reservat, o sense el camp <code>help</code>. L'editor t'ho avisa en vermell abans.</td></tr>
+<tr><td>La teulada queda torçada en girar l'edifici</td><td>La peça inclinada s'ha exportat amb <code>part</code> en comptes d'<code>orientedPart</code>. Passa si has editat el codi a mà.</td></tr>
+<tr><td>El model es clava a la casa del costat</td><td>Alguna peça passa de ±0,65 per cel·la. Mira la barra <i>Ocupa</i> i l'avís vermell.</td></tr>
+<tr><td>El marc de selecció no encaixa amb l'edifici</td><td>L'alçada declarada no és la real. Deixa marcat <i>mesura-la sola</i>.</td></tr>
+<tr><td>Una vila desada no s'obre</td><td>Aquella còpia del joc no té els mods. El JSON de la vila no inclou el codi: has de copiar-hi també <code>mods-personals/</code>.</td></tr>
+<tr><td>Les peces planes es veuen només per una banda</td><td>És normal: el joc dibuixa una sola cara. Dobla la peça amb el gir invertit si l'has de veure pels dos costats.</td></tr>
+</table>
+
+<h2 id="formes">14 · Taula de formes</h2>
+
+<table>
+<tr><th>Forma</th><th>Què és</th><th>Per a què va bé</th></tr>
+<tr><td><code>box</code><br><span class="lbl">cub</span></td><td>Cub d'1 × 1 × 1, centrat</td><td>Tot. Parets, lloses, bigues, obertures.</td></tr>
+<tr><td><code>cylinder</code><br><span class="lbl">cilindre</span></td><td>Cilindre vertical, 12 cares</td><td>Columnes, torres, pous, troncs.</td></tr>
+<tr><td><code>cone</code><br><span class="lbl">con</span></td><td>Con amb la punta amunt</td><td>Teulades còniques, xiprers, agulles.</td></tr>
+<tr><td><code>carrot</code><br><span class="lbl">con invertit</span></td><td>Con amb la punta avall</td><td>Penjolls, embuts, campanes.</td></tr>
+<tr><td><code>sphere</code><br><span class="lbl">esfera</span></td><td>Esfera de poca resolució</td><td>Boles, copes d'arbre, cúpules.</td></tr>
+<tr><td><code>rock</code><br><span class="lbl">roca</span></td><td>Dodecàedre</td><td>Pedres i fullatge. Escalat i girat desigual queda natural.</td></tr>
+<tr><td><code>ring</code><br><span class="lbl">anella</span></td><td>Tor prim, dret per defecte</td><td>Anelles, cèrcols, baranes rodones.</td></tr>
+<tr><td><code>ramp</code><br><span class="lbl">rampa</span></td><td>Falca del pendent del terreny</td><td>Rampes i escales que segueixen el terreny.</td></tr>
+<tr><td><code>arch</code><br><span class="lbl">arc</span></td><td>Arc de mig punt extrudit cap a +Z</td><td>Portals, finestres d'arc, arcades.</td></tr>
+<tr><td><code>gable</code><br><span class="lbl">frontó</span></td><td>Triangle d'alçada 0,42 dins la unitat</td><td>Frontons. Gira'l 90° en Y per posar-lo de cara.</td></tr>
+<tr><td><code>shedWall</code><br><span class="lbl">paret a una aigua</span></td><td>Paret de teulada a una aigua</td><td>Coberts, magatzems, annexos.</td></tr>
+<tr><td><code>arcade</code><br><span class="lbl">arcada</span></td><td>Timpà amb el buit de l'arc realment obert</td><td>Porxos i places porticades.</td></tr>
+<tr><td><code>fan</code><br><span class="lbl">ventall</span></td><td>Fulla de ventall, superfície plana</td><td>Palmes del margalló.</td></tr>
+<tr><td><code>churchCap</code><br><span class="lbl">piràmide</span></td><td>Piràmide de base quadrada</td><td>Coronaments, campanars, fites.</td></tr>
+<tr><td><code>hotelStar</code><br><span class="lbl">estrella</span></td><td>Estrella plana</td><td>Rètols i distintius.</td></tr>
+<tr><td><code>stoneBridgeArch</code><br><span class="lbl">arcada de pont</span></td><td>Arcada del pont de pedra</td><td>Ponts i aqüeductes.</td></tr>
+<tr><td><code>wallGate</code><br><span class="lbl">portal de muralla</span></td><td>Portal obert de muralla</td><td>Muralles i portes de vila.</td></tr>
+<tr><td><code>barberPoleRed</code> · <code>barberPoleBlue</code><br><span class="lbl">franja vermella · franja blava</span></td><td>Franges helicoidals</td><td>Pals de barber i detalls en espiral.</td></tr>
+</table>
+
+<h2 id="dreceres">15 · Dreceres</h2>
+
+<table>
+<tr><th>Tecla</th><th>Acció</th></tr>
+<tr><td>Fletxes</td><td>Mou la selecció en <code>u</code> i <code>v</code>, de 0,02 en 0,02</td></tr>
+<tr><td>Majúscules + fletxes</td><td>El mateix, de 0,005 en 0,005</td></tr>
+<tr><td>Re Pàg · Av Pàg</td><td>Puja i baixa la selecció</td></tr>
+<tr><td>Ctrl+clic</td><td>Afegeix o treu una peça de la selecció</td></tr>
+<tr><td>Majúscules+clic a la llista</td><td>Selecciona un tram sencer</td></tr>
+<tr><td>Supr</td><td>Esborra les peces seleccionades</td></tr>
+<tr><td>Ctrl+Z</td><td>Desfés</td></tr>
+<tr><td>Ctrl+S</td><td>Desa el mod al navegador</td></tr>
+<tr><td>Arrossegar</td><td>Gira la càmera</td></tr>
+<tr><td>Majúscules + arrossegar</td><td>Desplaça la càmera</td></tr>
+<tr><td>Roda</td><td>Apropa i allunya</td></tr>
+</table>
+
+<div class="note warn">
+  <p><b>La col·lecció viu al navegador.</b> Es desa al <code>localStorage</code> d'aquesta adreça i
+  port. Si canvies d'ordinador, buides les dades del navegador o serveixes el joc des d'un altre
+  port, la perds. Fes servir <b>Exporta la col·lecció</b> de tant en tant i desa el fitxer amb la
+  resta del projecte.</p>
+</div>
+
+<footer>
+  <p>Els exemples d'aquest manual són a <code>editor-mods/exemples/</code> i s'importen amb el botó
+  <b>Importa JSON…</b>. Per als terrenys, els arbres i els negocis personals, mira
+  <code>mods-personals/README.md</code> i <code>GUIA-MODS.md</code>.</p>
+</footer>
+</main>
+</div>
+</body>
+</html>

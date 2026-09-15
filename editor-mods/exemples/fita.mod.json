@@ -1,0 +1,54 @@
+{
+  "format": "vila-mod",
+  "version": 2,
+  "requiresModApi": 1,
+  "id": "fita",
+  "name": "Fita de terme",
+  "category": "monument",
+  "sizes": [
+    1
+  ],
+  "height": 0.9,
+  "help": "Una cel·la lliure i anivellada de terra ferma, prat o carrer.",
+  "parts": [
+    {
+      "shape": "box",
+      "color": "#b9ad92",
+      "u": 0,
+      "h": 0.05,
+      "v": 0,
+      "sx": 0.52,
+      "sy": 0.1,
+      "sz": 0.52,
+      "ry": 0,
+      "rx": 0,
+      "rz": 0
+    },
+    {
+      "shape": "box",
+      "color": "#d6cbb0",
+      "u": 0,
+      "h": 0.42,
+      "v": 0,
+      "sx": 0.26,
+      "sy": 0.66,
+      "sz": 0.26,
+      "ry": 0,
+      "rx": 0,
+      "rz": 0
+    },
+    {
+      "shape": "churchCap",
+      "color": "#c6bb9f",
+      "u": 0,
+      "h": 0.82,
+      "v": 0,
+      "sx": 0.32,
+      "sy": 0.16,
+      "sz": 0.32,
+      "ry": 0,
+      "rx": 0,
+      "rz": 0
+    }
+  ]
+}
