@@ -1,3 +1,5 @@
+import * as personalCatalog from './mods-personals/catalog.js';
+import {menuMetadata,validateMenuOrder} from './menu-order.js';
 import {
   REQUIRES_MOD_API,
   PERSONAL_LANDMARKS as rawLandmarks,
@@ -43,7 +45,7 @@ function validateLandmarks(input){
     if(reservedTreeIds.has(key))throw new Error(`mods-personals: l'identificador «${key}» està reservat per una eina del joc.`);
     if(!Array.isArray(value.sizes)||!value.sizes.length||value.sizes.some(size=>![1,2,4,6,9,16].includes(size)))throw new Error(`mods-personals: mides no vàlides a ${key}.`);
     if(value.category!==undefined&&value.category!=='monument')throw new Error(`mods-personals: category de ${key} només pot ser monument.`);
-    output[key]={name:text(value.name,`${key}.name`),sizes:[...new Set(value.sizes)],height:positive(value.height,`${key}.height`),help:text(value.help,`${key}.help`),...(value.category?{category:value.category}:{})};
+    output[key]={...menuMetadata(value,key),name:text(value.name,`${key}.name`),sizes:[...new Set(value.sizes)],height:positive(value.height,`${key}.height`),help:text(value.help,`${key}.help`),...(value.category?{category:value.category}:{})};
   }
   return Object.freeze(output);
 }
@@ -53,7 +55,7 @@ function validateTerrains(input){
   for(const [key,value] of Object.entries(record(input,'PERSONAL_TERRAINS'))){
     id(key,'PERSONAL_TERRAINS');record(value,`PERSONAL_TERRAINS.${key}`);
     if(reservedTreeIds.has(key))throw new Error(`mods-personals: l'identificador de terreny «${key}» està reservat.`);
-    output[key]={name:text(value.name,`${key}.name`),color:color(value.color,`${key}.color`),height:positive(value.height,`${key}.height`),description:text(value.description,`${key}.description`)};
+    output[key]={...menuMetadata(value,key),name:text(value.name,`${key}.name`),color:color(value.color,`${key}.color`),height:positive(value.height,`${key}.height`),description:text(value.description,`${key}.description`)};
   }
   return Object.freeze(output);
 }
@@ -65,7 +67,7 @@ function validateTrees(input){
     record(value,'PERSONAL_TREES');const key=id(value.id,'PERSONAL_TREES');
     if(reservedTreeIds.has(key))throw new Error(`mods-personals: l'identificador d'arbre «${key}» està reservat.`);
     if(seen.has(key))throw new Error(`mods-personals: arbre repetit: ${key}.`);seen.add(key);
-    return {id:key,name:text(value.name,`${key}.name`),...(value.scientific?{scientific:text(value.scientific,`${key}.scientific`)}:{}),height:positive(value.height,`${key}.height`),description:text(value.description,`${key}.description`)};
+    return {id:key,...menuMetadata(value,key),name:text(value.name,`${key}.name`),...(value.scientific?{scientific:text(value.scientific,`${key}.scientific`)}:{}),height:positive(value.height,`${key}.height`),description:text(value.description,`${key}.description`)};
   }));
 }
 
@@ -76,7 +78,7 @@ function validateBusinesses(input){
     if(reservedBusinessTools.has(key)||Object.hasOwn(Object.prototype,key))throw new Error(`mods-personals: l'identificador de negoci «${key}» està reservat.`);
     if(value.door!==undefined&&![-.36,0,.36].includes(value.door))throw new Error(`mods-personals: door de ${key} ha de ser -.36, 0 o .36.`);
     if(value.neutral!==undefined&&typeof value.neutral!=='boolean')throw new Error(`mods-personals: neutral de ${key} ha de ser booleà.`);
-    output[key]={name:text(value.name,`${key}.name`),accent:color(value.accent,`${key}.accent`),frame:color(value.frame,`${key}.frame`),awning:color(value.awning,`${key}.awning`),description:text(value.description,`${key}.description`),...(value.door!==undefined?{door:value.door}:{}),...(value.neutral!==undefined?{neutral:value.neutral}:{})};
+    output[key]={...menuMetadata(value,key),name:text(value.name,`${key}.name`),accent:color(value.accent,`${key}.accent`),frame:color(value.frame,`${key}.frame`),awning:color(value.awning,`${key}.awning`),description:text(value.description,`${key}.description`),...(value.door!==undefined?{door:value.door}:{}),...(value.neutral!==undefined?{neutral:value.neutral}:{})};
   }
   return Object.freeze(output);
 }
@@ -85,6 +87,8 @@ export const PERSONAL_LANDMARKS=validateLandmarks(rawLandmarks);
 export const PERSONAL_TERRAINS=validateTerrains(rawTerrains);
 export const PERSONAL_TREES=validateTrees(rawTrees);
 export const PERSONAL_BUSINESSES=validateBusinesses(rawBusinesses);
+// Optional export: existing API 1 catalogs need no changes.
+export const PERSONAL_MENU_ORDER=validateMenuOrder(personalCatalog.PERSONAL_MENU_ORDER===undefined?{}:personalCatalog.PERSONAL_MENU_ORDER);
 
 export function assertNoKeyCollisions(core,personal,label){
   const duplicate=Object.keys(personal).find(key=>Object.hasOwn(core,key));

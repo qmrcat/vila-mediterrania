@@ -25,6 +25,7 @@ export const PERSONAL_LANDMARKS={
 export const PERSONAL_TERRAINS={
     pratHerbes:{
     name:'Prat d’herbes',
+    menuAfter:'meadow',
     color:'#86a967',
     height:.40,
     description:'Herbes altes i baixes en verds variats, amb mates, espigues i flors escampades.',
@@ -42,3 +43,4 @@ export const PERSONAL_TREES=[];
  * Si neutral no és true, cal un renderitzador d'aparador amb el mateix id.
  */
 export const PERSONAL_BUSINESSES={};
+

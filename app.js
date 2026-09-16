@@ -1,4 +1,5 @@
-import {groupBuildings} from './building-categories.js';
+import {groupBuildings} from './building-categories.js?v=94';
+import {MENU_RULES,initPersonalMenus} from './personal-menus.js?v=94';
 import {loadSharedDesigns,copySharedDesign} from './shared-designs.js';
 import {RAILING_SIDES} from './terrain-railings.js';
 import {AGRICULTURAL_TERRAINS} from './agricultural-types.js';
@@ -24,7 +25,7 @@ const BUILDING_TOOLS=new Map([
   ...Object.entries(LANDMARK_TYPES).filter(([,definition])=>definition.category!=='monument').map(([id,definition])=>[id,definition.name]),
   ['building-sign','Canviar un rètol existent'],
 ]);
-const BUILDING_GROUPS=groupBuildings(BUILDING_TOOLS,PERSONAL_LANDMARKS);
+const BUILDING_GROUPS=groupBuildings(BUILDING_TOOLS,PERSONAL_LANDMARKS,MENU_RULES['building-type']);
 const lastBuildingByCategory=new Map();
 function syncBuildingPicker(type){
   const group=BUILDING_GROUPS.find(g=>g.entries.some(([id])=>id===type));
@@ -374,6 +375,8 @@ function redo(){const next=history.redo(world);if(next){world=next;refresh();toa
 function openDialog(selector){closeMenu();$(selector).showModal();}
 
 async function init(){
+  const personalMenus=initPersonalMenus();
+  window.addEventListener('pagehide',()=>personalMenus.dispose(),{once:true});
   $('#house-type option[value="standard"]').textContent=`Casa habitual · fins a ${CONFIG.houses.maxFloors} plantes`;
   $('#house-type option[value="patio"]').textContent=`Casa amb pati · màxim ${CONFIG.houses.maxPatioFloors} plantes`;
   $('#patio-floors').replaceChildren(...Array.from({length:CONFIG.houses.maxPatioFloors},(_,i)=>new Option(`${i+1} ${i===0?'planta':'plantes'}`,i+1)));

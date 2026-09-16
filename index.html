@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="game-version" content="93">
+  <meta name="game-version" content="94">
   <meta name="theme-color" content="#1c565b">
   <meta name="description" content="Construeix una vila vora el mar, inspirada en la Costa Brava i la Costa Daurada. Un joc creatiu i tranquil.">
   <title>Vila Mediterrània · Un poble al teu ritme</title>
@@ -199,7 +199,7 @@
       <button id="expand-grid">Amplia la quadrícula…</button>
       <button id="new-village">Comença una vila nova…</button>
       <button id="update-menu" hidden>Hi ha una versió nova · Actualitza</button>
-      <p id="game-version-label">Versió 93</p>
+      <p id="game-version-label">Versió 94</p>
       <p id="save-status">Es desa en aquest navegador.</p>
     </div>
     <div id="view-controls" aria-label="Vista i historial">
@@ -278,7 +278,7 @@
   </dialog>
   <dialog id="new-dialog"><button class="close-dialog" aria-label="Cancel·la">×</button><div class="eyebrow">UN NOU COMENÇAMENT</div><h2>Com vols començar?</h2><p>Pots desar la vila actual abans de substituir-la. També podràs recuperar-la amb Desfés.</p><label class="dialog-label" for="new-grid-size">Mida de la quadrícula</label><select id="new-grid-size"><option value="33">33 × 33 · Estàndard</option><option value="49">49 × 49 · Gran</option><option value="65">65 × 65 · Molt gran</option></select><p class="grid-dialog-note">La costa 80/20 s’adapta a tota la quadrícula. El poble i l’illa inicial mantenen la seva mida.</p><div class="new-options"><button data-preset="village"><strong>Un petit poble</strong><span>Cases, una plaça i un passeig vora el mar.</span></button><button data-preset="island"><strong>Una illa per construir</strong><span>Només terreny. La resta, a les teves mans.</span></button><button data-preset="coast80"><strong>Costa · 80% terra i 20% mar</strong><span>Terra a l’oest, platja i mar a l’est. Tot el terreny lliure per construir.</span></button><button data-preset="empty"><strong>Mar obert</strong><span>Una pàgina en blau, per començar de zero.</span></button></div><button id="save-before-new" class="quiet-button">Desa primer la vila actual</button></dialog>
   <dialog id="expand-grid-dialog"><button class="close-dialog" aria-label="Cancel·la">×</button><h2>Més espai per a la vila</h2><p id="expand-grid-current"></p><label class="dialog-label" for="expand-grid-size">Nova mida</label><select id="expand-grid-size"><option value="33">33 × 33</option><option value="49">49 × 49</option><option value="65">65 × 65</option></select><p class="grid-dialog-note">S’afegeix mar als quatre costats. Es conserven totes les construccions i les seves posicions. Pots desfer l’ampliació.</p><button id="apply-grid-expansion" class="primary-button">Amplia i conserva la vila</button></dialog>
-  <script type="module">import('./app.js?v=92').catch(error=>{document.getElementById('loading').hidden=true;document.getElementById('failure').hidden=false;document.getElementById('failure-message').textContent=`No s’ha pogut iniciar el joc: ${error.message} Revisa config.js i recarrega la pàgina.`;});</script>
+  <script type="module">import('./app.js?v=94').catch(error=>{document.getElementById('loading').hidden=true;document.getElementById('failure').hidden=false;document.getElementById('failure-message').textContent=`No s’ha pogut iniciar el joc: ${error.message} Revisa config.js i recarrega la pàgina.`;});</script>
   <script>window.addEventListener('error',function(e){if(e.target&&e.target.tagName==='SCRIPT'){document.getElementById('loading').hidden=true;document.getElementById('failure').hidden=false;document.getElementById('failure-message').textContent='No s’han pogut carregar els fitxers. Si has descarregat el joc, obre Inicia-Windows.bat o utilitza un servidor local.'}},true)</script>
 </body>
 </html>

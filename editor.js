@@ -1,4 +1,5 @@
 import {BALCONY_FACES} from './balcony-facades.js';
+import {initPersonalMenus} from './personal-menus.js?v=94';
 import {updateCompass} from './compass.js';
 import {loadSharedDesigns,mergePublishedDesign,parseSharedCatalog,MAX_CATALOG_BYTES} from './shared-designs.js';
 import {defaultEntrance} from './entrances.js';
@@ -160,6 +161,7 @@ $('publication-file').addEventListener('change',e=>{
   });
 });
 renderPublication();
+const personalMenus=initPersonalMenus();
 for(const button of document.querySelectorAll('[data-layer]'))button.addEventListener('click',()=>{layer=button.dataset.layer;renderFields();renderGrid();});
 for(const id of ['cell-style','wall-color','roof-type','roof-color','roof-turn'])$(id).addEventListener('input',readCell);
 $('design-name').addEventListener('input',()=>{design.name=$('design-name').value;dirty=true;status('Canvis sense desar.');});
@@ -194,7 +196,7 @@ $('import-file').addEventListener('change',async e=>{
 $('return-game').addEventListener('click',e=>{if(!discard())e.preventDefault();else dirty=false;});
 window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue='';}});
 window.addEventListener('storage',e=>{if(e.key===DESIGN_KEY)reloadLibrary();});
-window.addEventListener('pagehide',()=>{clearTimeout(timer);viewer?.dispose();},{once:true});window.addEventListener('pageshow',e=>{if(e.persisted)location.reload();});
+window.addEventListener('pagehide',()=>{personalMenus.dispose();clearTimeout(timer);viewer?.dispose();},{once:true});window.addEventListener('pageshow',e=>{if(e.persisted)location.reload();});
 $('rotate').addEventListener('click',()=>viewer?.rotate());$('center').addEventListener('click',()=>{viewer?.home();fit();});
 reloadLibrary();
 const requested=new URLSearchParams(location.search).get('design'),saved=library.find(d=>d.id===requested);if(saved)design=structuredClone(saved);
