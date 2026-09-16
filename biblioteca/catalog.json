@@ -4,7 +4,7 @@
   "designs": [
         {
       "version": 4,
-      "id": "944aca84-ecf5-4f78-b50a-25e721695850",
+      "id": "b7d3f1a2-6c84-4e19-9f52-3a8d7c0b6e41",
       "name": "Casa de 2x2 amb diferents taulades",
       "width": 2,
       "depth": 2,
@@ -88,6 +88,120 @@
           "faces": [
             "balcony",
             "window",
+            "window",
+            "window"
+          ]
+        }
+      ],
+      "roof": [
+        {
+          "type": "shed",
+          "color": "#bf7957",
+          "direction": 2
+        },
+        {
+          "type": "shed",
+          "color": "#bf7957",
+          "direction": 0
+        },
+        {
+          "type": "flat",
+          "color": "#bf7957",
+          "direction": 0
+        },
+        {
+          "type": "attic",
+          "color": "#bf7957",
+          "direction": 2
+        }
+      ]
+    },
+{
+      "version": 4,
+      "id": "944aca84-ecf5-4f78-b50a-25e721695850",
+      "name": "Casa de 2x2 amb diferents taulades versió 2",
+      "width": 2,
+      "depth": 2,
+      "middleCount": 1,
+      "ground": [
+        {
+          "color": "#f5eee0",
+          "style": "solid",
+          "faces": [
+            "door",
+            "window",
+            "arched-window",
+            "arched-window"
+          ]
+        },
+        {
+          "color": "#f5eee0",
+          "style": "solid",
+          "faces": [
+            "door",
+            "arched-window",
+            "arched-window",
+            "window"
+          ]
+        },
+        {
+          "color": "#f5eee0",
+          "style": "solid",
+          "faces": [
+            "door",
+            "window",
+            "arched-window",
+            "arched-window"
+          ]
+        },
+        {
+          "color": "#f5eee0",
+          "style": "solid",
+          "faces": [
+            "window",
+            "arched-window",
+            "arched-window",
+            "arched-window"
+          ]
+        }
+      ],
+      "middle": [
+        {
+          "color": "#f5eee0",
+          "style": "solid",
+          "faces": [
+            "balcony",
+            "balcony",
+            "window-left-balcony",
+            "window"
+          ]
+        },
+        {
+          "color": "#f5eee0",
+          "style": "solid",
+          "faces": [
+            "balcony",
+            "balcony-pair",
+            "balcony-left-window",
+            "window"
+          ]
+        },
+        {
+          "color": "#f5eee0",
+          "style": "solid",
+          "faces": [
+            "balcony",
+            "window",
+            "arched-window",
+            "window"
+          ]
+        },
+        {
+          "color": "#f5eee0",
+          "style": "solid",
+          "faces": [
+            "balcony",
+            "balcony",
             "window",
             "window"
           ]

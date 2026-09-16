@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="ca">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#1c565b"><title>Editor d’edificis · Vila Mediterrània</title><link rel="stylesheet" href="./editor.css?v=92"></head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#1c565b"><title>Editor d’edificis · Vila Mediterrània</title><link rel="stylesheet" href="./editor.css?v=93"></head>
 <body>
 <header><div><a id="return-game" href="./index.html?tool=custom">← Torna a la vila</a><h1>Editor d’edificis</h1></div><div class="actions"><button id="save" class="primary">Desa el disseny</button><button id="export">Exporta aquest JSON</button><button id="import">Importa JSON…</button></div></header>
 <main class="editor-layout">
@@ -37,12 +37,35 @@
     <p class="note">La planta baixa ocupa tota la parcel·la. Les cel·les sense planta intermèdia tenen la coberta més baixa. Les arcades deixen buits amb suports.</p>
   </aside>
   <section class="workarea" aria-label="Disseny de l’edifici">
-    <div class="preview"><canvas id="preview" tabindex="0" aria-label="Vista 3D del disseny. Arrossega per girar i fes servir la roda per apropar."></canvas><p id="preview-error" role="status" hidden></p><div class="preview-controls"><span>Vista 3D · arrossega per girar</span><button id="rotate">Gira ↻</button><button id="center">Centra</button></div></div>
+    <div class="preview">
+      <canvas id="preview" tabindex="0" aria-label="Vista 3D del disseny. Arrossega per girar i fes servir la roda per apropar."></canvas>
+      <figure id="facade-orientation" class="facade-orientation" hidden>
+        <figcaption>Façanes</figcaption>
+        <svg viewBox="-18 -2 164 132" role="img" aria-labelledby="facade-orientation-title">
+          <title id="facade-orientation-title">Orientació de les façanes segons la vista 3D. Davant és la façana principal.</title>
+          <g class="facade-arms" aria-hidden="true">
+            <line data-compass-arm="north" x1="64" y1="64" x2="64" y2="33"/>
+            <line data-compass-arm="east" x1="64" y1="64" x2="95" y2="64"/>
+            <line data-compass-arm="south" x1="64" y1="64" x2="64" y2="95"/>
+            <line data-compass-arm="west" x1="64" y1="64" x2="33" y2="64"/>
+          </g>
+          <circle cx="64" cy="64" r="4" aria-hidden="true"/>
+          <g class="facade-names" text-anchor="middle" dominant-baseline="middle">
+            <text data-cardinal="north" x="64" y="19">Darrere</text>
+            <text data-cardinal="east" x="109" y="64">Dreta</text>
+            <text data-cardinal="south" x="64" y="109">Davant</text>
+            <text data-cardinal="west" x="19" y="64">Esquerra</text>
+          </g>
+        </svg>
+      </figure>
+      <p id="preview-error" role="status" hidden></p>
+      <div class="preview-controls"><span>Vista 3D · arrossega per girar</span><button id="rotate">Gira ↻</button><button id="center">Centra</button></div>
+    </div>
     <div class="plan-panel"><div class="tabs" role="group" aria-label="Planta que vols editar"><button data-layer="ground" aria-pressed="true">Planta baixa</button><button data-layer="middle" aria-pressed="false">Planta del mig</button><button data-layer="roof" aria-pressed="false">Terrat i teulada</button></div><p id="plan-hint">Selecciona una cel·la i canvia els seus elements als controls.</p><div class="plan-wrap"><span>Darrere</span><div id="plan" role="group" aria-label="Cel·les de la planta"></div><strong>Façana principal · davant</strong></div></div>
   </section>
 </main>
 <footer><p id="status" role="status" aria-live="polite">Disseny nou. Desa’l per utilitzar-lo a la vila.</p><span>Els edificis ja col·locats conserven el seu disseny original.</span></footer>
 <input id="import-file" type="file" accept=".json,application/json" hidden>
 <input id="publication-file" type="file" accept=".json,application/json" hidden>
-<script type="module" src="./editor.js?v=92"></script>
+<script type="module" src="./editor.js?v=93"></script>
 </body></html>

@@ -1,4 +1,5 @@
 import {BALCONY_FACES} from './balcony-facades.js';
+import {updateCompass} from './compass.js';
 import {loadSharedDesigns,mergePublishedDesign,parseSharedCatalog,MAX_CATALOG_BYTES} from './shared-designs.js';
 import {defaultEntrance} from './entrances.js';
 import {newDesign,validateDesign,resizeDesign,loadDesigns,saveDesign,writeDesigns,importDesigns,catalogFile,DESIGN_KEY,designId} from './designs.js';
@@ -200,6 +201,9 @@ const requested=new URLSearchParams(location.search).get('design'),saved=library
 fill();
 try{
   const {VillageScene}=await import('./scene.js');
-  viewer=new VillageScene($('preview'),{onClick:p=>{if(p.x>=0&&p.x<design.width&&p.z>=0&&p.z<design.depth){selected=p.z*design.width+p.x;renderFields();renderGrid();}},onHover:()=>{},onError:message=>{$('preview-error').hidden=false;$('preview-error').textContent=message;}});
+  viewer=new VillageScene($('preview'),{onClick:p=>{if(p.x>=0&&p.x<design.width&&p.z>=0&&p.z<design.depth){selected=p.z*design.width+p.x;renderFields();renderGrid();}},onHover:()=>{},onCameraChange:({theta,phi})=>{
+    // Preview direction is always zero: front +Z, right +X, back -Z, left -X.
+    updateCompass($('facade-orientation'),theta,phi);$('facade-orientation').hidden=false;
+  },onError:message=>{$('facade-orientation').hidden=true;$('preview-error').hidden=false;$('preview-error').textContent=message;}});
   renderPreview();fit();
-}catch{$('preview-error').hidden=false;$('preview-error').textContent='No s’ha pogut iniciar la vista 3D. Pots editar la quadrícula i desar o exportar el disseny; per veure’l cal WebGL 2.';}
+}catch{$('facade-orientation').hidden=true;$('preview-error').hidden=false;$('preview-error').textContent='No s’ha pogut iniciar la vista 3D. Pots editar la quadrícula i desar o exportar el disseny; per veure’l cal WebGL 2.';}

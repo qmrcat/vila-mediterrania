@@ -2,6 +2,14 @@
 @media(max-width:800px){body{height:auto;min-height:100dvh}header{align-items:flex-start;flex-direction:column;padding:16px}.editor-layout{display:flex;flex-direction:column}.workarea{order:-1;display:block}.preview{height:340px}.plan-panel{max-height:none;padding:16px}.settings{overflow:visible;border-right:0;padding:20px}.settings .two-columns{gap:16px}footer{position:sticky;bottom:0;padding:12px 16px}footer span{display:none}}
 
 .workarea{overflow:auto}
+.facade-orientation{position:absolute;top:12px;right:12px;width:174px;margin:0;padding:8px 4px 0;border:1px solid #1c565b26;border-radius:12px;background:#fcfcf8e6;box-shadow:0 2px 10px #183f4314;pointer-events:none;user-select:none}
+.facade-orientation figcaption{text-align:center;font-size:12px;font-weight:600;color:#536b68}
+.facade-orientation svg{display:block;width:100%;height:auto;fill:#183f43}
+.facade-arms{stroke:#67827b;stroke-width:1.5;stroke-linecap:round}
+.facade-arms [data-compass-arm="south"]{stroke:#a3652d;stroke-width:3}
+.facade-names{font-size:12px;paint-order:stroke;stroke:#fcfcf8;stroke-width:3;stroke-linejoin:round}
+.facade-names [data-cardinal="south"]{fill:#985321;font-weight:700}
+@media(max-width:800px){.facade-orientation{top:8px;right:8px;width:158px;padding-top:6px}}
 
 #faces{grid-template-columns:1fr}.face-card{padding:12px;border:1px solid var(--line);border-radius:9px;background:#f6f7f0}.face-card>label{font-size:15px}.face-card select:last-child{margin-bottom:0}.face-card>div{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
 
