@@ -1,5 +1,120 @@
 {
   "format": "vila-buildings",
   "version": 4,
-  "designs": []
+  "designs": [
+        {
+      "version": 4,
+      "id": "944aca84-ecf5-4f78-b50a-25e721695850",
+      "name": "Casa de 2x2 amb diferents taulades",
+      "width": 2,
+      "depth": 2,
+      "middleCount": 1,
+      "ground": [
+        {
+          "color": "#f5eee0",
+          "style": "solid",
+          "faces": [
+            "door",
+            "window",
+            "arched-window",
+            "window"
+          ]
+        },
+        {
+          "color": "#f5eee0",
+          "style": "solid",
+          "faces": [
+            "door",
+            "window",
+            "arched-window",
+            "window"
+          ]
+        },
+        {
+          "color": "#f5eee0",
+          "style": "solid",
+          "faces": [
+            "door",
+            "window",
+            "arched-window",
+            "window"
+          ]
+        },
+        {
+          "color": "#f5eee0",
+          "style": "solid",
+          "faces": [
+            "door",
+            "arched-window",
+            "arched-window",
+            "window"
+          ]
+        }
+      ],
+      "middle": [
+        {
+          "color": "#f5eee0",
+          "style": "solid",
+          "faces": [
+            "balcony",
+            "window",
+            "window-left-balcony",
+            "window"
+          ]
+        },
+        {
+          "color": "#f5eee0",
+          "style": "solid",
+          "faces": [
+            "balcony",
+            "window",
+            "balcony-left-window",
+            "window"
+          ]
+        },
+        {
+          "color": "#f5eee0",
+          "style": "solid",
+          "faces": [
+            "balcony",
+            "window",
+            "arched-window",
+            "window"
+          ]
+        },
+        {
+          "color": "#f5eee0",
+          "style": "solid",
+          "faces": [
+            "balcony",
+            "window",
+            "window",
+            "window"
+          ]
+        }
+      ],
+      "roof": [
+        {
+          "type": "shed",
+          "color": "#bf7957",
+          "direction": 2
+        },
+        {
+          "type": "shed",
+          "color": "#bf7957",
+          "direction": 0
+        },
+        {
+          "type": "flat",
+          "color": "#bf7957",
+          "direction": 0
+        },
+        {
+          "type": "attic",
+          "color": "#bf7957",
+          "direction": 2
+        }
+      ]
+    }
+  ]
 }
