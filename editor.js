@@ -1,4 +1,5 @@
 import {BALCONY_FACES} from './balcony-facades.js';
+import {loadSharedDesigns,mergePublishedDesign,parseSharedCatalog,MAX_CATALOG_BYTES} from './shared-designs.js';
 import {defaultEntrance} from './entrances.js';
 import {newDesign,validateDesign,resizeDesign,loadDesigns,saveDesign,writeDesigns,importDesigns,catalogFile,DESIGN_KEY,designId} from './designs.js';
 import {createWorld,editWorld,COLORS} from './model.js';
@@ -102,6 +103,62 @@ function save(copy=false){
 function download(designs,name){
   const blob=new Blob([JSON.stringify(catalogFile(designs),null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);
 }
+// This is a local preparation area, not a GitHub write API. Each export includes
+// earlier prepared additions; importing the last download continues another session.
+let publicationCatalog=null,publicationBusy=false,publicationPrepared=false;
+const publicationButtons=['publication-refresh','publication-import','publication-open','publication-export'];
+function publicationStatus(message){$('publication-status').textContent=message;}
+function renderPublication(){
+  const select=$('publication-design'),previous=select.value;
+  select.replaceChildren(...(publicationCatalog??[]).map(d=>new Option(d.name,d.id)));
+  if(!select.options.length)select.add(new Option('Cap disseny al catàleg',''));
+  if(publicationCatalog?.some(d=>d.id===previous))select.value=previous;
+  select.disabled=publicationBusy||!publicationCatalog?.length;
+  for(const id of publicationButtons)$(id).disabled=publicationBusy||(id==='publication-open'&&!publicationCatalog?.length);
+}
+async function publicationAction(action){
+  if(publicationBusy)return;
+  publicationBusy=true;renderPublication();
+  try{await action();}catch(error){publicationStatus(error.message||'No s’ha pogut preparar el catàleg.');}
+  finally{publicationBusy=false;renderPublication();}
+}
+function replacePublication(){
+  return !publicationPrepared||confirm('Això substituirà el catàleg preparat en aquesta sessió. Conserva l’últim catalog.json descarregat si encara no l’has pujat a GitHub. Vols continuar?');
+}
+$('publication-refresh').addEventListener('click',()=>{
+  if(!replacePublication())return;
+  publicationAction(async()=>{
+    publicationStatus('Llegint el catàleg publicat…');
+    const next=await loadSharedDesigns();publicationCatalog=next;publicationPrepared=false;
+    publicationStatus(`Catàleg publicat carregat: ${next.length} dissenys.`);
+  });
+});
+$('publication-open').addEventListener('click',()=>{
+  const chosen=publicationCatalog?.find(d=>d.id===$('publication-design').value);
+  if(!chosen||!discard())return;
+  design=structuredClone(chosen);dirty=true;selected=0;fill();
+  status('Disseny del catàleg obert. Desa’l al navegador o prepara una actualització del catàleg.');
+  publicationStatus('Es conserva l’identificador: l’exportació actualitzarà aquest edifici. «Desa com a còpia» en crea un de nou.');
+});
+$('publication-export').addEventListener('click',()=>publicationAction(async()=>{
+  const candidate=validateDesign(design);
+  if(publicationCatalog===null){publicationStatus('Llegint el catàleg publicat…');publicationCatalog=await loadSharedDesigns();}
+  const next=mergePublishedDesign(publicationCatalog,candidate);
+  download(next.designs,'catalog.json');publicationCatalog=next.designs;publicationPrepared=true;
+  publicationStatus(`Catàleg preparat amb ${next.designs.length} dissenys. Puja aquest catalog.json a biblioteca/ del repositori. Encara no s’ha publicat.`);
+}));
+$('publication-import').addEventListener('click',()=>{if(replacePublication())$('publication-file').click();});
+$('publication-file').addEventListener('change',e=>{
+  const file=e.target.files[0];if(!file)return;
+  publicationAction(async()=>{
+    try{
+      if(file.size>MAX_CATALOG_BYTES)throw new Error('El catàleg supera el límit de 2 MB.');
+      const next=parseSharedCatalog(await file.text());publicationCatalog=next;publicationPrepared=true;
+      publicationStatus(`Catàleg de treball carregat: ${next.length} dissenys. No s’ha modificat la col·lecció del navegador.`);
+    }finally{e.target.value='';}
+  });
+});
+renderPublication();
 for(const button of document.querySelectorAll('[data-layer]'))button.addEventListener('click',()=>{layer=button.dataset.layer;renderFields();renderGrid();});
 for(const id of ['cell-style','wall-color','roof-type','roof-color','roof-turn'])$(id).addEventListener('input',readCell);
 $('design-name').addEventListener('input',()=>{design.name=$('design-name').value;dirty=true;status('Canvis sense desar.');});

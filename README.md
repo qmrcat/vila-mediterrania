@@ -1,5 +1,11 @@
 # Vila Mediterrània
 
+## Biblioteca compartida — v92
+
+Els edificis de l’editor es poden compartir mitjançant `biblioteca/catalog.json` al repositori. A **Els meus edificis → Biblioteca compartida**, els jugadors els poden construir directament o desar-ne una còpia privada. L’editor prepara el catàleg per pujar-lo manualment a GitHub, conservant els altres dissenys. Consulta [la guia de publicació](biblioteca/README.md).
+
+**Descarrega el joc i el codi** passa per `descarregues/` i baixa el ZIP de la branca `main` de GitHub, amb el catàleg publicat i els mods del repositori. Els ZIP esmentats a l’historial següent corresponen a versions antigues.
+
 Un prototip de construcció lliure, inspirat en Townscaper i en l’arquitectura de la Costa Brava i la Costa Daurada. No és una reproducció de Townscaper ni un mapa d’una localitat real.
 
 ## Posar-lo en marxa

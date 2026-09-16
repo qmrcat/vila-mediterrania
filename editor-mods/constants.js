@@ -7,7 +7,7 @@ export const TERRAIN_STEP = 0.42;
 export const SHAPES = [
   'box', 'cylinder', 'cone', 'sphere', 'rock', 'ring', 'ramp', 'arch', 'gable',
   'shedWall', 'arcade', 'fan', 'carrot', 'churchCap', 'hotelStar',
-  'stoneBridgeArch', 'wallGate', 'barberPoleRed', 'barberPoleBlue',
+  'stoneBridgeArch', 'wallGate', 'wallGateTrim', 'barberPoleRed', 'barberPoleBlue',
 ];
 
 // Nom en català de cada forma, per al desplegable. La clau continua sent
@@ -30,6 +30,7 @@ export const SHAPE_NAMES = {
   hotelStar: 'estrella',
   stoneBridgeArch: 'arcada de pont',
   wallGate: 'portal de muralla',
+  wallGateTrim: 'marc del portal',
   barberPoleRed: 'franja vermella',
   barberPoleBlue: 'franja blava',
 };
@@ -53,6 +54,7 @@ export const SHAPE_HINTS = {
   hotelStar: 'Estrella plana dels rètols d’hotel.',
   stoneBridgeArch: 'Arcada del pont de pedra.',
   wallGate: 'Portal obert de les muralles.',
+  wallGateTrim: 'La motllura que emmarca el portal de muralla.',
   barberPoleRed: 'Franja helicoidal vermella del barber pole.',
   barberPoleBlue: 'Franja helicoidal blava del barber pole.',
 };

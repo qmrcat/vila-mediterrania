@@ -85,6 +85,7 @@
       </div>
       <div class="toggles">
         <label class="check"><input type="checkbox" id="show-heights" checked> Alçades</label>
+        <label class="check"><input type="checkbox" id="show-axes" checked> Eixos</label>
         <label class="check"><input type="checkbox" id="show-neighbours"> Cases veïnes</label>
       </div>
     </div>
@@ -124,6 +125,30 @@
           <label><span>X</span><input type="number" id="part-rx" step="5"></label>
           <label><span>Z</span><input type="number" id="part-rz" step="5"></label>
         </div>
+      </div>
+    </section>
+
+    <section id="shapes">
+      <h2>Formes personals</h2>
+      <p class="hint" id="shapes-state"></p>
+      <div class="row">
+        <label class="field"><span>Plantilla</span>
+          <select id="shape-template"></select></label>
+        <label class="field"><span>Nom nou</span>
+          <input type="text" id="shape-name" maxlength="40" spellcheck="false" placeholder="tubDePedra"></label>
+      </div>
+      <div class="part-tools">
+        <button type="button" id="shape-create">Crea la forma</button>
+      </div>
+      <label class="field"><span>Formes del taller</span>
+        <select id="shape-list"></select></label>
+      <p class="empty" id="shape-empty" hidden>Encara no n’has creat cap.</p>
+      <div class="triplet" id="shape-params"></div>
+      <p class="hint" id="shape-note"></p>
+      <div class="part-tools">
+        <button type="button" id="shape-apply">Aplica a la selecció</button>
+        <button type="button" id="shape-rename">Reanomena</button>
+        <button type="button" id="shape-delete">Elimina</button>
       </div>
     </section>
 
@@ -176,6 +201,9 @@
           <optgroup label="Camí A · renderitzador escrit">
             <option value="module">El renderitzador</option>
             <option value="register">Els registres de mods-personals</option>
+          </optgroup>
+          <optgroup label="Formes personals">
+            <option value="shapes">El fitxer geometries.js</option>
           </optgroup>
           <optgroup label="Camí B · dades i runtime">
             <option value="json">El JSON del mod</option>

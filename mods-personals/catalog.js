@@ -22,7 +22,14 @@ export const PERSONAL_LANDMARKS={
  * id: {name, color:'#rrggbb', height, description}
  * Es comporten com els terrenys agrícoles: conserven alçada i pendent.
  */
-export const PERSONAL_TERRAINS={};
+export const PERSONAL_TERRAINS={
+    pratHerbes:{
+    name:'Prat d’herbes',
+    color:'#86a967',
+    height:.40,
+    description:'Herbes altes i baixes en verds variats, amb mates, espigues i flors escampades.',
+  },
+};
 
 /**
  * {id, name, scientific?:string, height:number, description:string}

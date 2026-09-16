@@ -94,6 +94,13 @@ textarea{resize:vertical;line-height:1.45}
 canvas{width:100%;height:100%;display:block;background:
   linear-gradient(#dfe9e6,#f2ece0);touch-action:none}
 @media (prefers-color-scheme:dark){canvas{background:linear-gradient(#16333a,#0e2126)}}
+.labels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.labels span{position:absolute;top:0;left:0;white-space:nowrap;font-family:var(--mono);font-size:11.5px;
+  color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:5px;
+  padding:1px 6px;opacity:.94}
+.labels span.south{color:var(--terra);border-color:var(--terra)}
+.labels span.height{color:var(--terra)}
+
 .views,.toggles{position:absolute;display:flex;gap:5px;background:var(--surface);border:1px solid var(--line);
   border-radius:8px;padding:5px}
 .views{top:10px;left:10px}

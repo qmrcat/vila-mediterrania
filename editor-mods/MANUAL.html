@@ -85,20 +85,21 @@ footer{border-top:1px solid var(--line);margin-top:56px;padding-top:18px;color:v
   <a href="#casa">5 · La casa de poble</a>
   <a href="#pou">6 · El pou de la plaça</a>
   <a href="#peces">7 · Peces reutilitzables</a>
-  <a href="#girs">8 · Girs i inclinacions</a>
-  <a href="#mides">9 · Diverses mides</a>
-  <a href="#colors">10 · Colors i materials</a>
-  <a href="#exportar">11 · Exportar i instal·lar</a>
-  <a href="#comprovar">12 · Comprovar</a>
-  <a href="#errors">13 · Errors freqüents</a>
-  <a href="#formes">14 · Taula de formes</a>
-  <a href="#dreceres">15 · Dreceres</a>
+  <a href="#personals">8 · Formes personals</a>
+  <a href="#girs">9 · Girs i inclinacions</a>
+  <a href="#mides">10 · Diverses mides</a>
+  <a href="#colors">11 · Colors i materials</a>
+  <a href="#exportar">12 · Exportar i instal·lar</a>
+  <a href="#comprovar">13 · Comprovar</a>
+  <a href="#errors">14 · Errors freqüents</a>
+  <a href="#formes">15 · Taula de formes</a>
+  <a href="#dreceres">16 · Dreceres</a>
 </nav>
 
 <main>
 <header class="top">
   <h1>Manual del taller de mods</h1>
-  <p class="sub">Com fer edificis i monuments nous per a Vila Mediterrània v89 · API de mods 1</p>
+  <p class="sub">Com fer edificis i monuments nous per a Vila Mediterrània v91 · API de mods 1</p>
 </header>
 
 <p>Aquest manual et porta de la primera peça fins a tenir la teva casa dins del joc.
@@ -118,14 +119,14 @@ afegir per l'API de mods, però s'escriu a mà seguint els exemples de
 
 <div class="note">
   <p><b>Una peça no és una malla lliure.</b> No hi ha vèrtexs ni corbes: cada peça és una de les
-  dinou formes que el joc ja té a <code>scene.js</code>, col·locada, escalada i girada. Aquesta
+  vint formes oficials del joc o una que hagis registrat tu, col·locada, escalada i girada. Aquesta
   limitació és el que fa que tot el poble sembli fet de la mateixa pasta.</p>
 </div>
 
 <h2 id="pantalla">2 · La pantalla</h2>
 
 <p>Obre el joc amb <code>node server.mjs</code> i ves a <code>/editor-mods/</code>. A dalt a la
-dreta del títol hi ha d'haver la insígnia <b>API de mods 1 · joc v89</b>; si diu «joc no detectat»,
+dreta del títol hi ha d'haver la insígnia <b>API de mods 1 · joc v91</b>; si diu «joc no detectat»,
 la carpeta <code>editor-mods/</code> no està al costat d'<code>index.html</code>.</p>
 
 <table>
@@ -134,6 +135,7 @@ la carpeta <code>editor-mods/</code> no està al costat d'<code>index.html</code
 <tr><td><b>Columna esquerra, a baix</b></td><td>La llista de peces, en l'ordre en què es dibuixen. Clica-hi per seleccionar; els botons dupliquen, emmirallen, mouen i esborren.</td></tr>
 <tr><td><b>Vista 3D</b></td><td>Arrossega per girar, Majúscules+arrossega per desplaçar, roda per apropar. Clica una peça per seleccionar-la. Els botons Sud, Est, Nord, Oest i Zenital posen la càmera en angles exactes, molt útils per alinear.</td></tr>
 <tr><td><b>Barra de sota la vista</b></td><td>Quant ocupa el model, l'alçada real i quants materials gastes.</td></tr>
+<tr><td><b>Eixos</b></td><td>Les fletxes de terra amb <code>+u</code>, <code>+v</code> i <code>+h</code>, i l'aresta de la façana en to de teula. Es poden amagar amb la casella <b>Eixos</b>.</td></tr>
 <tr><td><b>Avisos</b></td><td>Vermell: el joc ho rebutjarà o quedarà malament. Groc: val la pena mirar-ho. Verd: informatiu.</td></tr>
 <tr><td><b>Columna dreta</b></td><td>La peça seleccionada, les eines de repetició i el codi per exportar.</td></tr>
 </table>
@@ -185,6 +187,10 @@ per un guió: <code>gable - frontó</code>. El que va al codi generat sempre és
 </svg>
 <figcaption>Una parcel·la d'1 × 1 vista des de dalt. El centre és sempre el (0, 0).</figcaption>
 </figure>
+
+<p>A la vista 3D de l'editor tens el mateix dibuixat a terra: una fletxa cap a l'est amb
+<code>+u</code>, una cap al sud amb <code>+v</code>, la vertical amb <code>+h</code> i l'aresta de la
+façana marcada en to de teula. Si et fan nosa, la casella <b>Eixos</b> els amaga.</p>
 
 <div class="note">
   <p><b>Dibuixa sempre com si l'edifici mirés al sud.</b> El jugador el girarà amb les tecles, i el
@@ -368,15 +374,20 @@ export function renderCasaDePoble(landmark, part, unit, {orientedPart}){
 
 <h2 id="peces">7 · Peces reutilitzables</h2>
 
-<h3>No es poden afegir formes noves</h3>
+<h3>Dues maneres de reutilitzar</h3>
 
-<p>El catàleg de dinou formes és tancat: viu a <code>scene.js</code> i l'API de mods no permet
-registrar-hi geometries. Un mod pot posar una forma on vulgui, amb la mida i el gir que vulgui,
-però no en pot inventar cap. Tot el que facis, doncs, surt de combinar-ne.</p>
+<p>Hi ha dues coses que es diuen «peça» i que convé no confondre:</p>
 
-<p>La bona notícia és que les combinacions es poden desar i reutilitzar. El taller té una
-<b>biblioteca de peces</b>: composes una galleda una vegada, li poses nom, i després la
-insereixes a tots els mods que vulguis.</p>
+<table>
+<tr><th></th><th>Peça de biblioteca</th><th>Forma personal</th></tr>
+<tr><td><b>Què és</b></td><td>Una combinació de formes que ja existeixen</td><td>Una geometria nova, amb els seus vèrtexs</td></tr>
+<tr><td><b>On viu</b></td><td>Al taller, al teu navegador</td><td>A <code>mods-personals/geometries.js</code>, dins del joc</td></tr>
+<tr><td><b>Com s'exporta</b></td><td>No s'exporta: en inserir-la passa a ser peces normals</td><td>Com a codi, i el mod hi queda lligat</td></tr>
+<tr><td><b>Per a què</b></td><td>Una galleda, una finestra, un balcó, un portal sencer</td><td>Un tub, un prisma de sis cares, una escala de graons</td></tr>
+</table>
+
+<p>Aquesta secció tracta de la primera; la següent, de la segona. Si el que vols és compondre
+una galleda una vegada i tornar-la a fer servir, el que et cal és la <b>biblioteca de peces</b>.</p>
 
 <h3>Un cilindre buit, de dues maneres</h3>
 
@@ -412,6 +423,12 @@ la secció s'allarga i el que en surt és exactament una paret cilíndrica buida
 <code>sz</code> a 1,8 i gir X de 90°. Una peça en comptes de dotze. A canvi, la secció del tor té
 només cinc cares, i si l'estires molt s'hi noten les arestes verticals. Per a objectes petits
 —galledes, gerres, cèrcols de pou— no es veu; per a una torre, fes servir els cubs.</p>
+
+<div class="note tip">
+  <p><b>Des de la v91 hi ha una tercera via</b>, i per a un cilindre buit és la millor: registrar-lo
+  com a <b>forma personal</b>, amb el gruix i el nombre de cares que vulguis, i tenir-lo com una
+  forma més. Ho tens a la secció següent.</p>
+</div>
 
 <h3>La biblioteca</h3>
 
@@ -479,7 +496,147 @@ el jugador gira l'edifici. Una teulada girada continua sent una teulada.</p>
 còpia en un mod qualsevol, afegeix-hi l'anella i torna a desar la selecció amb el nom nou. La
 galleda original queda intacta.</p>
 
-<h2 id="girs">8 · Girs i inclinacions</h2>
+<h2 id="personals">8 · Formes personals</h2>
+
+<p>Des de la <b>v91</b>, un mod pot registrar geometries noves. Deixen de ser les vint formes
+oficials i passen a ser les que tu vulguis: un tub, una escala de set graons, una volta. El joc les
+crea una vegada en arrencar i les fa servir pel nom, exactament igual que les oficials.</p>
+
+<pre><code>// mods-personals/geometries.js
+export const PERSONAL_GEOMETRIES={
+  cupulaPersonal(THREE){
+    return new THREE.SphereGeometry(.5,16,8,0,Math.PI*2,0,Math.PI/2).scale(1,2,1);
+  },
+};</code></pre>
+
+<p>Després, al renderitzador, <code>part('cupulaPersonal', '#cbbd9d', 0, 2, 0, 1, .6, 1)</code>.
+El registre es reexporta des de <code>renderers.js</code>, i els mods antics que no el tinguin
+continuen funcionant.</p>
+
+<h3>El generador del taller</h3>
+
+<p>El panell <b>Formes personals</b> et diu quantes formes té registrades la teva còpia del joc i
+et deixa dissenyar-ne de noves a partir de plantilles paramètriques. La forma es construeix
+immediatament i la pots fer servir a la vista 3D com qualsevol altra.</p>
+
+<table>
+<tr><th>Plantilla</th><th>Paràmetres</th><th>Què en surt</th></tr>
+<tr><td><b>Tub</b></td><td>Cares, gruix de paret</td><td>Un cilindre buit de debò, amb els extrems oberts i les tapes anulars. Diàmetre 1, alçada 1.</td></tr>
+<tr><td><b>Prisma</b></td><td>Cares, radi superior</td><td>Amb el radi superior a 1, un prisma recte de N cares; a 0, una piràmide; enmig, un tronc de con.</td></tr>
+<tr><td><b>Escala</b></td><td>Graons</td><td>Una escala massissa que puja cap a +X dins d'un cub unitat. L'amplada va per <code>sz</code>.</td></tr>
+<tr><td><b>Teula romana</b></td><td>Cares, gruix, estretiment</td><td>Una teula corba buida per sota, amb les testes tancades. Amplada 1, llargada 1, alçada 0,5, base a Y=0.</td></tr>
+</table>
+
+<p>Les tres primeres caben dins d'un cub d'1 × 1 × 1 centrat a l'origen, com les formes del joc,
+i la teula hi cap amb la base a Y=0: així les escales de <code>part()</code> volen dir el mateix per
+a totes.</p>
+
+<ol class="steps">
+  <li><b>Crea-la.</b> Tria la plantilla, posa-li un nom —minúscula inicial, lletres i xifres, com
+  <code>tubDePedra</code>— i prem <b>Crea la forma</b>.</li>
+  <li><b>Ajusta-la.</b> Els paràmetres es toquen en calent: cada canvi reconstrueix la geometria i
+  la veus de seguida a totes les peces que la facin servir.</li>
+  <li><b>Fes-la servir.</b> Ja surt al desplegable de formes, dins del grup
+  <i>Formes del taller, pendents d'instal·lar</i>. També hi ha <b>Aplica a la selecció</b>.</li>
+  <li><b>Instal·la-la.</b> A <b>Exporta → El fitxer geometries.js</b>, baixa'l i desa'l a
+  <code>mods-personals/</code>. Comprova-ho i recarrega el joc:
+  <code>node mods-personals/check.mjs</code>.</li>
+</ol>
+
+<div class="note warn">
+  <p><b>Mentre no la instal·lis, el mod està trencat.</b> El taller la sap dibuixar, però el joc no
+  la coneix i llança «Forma desconeguda» en construir la vila. Per això hi ha un avís vermell fins
+  que la còpia del joc la té registrada. En recarregar l'editor, la forma passa al grup
+  <i>instal·lades</i> i l'avís desapareix.</p>
+</div>
+
+<h3>Exemple · la teula romana</h3>
+
+<p>La plantilla <b>Teula romana</b> fa una teula corba buida per sota, com les de tota la vida.
+És un sòlid tancat, amb les dues testes i els dos cantells, i per tant es veu bé des de qualsevol
+angle. Té tres paràmetres: les cares de l'arc, el gruix i l'estretiment de l'extrem.</p>
+
+<table>
+<tr><th>Eix</th><th>Què mesura</th><th>Mida base</th></tr>
+<tr><td><code>sx</code></td><td>L'amplada de la teula</td><td>1</td></tr>
+<tr><td><code>sz</code></td><td>La llargada, que va pendent avall</td><td>1</td></tr>
+<tr><td><code>sy</code></td><td>La curvatura. Amb <code>sy</code> igual a <code>sx</code> la secció és mig cercle</td><td>0,5</td></tr>
+</table>
+
+<p>La base és a Y=0, com la cúpula d'exemple del joc: el punt que col·loques amb <code>h</code> és
+la cara de sota, no el centre. Això és justament el que vols en una teulada, perquè la deixes
+recolzada sobre el pla del vessant. L'extrem estret mira cap a <code>+Z</code>.</p>
+
+<ol class="steps">
+  <li><b>Tingues la forma a punt.</b> El taller arrenca amb <code>teulaRomana</code> ja creada al
+  panell <b>Formes personals</b>. Retoca-hi les cares i el gruix si vols, i baixa
+  <b>Exporta → El fitxer geometries.js</b> a <code>mods-personals/</code>.</li>
+  <li><b>Parteix d'una teulada que ja funcioni.</b> Les teules van <i>damunt</i> del vessant, no el
+  substitueixen: la llosa inclinada continua tapant els forats entre teula i teula.</li>
+  <li><b>Col·loca la primera.</b> Ha d'anar a la cara de dalt de la llosa i amb la mateixa
+  inclinació. Amb el vessant de la casa de poble, que és a <code>h 1.39 · v 0.308</code> amb 0,06 de
+  gruix i 28,9° de pendent, la teula va a <code>h 1.416 · v 0.314</code> amb gir <b>X 28,9°</b>.
+  Els 0,026 i els 0,006 de diferència són la mitja llosa mesurada perpendicularment al vessant.</li>
+  <li><b>Dona-li mida.</b> <code>0.16 × 0.16 × 0.64</code>: setze centímetres d'ample i tota la
+  llargada del vessant. Posa-la al començament de la filera, a <code>u −0.56</code>.</li>
+  <li><b>Fes la filera.</b> A <b>Repeteix</b>, mode <i>En filera</i>, 7 còpies amb pas
+  <code>u 0.16</code>. Vuit teules que cobreixen de −0,64 a 0,64, dins de la cel·la per un pèl.</li>
+  <li><b>L'altre vessant.</b> Selecciona les vuit amb Majúscules+clic, prem <b>Duplica</b> i
+  canvia-li el signe a dues coses: <code>v −0.314</code> i gir <b>X −28,9°</b>. Com amb les lloses,
+  aquí <b>Emmiralla</b> no serveix, perquè la simetria és en <code>v</code>.</li>
+</ol>
+
+<p>El resultat és <code>casaDeTeules.mod.json</code>, a la carpeta d'exemples: la casa de poble amb
+setze teules, 32 peces en total, i continua cabent a la cel·la i fent 1,91 d'alt. Importa'l i
+desmunta'l si vols veure els números al seu lloc.</p>
+
+<pre><code>orientedPart('teulaRomana','#b2603f',-.56,1.416,.314,.16,.16,.64,0,.50434);
+orientedPart('teulaRomana','#b2603f',-.4,1.416,.314,.16,.16,.64,0,.50434);
+…</code></pre>
+
+<div class="note tip">
+  <p><b>Setze teules per una casa és molt.</b> A la distància del joc, una teulada de vuit teules per
+  vessant ja es llegeix. Si en vols moltes més, recorda que cada peça és una instància: puja el
+  comptador de la barra de sota i, en una vila gran amb moltes cases, es nota. Una alternativa
+  barata és deixar la llosa llisa i posar teules només al carener i als dos ràfecs.</p>
+</div>
+
+<div class="note warn">
+  <p><b>L'estretiment mira a +Z.</b> En el vessant sud, que baixa cap a +Z, la teula queda estreta a
+  la part baixa; en el nord, a la part alta. Si et molesta, posa l'estretiment a 1 i tindràs una
+  teula cilíndrica, igual pels dos costats.</p>
+</div>
+
+<h3>Si escrius la forma a mà</h3>
+
+<p>Les plantilles no són l'únic camí: <code>geometries.js</code> és codi normal i hi pots posar el
+que sàpigues fer amb Three.js. El joc valida el que li dones i no s'ho empassa tot:</p>
+
+<ul>
+  <li>Una funció <b>síncrona</b> que rep <code>THREE</code> i retorna una <code>BufferGeometry</code>
+  nova. Ni <code>Mesh</code>, ni materials, ni promeses.</li>
+  <li>Noms únics de 2 a 40 lletres o xifres amb inicial minúscula, que no xoquin amb cap forma
+  oficial.</li>
+  <li>Triangles amb un atribut <code>position</code> de tres components i coordenades finites. Si hi
+  ha índexs, han d'apuntar a vèrtexs que existeixin. Les normals i els límits els calcula el motor
+  si falten.</li>
+  <li>La geometria és compartida entre totes les instàncies: no la modifiquis ni li facis
+  <code>dispose()</code> des d'un renderitzador. Per variar mides i orientació, fes servir els
+  arguments de <code>part()</code>.</li>
+  <li>El color continua sent cosa de <code>part()</code>: aquesta API no afegeix materials ni
+  textures.</li>
+</ul>
+
+<p>Una forma personal <b>no crea ocupació ni volum de selecció nous</b>: continua havent de cabre
+dins de la mida i l'alçada que has declarat al catàleg.</p>
+
+<div class="note warn">
+  <p><b>El JSON de la vila no conté aquest codi.</b> Un mod amb formes personals depèn de
+  <code>geometries.js</code> igual que del seu renderitzador. Si el comparteixes, comparteix els dos
+  fitxers.</p>
+</div>
+
+<h2 id="girs">9 · Girs i inclinacions</h2>
 
 <p>Hi ha dues menes de gir, i la diferència importa:</p>
 
@@ -499,7 +656,7 @@ però val la pena entendre per què el codi surt amb dues crides diferents.</p>
   direccions. Una teulada mal composta es veu de seguida: el carener apunta on no toca.</p>
 </div>
 
-<h2 id="mides">9 · Diverses mides</h2>
+<h2 id="mides">10 · Diverses mides</h2>
 
 <p>Un mod pot oferir més d'una parcel·la. Marca-les totes a <i>Mides que podrà triar el jugador</i>
 i el selector del joc les mostrarà.</p>
@@ -523,7 +680,7 @@ i el selector del joc les mostrarà.</p>
 <p>Recorda que la comprovació de si et surts de la parcel·la es fa contra la <b>mida més petita</b>
 que hagis declarat: és la que et pot fer mal.</p>
 
-<h2 id="colors">10 · Colors i materials</h2>
+<h2 id="colors">11 · Colors i materials</h2>
 
 <p>Cada parella de forma i color obre un lot de dibuix, i cada color nou crea un material. Amb deu
 o dotze colors en tens de sobra per a qualsevol edifici; passar de catorze és senyal que estàs
@@ -542,7 +699,7 @@ en comptes de triar un to nou gairebé igual. Els tons que combinen bé amb el p
 <tr><td>Vegetació</td><td><code>#567043</code> <code>#4f6b3f</code> <code>#6f8a5a</code></td></tr>
 </table>
 
-<h2 id="exportar">11 · Exportar i instal·lar</h2>
+<h2 id="exportar">12 · Exportar i instal·lar</h2>
 
 <h3>Camí A · un renderitzador escrit</h3>
 
@@ -574,12 +731,16 @@ en comptes de triar un to nou gairebé igual. Els tons que combinen bé amb el p
 <p>Els dos camins conviuen sense problema: pots tenir el molí i la casa com a fitxers i la resta com
 a dades.</p>
 
-<h2 id="comprovar">12 · Comprovar</h2>
+<h2 id="comprovar">13 · Comprovar</h2>
 
 <pre><code>node mods-personals/check.mjs
-node check-mods.mjs</code></pre>
+node check-mods.mjs
+node editor-mods/check-formes.mjs</code></pre>
 
-<p>El primer valida el catàleg. El segon és el bo: col·loca cada mod en <b>les quatre
+<p>El primer valida el catàleg i, des de la v91, també les geometries registrades; tots dos
+n'informen el nombre. El tercer és del taller: comprova que el codi que genera per a
+<code>geometries.js</code> produeix exactament la mateixa geometria que has vist a la vista 3D, i
+que el validador del joc l'accepta. El segon és el bo: col·loca cada mod en <b>les quatre
 orientacions i en totes les mides</b> que hagis declarat, en construeix la geometria de veritat i
 comprova que la vila es recupera del JSON. Si passa, el mod no petarà.</p>
 
@@ -594,7 +755,7 @@ comprova que la vila es recupera del JSON. Si passa, el mod no petarà.</p>
   <li>Exporta la vila a JSON, comença'n una de nova i torna-la a importar.</li>
 </ul>
 
-<h2 id="errors">13 · Errors freqüents</h2>
+<h2 id="errors">14 · Errors freqüents</h2>
 
 <table>
 <tr><th>Símptoma</th><th>Causa</th></tr>
@@ -605,10 +766,14 @@ comprova que la vila es recupera del JSON. Si passa, el mod no petarà.</p>
 <tr><td>El model es clava a la casa del costat</td><td>Alguna peça passa de ±0,65 per cel·la. Mira la barra <i>Ocupa</i> i l'avís vermell.</td></tr>
 <tr><td>El marc de selecció no encaixa amb l'edifici</td><td>L'alçada declarada no és la real. Deixa marcat <i>mesura-la sola</i>.</td></tr>
 <tr><td>Una vila desada no s'obre</td><td>Aquella còpia del joc no té els mods. El JSON de la vila no inclou el codi: has de copiar-hi també <code>mods-personals/</code>.</td></tr>
+<tr><td>«Forma desconeguda» en carregar la vila</td><td>El mod fa servir una forma personal que no és a <code>geometries.js</code>, o el nom no s'escriu igual als dos llocs.</td></tr>
 <tr><td>Les peces planes es veuen només per una banda</td><td>És normal: el joc dibuixa una sola cara. Dobla la peça amb el gir invertit si l'has de veure pels dos costats.</td></tr>
 </table>
 
-<h2 id="formes">14 · Taula de formes</h2>
+<h2 id="formes">15 · Taula de formes</h2>
+
+<p>Les vint formes oficials. Les que registris a <code>geometries.js</code> s'hi sumen amb el mateix
+funcionament.</p>
 
 <table>
 <tr><th>Forma</th><th>Què és</th><th>Per a què va bé</th></tr>
@@ -629,10 +794,11 @@ comprova que la vila es recupera del JSON. Si passa, el mod no petarà.</p>
 <tr><td><code>hotelStar</code><br><span class="lbl">estrella</span></td><td>Estrella plana</td><td>Rètols i distintius.</td></tr>
 <tr><td><code>stoneBridgeArch</code><br><span class="lbl">arcada de pont</span></td><td>Arcada del pont de pedra</td><td>Ponts i aqüeductes.</td></tr>
 <tr><td><code>wallGate</code><br><span class="lbl">portal de muralla</span></td><td>Portal obert de muralla</td><td>Muralles i portes de vila.</td></tr>
+<tr><td><code>wallGateTrim</code><br><span class="lbl">marc del portal</span></td><td>La motllura del portal</td><td>Remata el <code>wallGate</code> amb un altre color.</td></tr>
 <tr><td><code>barberPoleRed</code> · <code>barberPoleBlue</code><br><span class="lbl">franja vermella · franja blava</span></td><td>Franges helicoidals</td><td>Pals de barber i detalls en espiral.</td></tr>
 </table>
 
-<h2 id="dreceres">15 · Dreceres</h2>
+<h2 id="dreceres">16 · Dreceres</h2>
 
 <table>
 <tr><th>Tecla</th><th>Acció</th></tr>

@@ -18,6 +18,12 @@ export const SIZES = [
 ];
 
 export const footprint = size => SIZES.find(s => s.size === size) ?? SIZES[0];
+
+// A les 20 formes oficials s'hi sumen les que el joc registri a
+// PERSONAL_GEOMETRIES i les que estiguis dissenyant al taller.
+let extraShapes = new Set();
+export const setExtraShapes = list => { extraShapes = new Set(list); };
+export const isKnownShape = shape => SHAPES.includes(shape) || extraShapes.has(shape);
 export const num = (value, fallback = 0) => (Number.isFinite(Number(value)) ? Number(value) : fallback);
 
 // personal-content.js exigeix minúscula inicial i entre 2 i 40 caràcters.
@@ -56,7 +62,7 @@ export function validateMod(input) {
   if (!Array.isArray(input.parts)) throw new Error('Falta la llista de peces.');
   if (input.parts.length > 2000) throw new Error('Un mod no pot passar de 2000 peces.');
   const parts = input.parts.map(p => {
-    if (!SHAPES.includes(p?.shape)) throw new Error(`La forma «${p?.shape}» no existeix al joc.`);
+    if (!isKnownShape(p?.shape)) throw new Error(`La forma «${p?.shape}» no existeix ni al joc ni al taller.`);
     if (!/^#[0-9a-fA-F]{6}$/.test(String(p.color))) throw new Error('Els colors han de ser hexadecimals de sis xifres.');
     return newPart({
       shape: p.shape, color: String(p.color).toLowerCase(),
@@ -81,7 +87,7 @@ export function validateMod(input) {
 export const smallestPlot = mod => footprint(Math.min(...mod.sizes));
 
 /** Avisos que no impedeixen desar, però sí que trenquen el mod dins del joc. */
-export function reviewMod(mod, bounds, taken = []) {
+export function reviewMod(mod, bounds, taken = [], pending = []) {
   const notes = [];
   if (!mod.parts.length) notes.push({ level: 'info', text: 'Encara no hi ha cap peça. Afegeix-ne una per començar.' });
   if (!ID_PATTERN.test(mod.id)) notes.push({ level: 'error', text: 'L’identificador ha de començar per minúscula i només pot tenir lletres i xifres.' });
@@ -100,6 +106,9 @@ export function reviewMod(mod, bounds, taken = []) {
   }
   if (mod.sizes.length > 1)
     notes.push({ level: 'info', text: 'Amb més d’una mida, el renderitzador rep landmark.size: fes-hi créixer la geometria o deixa-la centrada a propòsit.' });
+  const missing = [...new Set(mod.parts.map(p => p.shape))].filter(shape => pending.includes(shape));
+  if (missing.length) notes.push({ level: 'error',
+    text: `Aquestes formes encara no són al joc: ${missing.join(', ')}. Instal·la mods-personals/geometries.js i recarrega.` });
   const colors = new Set(mod.parts.map(p => p.color));
   if (colors.size > 14) notes.push({ level: 'warn', text: `${colors.size} colors diferents: cadascun crea un material nou. Mira si en pots reaprofitar.` });
   return notes;

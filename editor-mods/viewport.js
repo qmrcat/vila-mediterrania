@@ -6,6 +6,7 @@ import { UNIT, FLOOR_HEIGHT, TERRAIN_STEP } from './constants.js';
 import { footprint } from './format.js';
 
 const LINE_PLOT = 0x1c565b, LINE_CELL = 0x8fa2a0, LINE_FLOOR = 0xb0553a, LINE_STEP = 0xc9bca0;
+const LINE_SOUTH = 0xb0553a, LINE_AXIS = 0x1c565b;
 
 export function createViewport(canvas, { onPick }) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
@@ -32,6 +33,37 @@ sun.shadow.camera.updateProjectionMatrix();
   const guides = new THREE.Group(); scene.add(guides);
   const ghosts = new THREE.Group(); scene.add(ghosts);
   const parts = new THREE.Group(); scene.add(parts);
+
+  // Les lletres dels eixos són HTML damunt del llenç: així es llegeixen sempre
+  // a la mida justa i agafen els colors del tema.
+  const overlay = document.createElement('div');
+  overlay.className = 'labels';
+  canvas.parentElement.append(overlay);
+  const labels = [];
+
+  function setLabels(items) {
+    labels.length = 0;
+    overlay.replaceChildren(...items.map(({ text, at, tone }) => {
+      const element = document.createElement('span');
+      element.textContent = text;
+      if (tone) element.classList.add(tone);
+      labels.push({ element, point: new THREE.Vector3(...at) });
+      return element;
+    }));
+  }
+
+  const projected = new THREE.Vector3();
+  function placeLabels() {
+    const width = canvas.clientWidth, height = canvas.clientHeight;
+    for (const label of labels) {
+      projected.copy(label.point).project(camera);
+      const behind = projected.z > 1;
+      label.element.style.visibility = behind ? 'hidden' : '';
+      if (behind) continue;
+      label.element.style.transform =
+        `translate(-50%,-50%) translate(${(projected.x * .5 + .5) * width}px,${(-projected.y * .5 + .5) * height}px)`;
+    }
+  }
 
   const selection = new THREE.Box3Helper(new THREE.Box3(), 0xa8802f);
   selection.visible = false; scene.add(selection);
@@ -128,8 +160,30 @@ sun.shadow.camera.updateProjectionMatrix();
         ghosts.add(box);
       }
     }
-    const compass = [[0, hd + .34, 'sud'], [0, -hd - .34, 'nord']];
-    for (const [u, v] of compass) guides.add(line([[u - .12, .004, v], [u + .12, .004, v], [u, .004, v > 0 ? v + .2 : v - .2], [u - .12, .004, v]], LINE_PLOT));
+    if (!options.axes) { setLabels([]); return; }
+
+    // L'aresta de la façana, doblada i en to de teula perquè es distingeixi.
+    guides.add(line([[-hw, .006, hd], [hw, .006, hd]], LINE_SOUTH));
+    guides.add(line([[-hw, .012, hd], [hw, .012, hd]], LINE_SOUTH));
+
+    const top = Math.max(mod.height, 1) + .4;
+    const arrow = (from, to, side, color) => {
+      guides.add(line([from, to], color));
+      guides.add(line([side[0], to, side[1]], color));
+    };
+    arrow([0, .01, 0], [hw + .42, .01, 0], [[hw + .30, .01, -.07], [hw + .30, .01, .07]], LINE_AXIS);
+    arrow([0, .01, 0], [0, .01, hd + .42], [[-.07, .01, hd + .30], [.07, .01, hd + .30]], LINE_SOUTH);
+    arrow([-hw, 0, -hd], [-hw, top + .18, -hd],
+      [[-hw - .06, top + .06, -hd], [-hw + .06, top + .06, -hd]], LINE_FLOOR);
+
+    setLabels([
+      { text: '+u  est', at: [hw + .62, .01, 0] },
+      { text: '−u  oest', at: [-hw - .62, .01, 0] },
+      { text: '+v  sud · façana', at: [0, .01, hd + .66], tone: 'south' },
+      { text: '−v  nord', at: [0, .01, -hd - .40] },
+      { text: '+h', at: [-hw - .16, top + .22, -hd], tone: 'height' },
+      { text: '0,0', at: [.16, .01, -.16] },
+    ]);
   }
 
   function buildParts(mod, chosen) {
@@ -170,7 +224,7 @@ sun.shadow.camera.updateProjectionMatrix();
   new ResizeObserver(resize).observe(canvas);
 
   let request = 0;
-  function loop() { request = requestAnimationFrame(loop); renderer.render(scene, camera); }
+  function loop() { request = requestAnimationFrame(loop); placeLabels(); renderer.render(scene, camera); }
   place(); resize(); loop();
 
   return {
@@ -183,6 +237,6 @@ sun.shadow.camera.updateProjectionMatrix();
     },
     look(theta, phi) { orbit.theta = theta; orbit.phi = phi; place(); },
     snapshot() { renderer.render(scene, camera); return canvas.toDataURL('image/png'); },
-    dispose() { cancelAnimationFrame(request); renderer.dispose(); },
+    dispose() { cancelAnimationFrame(request); overlay.remove(); renderer.dispose(); },
   };
 }

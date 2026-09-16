@@ -1,8 +1,12 @@
-import { loadShapes, missingShapes } from './shapes.js';
+import { loadShapes, missingShapes, loadPersonalShapes, applyDrafts, personalShapes } from './shapes.js';
 import { SHAPES, SHAPE_HINTS, SHAPE_NAMES, UNIT } from './constants.js';
 import {
+  TEMPLATES, defaultParams, validateDraft, loadDrafts, saveDrafts,
+  geometriesFile, starterDrafts, SHAPE_ID_PATTERN,
+} from './personal-shapes.js';
+import {
   newMod, newPart, validateMod, reviewMod, footprint, smallestPlot, SIZES,
-  loadCollection, saveCollection, uniqueId, num, REQUIRES_MOD_API,
+  loadCollection, saveCollection, uniqueId, num, REQUIRES_MOD_API, setExtraShapes,
 } from './format.js';
 import { createViewport } from './viewport.js';
 import { moduleCode, modJson, registerSnippets, runtimeSnippets, moduleFile, download } from './exporters.js';
@@ -20,7 +24,7 @@ const BASE_PALETTE = ['#f2eee3', '#d4cab3', '#cbbd9d', '#b6aa91', '#b87850', '#a
   '#72563b', '#567043', '#4f6b3f', '#45636a', '#1c565b', '#d7b867'];
 
 let mods = [], mod = null, selected = null, dirty = false, bounds = null, takenIds = [];
-let picked = new Set(), blocks = [];
+let picked = new Set(), blocks = [], drafts = [];
 const undoStack = [];
 let viewport = null;
 
@@ -30,6 +34,10 @@ let viewport = null;
 async function start() {
   await loadShapes();
   if (missingShapes.length) console.warn('Formes no trobades als mòduls del joc:', missingShapes.join(', '));
+  const registry = await loadPersonalShapes();
+  drafts = loadDrafts(localStorage);
+  if (!drafts.length) drafts = starterDrafts();
+  refreshShapes();
 
   mods = loadCollection(localStorage);
   if (!mods.length) mods = starterMods();
@@ -38,7 +46,10 @@ async function start() {
   if (!blocks.length) blocks = starterBlocks();
 
   buildSizeChecks();
-  fillSelect($('#part-shape'), SHAPES.map(s => [s, `${s} - ${SHAPE_NAMES[s]}`]));
+  fillSelect($('#shape-template'), Object.entries(TEMPLATES).map(([id, item]) => [id, item.name]));
+  $('#shapes-state').textContent = registry.ok
+    ? `El joc té ${registry.count} forma${registry.count === 1 ? '' : 'es'} personal${registry.count === 1 ? '' : 's'} registrada${registry.count === 1 ? '' : 'es'}.`
+    : `No s’ha pogut llegir el registre de formes: ${registry.message}`;
   viewport = createViewport($('#canvas'), { onPick: (index, mode) => select(index, mode) });
 
   bindMeta();
@@ -49,8 +60,10 @@ async function start() {
   bindViews();
   bindKeys();
   bindLibrary();
+  bindShapes();
   refreshCollection();
   renderLibrary();
+  renderShapes();
   render();
   viewport.frame(mod);
   probeGame();
@@ -146,7 +159,11 @@ const current = () => (selected === null ? null : mod.parts[selected]);
 
 // ——— dibuix de la interfície ———
 function render() {
-  const options = { heights: $('#show-heights').checked, neighbours: $('#show-neighbours').checked };
+  const options = {
+    heights: $('#show-heights').checked,
+    neighbours: $('#show-neighbours').checked,
+    axes: $('#show-axes').checked,
+  };
   picked = new Set(pickedList());
   if (selected === null || selected >= mod.parts.length || !picked.has(selected)) selected = pickedList()[0] ?? null;
   bounds = viewport.update(mod, pickedList(), options);
@@ -249,7 +266,7 @@ function renderReadout() {
 }
 
 function renderNotes() {
-  const notes = reviewMod(mod, bounds, takenIds);
+  const notes = reviewMod(mod, bounds, takenIds, pendingShapes());
   $('#notes').replaceChildren(...notes.map(note => {
     const item = document.createElement('li');
     item.className = note.level; item.textContent = note.text;
@@ -264,6 +281,7 @@ function renderOutput() {
     json: () => modJson(mod),
     register: () => registerSnippets(mod).map(s => `// ${s.file}\n${s.code}\n// ${s.note}`).join('\n\n'),
     runtime: () => runtimeSnippets().map(s => `// ${s.file}\n${s.code}\n// ${s.note}`).join('\n\n'),
+    shapes: () => geometriesFile(drafts),
   };
   $('#code').textContent = blocks[mode]();
   $('#output-note').textContent = {
@@ -271,6 +289,9 @@ function renderOutput() {
     json: 'Enganxa’l dins de l’array JSON_MODS de mods-personals/json-mods-data.js.',
     register: 'Dues entrades a mods-personals i el joc ja el mostra.',
     runtime: 'Es connecta una sola vegada; després només toques json-mods-data.js.',
+    shapes: drafts.length
+      ? 'Desa’l com a mods-personals/geometries.js i recarrega el joc.'
+      : 'Encara no has creat cap forma al taller.',
   }[mode];
 }
 
@@ -486,8 +507,120 @@ function bindOutput() {
     const mode = $('#output').value;
     const name = mode === 'module' ? moduleFile(mod)
       : mode === 'json' ? `${mod.id}.mod.json`
+        : mode === 'shapes' ? 'geometries.js'
         : `${mod.id}-retalls.txt`;
     download(name, $('#code').textContent);
+  });
+}
+
+// ——— formes personals ———
+
+/** Reconstrueix el catàleg de formes: oficials, les del joc i les del taller. */
+function refreshShapes() {
+  const applied = applyDrafts(drafts);
+  setExtraShapes([...personalShapes, ...applied]);
+  fillShapeSelect();
+}
+
+const pendingShapes = () => drafts.map(draft => draft.id).filter(id => !personalShapes.includes(id));
+
+function fillShapeSelect() {
+  const select = $('#part-shape');
+  if (!select) return;
+  const chosen = select.value;
+  const groups = [
+    ['Formes del joc', SHAPES.map(id => [id, `${id} - ${SHAPE_NAMES[id] ?? id}`])],
+    ['Formes personals instal·lades', personalShapes.map(id => [id, id])],
+    ['Formes del taller, pendents d’instal·lar', pendingShapes().map(id => [id, id])],
+  ];
+  select.replaceChildren(...groups.filter(([, items]) => items.length).map(([label, items]) => {
+    const group = document.createElement('optgroup');
+    group.label = label;
+    group.append(...items.map(([value, text]) => {
+      const option = document.createElement('option');
+      option.value = value; option.textContent = text; return option;
+    }));
+    return group;
+  }));
+  if ([...select.options].some(option => option.value === chosen)) select.value = chosen;
+}
+
+const currentDraft = () => drafts.find(draft => draft.id === $('#shape-list').value) ?? null;
+
+function renderShapes() {
+  const chosen = $('#shape-list').value;
+  fillSelect($('#shape-list'), drafts.map(draft => [draft.id, `${draft.id} · ${TEMPLATES[draft.template].name}`]));
+  if (drafts.some(draft => draft.id === chosen)) $('#shape-list').value = chosen;
+  const draft = currentDraft();
+  $('#shape-empty').hidden = !!drafts.length;
+  for (const id of ['#shape-apply', '#shape-rename', '#shape-delete']) $(id).disabled = !draft;
+  $('#shape-note').textContent = draft ? TEMPLATES[draft.template].note : '';
+  $('#shape-params').replaceChildren(...(draft ? TEMPLATES[draft.template].fields : []).map(field => {
+    const label = document.createElement('label');
+    const caption = document.createElement('span');
+    caption.textContent = field.label;
+    const input = document.createElement('input');
+    input.type = 'number'; input.min = field.min; input.max = field.max;
+    input.step = field.step; input.value = draft.params[field.key];
+    input.addEventListener('input', () => {
+      draft.params = TEMPLATES[draft.template].clean({ ...draft.params, [field.key]: input.value });
+      persistDrafts(); refreshShapes(); render();
+    });
+    label.append(caption, input);
+    return label;
+  }));
+}
+
+function persistDrafts() {
+  try { saveDrafts(localStorage, drafts); }
+  catch { toast('El navegador no ha pogut desar les formes. Exporta el fitxer per no perdre-les.'); }
+}
+
+function bindShapes() {
+  $('#shape-create').addEventListener('click', () => {
+    const id = $('#shape-name').value.trim();
+    if (!SHAPE_ID_PATTERN.test(id)) { toast('El nom ha de començar per minúscula i només pot tenir lletres i xifres.'); return; }
+    if (SHAPES.includes(id)) { toast(`«${id}» ja és una forma del joc.`); return; }
+    if (drafts.some(draft => draft.id === id) || personalShapes.includes(id)) { toast(`Ja hi ha una forma que es diu «${id}».`); return; }
+    const template = $('#shape-template').value;
+    drafts.push(validateDraft({ id, template, params: defaultParams(template) }));
+    persistDrafts(); refreshShapes(); renderShapes();
+    $('#shape-list').value = id; $('#shape-name').value = '';
+    renderShapes(); render();
+    toast(`Forma «${id}» creada. Recorda instal·lar-la al joc abans de publicar el mod.`);
+  });
+
+  $('#shape-list').addEventListener('change', renderShapes);
+
+  $('#shape-apply').addEventListener('click', () => {
+    const draft = currentDraft();
+    if (!draft || !picked.size) { toast('Selecciona abans alguna peça del mod.'); return; }
+    change(() => { for (const index of pickedList()) mod.parts[index].shape = draft.id; });
+  });
+
+  $('#shape-rename').addEventListener('click', () => {
+    const draft = currentDraft();
+    if (!draft) return;
+    const name = prompt('Nom nou de la forma:', draft.id);
+    if (name === null) return;
+    const id = name.trim();
+    if (!SHAPE_ID_PATTERN.test(id) || SHAPES.includes(id) || personalShapes.includes(id)
+      || drafts.some(item => item.id === id)) { toast('Aquest nom no es pot fer servir.'); return; }
+    const old = draft.id;
+    draft.id = id;
+    for (const part of mod.parts) if (part.shape === old) part.shape = id;
+    persistDrafts(); refreshShapes(); renderShapes(); render();
+  });
+
+  $('#shape-delete').addEventListener('click', () => {
+    const draft = currentDraft();
+    if (!draft) return;
+    const used = mod.parts.some(part => part.shape === draft.id);
+    if (!confirm(used
+      ? `«${draft.id}» s’està fent servir en aquest mod. La vols eliminar igualment?`
+      : `Vols eliminar la forma «${draft.id}»?`)) return;
+    drafts = drafts.filter(item => item.id !== draft.id);
+    persistDrafts(); refreshShapes(); renderShapes(); render();
   });
 }
 
@@ -599,6 +732,7 @@ function bindViews() {
   for (const button of document.querySelectorAll('[data-view]'))
     button.addEventListener('click', () => viewport.look(...angles[button.dataset.view]));
   $('#frame').addEventListener('click', () => viewport.frame(mod));
+  $('#show-axes').addEventListener('change', render);
   $('#show-heights').addEventListener('change', render);
   $('#show-neighbours').addEventListener('change', render);
 }

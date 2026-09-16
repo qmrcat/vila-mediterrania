@@ -4,8 +4,7 @@
 //
 // Fitxer pur: ni DOM ni Three.js. Els girs es componen a mà amb quaternions
 // per no dependre de la llibreria.
-import { newPart, num } from './format.js';
-import { SHAPES } from './constants.js';
+import { newPart, num, isKnownShape } from './format.js';
 
 export const LIBRARY_KEY = 'vila-mediterrania-blocks-1';
 export const BLOCK_FORMAT = 'vila-block';
@@ -22,7 +21,7 @@ export function validateBlock(input) {
   if (!Array.isArray(input.parts) || !input.parts.length) throw new Error('La peça no té cap element.');
   if (input.parts.length > 400) throw new Error('Una peça de biblioteca no pot passar de 400 elements.');
   const parts = input.parts.map(p => {
-    if (!SHAPES.includes(p?.shape)) throw new Error(`La forma «${p?.shape}» no existeix al joc.`);
+    if (!isKnownShape(p?.shape)) throw new Error(`La forma «${p?.shape}» no existeix ni al joc ni al taller.`);
     if (!/^#[0-9a-fA-F]{6}$/.test(String(p.color))) throw new Error('Els colors han de ser hexadecimals de sis xifres.');
     return newPart({
       shape: p.shape, color: String(p.color).toLowerCase(),

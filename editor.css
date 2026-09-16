@@ -10,4 +10,9 @@
 .game-colors button:hover:not(:disabled){background:#edf2ed}
 .game-colors button[aria-pressed="true"]{border-color:var(--accent);background:#edf2ed}
 .game-color-sample{display:block;width:28px;height:28px;border-radius:50%;border:1px solid #183f4333}
+.publication-panel{margin-top:20px;padding:12px;border:1px solid var(--line);border-radius:9px;background:#f1f5ef}
+.publication-panel summary{cursor:pointer;font-weight:600;font-size:14px;min-height:32px;line-height:1.5}
+.publication-panel summary:focus-visible{outline:3px solid #c69a40;outline-offset:2px}
+.publication-panel label{margin-top:16px}
+.publication-panel button{max-width:100%;white-space:normal}
 .game-colors button[aria-pressed="true"] .game-color-sample::after{content:'✓';display:grid;place-items:center;height:100%;font-size:20px;font-weight:700;color:#183f43}

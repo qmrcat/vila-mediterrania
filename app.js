@@ -1,4 +1,5 @@
 import {groupBuildings} from './building-categories.js';
+import {loadSharedDesigns,copySharedDesign} from './shared-designs.js';
 import {RAILING_SIDES} from './terrain-railings.js';
 import {AGRICULTURAL_TERRAINS} from './agricultural-types.js';
 import {PERSONAL_BUSINESSES,PERSONAL_LANDMARKS} from './personal-content.js';
@@ -38,6 +39,7 @@ function syncBuildingPicker(type){
 const MONUMENT_TOOLS=new Map(Object.entries(LANDMARK_TYPES).filter(([,definition])=>definition.category==='monument').map(([id,definition])=>[id,definition.name]));
 const LEGACY_STORAGE_KEYS=['vila-mediterrania:v65','vila-mediterrania:v64','vila-mediterrania:v63','vila-mediterrania:v62','vila-mediterrania:v61','vila-mediterrania:v60','vila-mediterrania:v59','vila-mediterrania:v58','vila-mediterrania:v57','vila-mediterrania:v56','vila-mediterrania:v55','vila-mediterrania:v54','vila-mediterrania:v53','vila-mediterrania:v52','vila-mediterrania:v51','vila-mediterrania:v50','vila-mediterrania:v49','vila-mediterrania:v48','vila-mediterrania:v47','vila-mediterrania:v46','vila-mediterrania:v45','vila-mediterrania:v44','vila-mediterrania:v43','vila-mediterrania:v42','vila-mediterrania:v41','vila-mediterrania:v40','vila-mediterrania:v39','vila-mediterrania:v38','vila-mediterrania:v37','vila-mediterrania:v36','vila-mediterrania:v35','vila-mediterrania:v34','vila-mediterrania:v33','vila-mediterrania:v32','vila-mediterrania:v31','vila-mediterrania:v30','vila-mediterrania:v29','vila-mediterrania:v28','vila-mediterrania:v27','vila-mediterrania:v26','vila-mediterrania:v25','vila-mediterrania:v24','vila-mediterrania:v23','vila-mediterrania:v22','vila-mediterrania:v21','vila-mediterrania:v20','vila-mediterrania:v19','vila-mediterrania:v18','vila-mediterrania:v17','vila-mediterrania:v16','vila-mediterrania:v15','vila-mediterrania:v14','vila-mediterrania:v13','vila-mediterrania:v12','vila-mediterrania:v11','vila-mediterrania:v10','vila-mediterrania:v9','vila-mediterrania:v8','vila-mediterrania:v7','vila-mediterrania:v6','vila-mediterrania:v5','vila-mediterrania:v4','vila-mediterrania:v3','vila-mediterrania:v2','vila-mediterrania:v1'];
 let bridgeStart=null,designs=[];
+let sharedDesigns=[],sharedLoaded=false,sharedLoading=false;
 let terrainStroke=null,controlDrawers;
 let cloneStart=null,cloneClipboard=null,cloneStyle=null;
 let world,scene,tool='house',treeSpecies='pine',terrainType='land',color=0,roof='tile',roofDirection=0,keyboardCell={x:0,z:0},toastTimer;
@@ -86,7 +88,7 @@ const instructions={
   plaza:['Un lloc per trobar-se','Uneix les places per crear carrers i passejos vora el mar.'],
   pine:['Una mica d’ombra','Tria una espècie i clica per plantar-la. Clica un altre arbre per substituir-lo.'],
   beachbar:['La guingueta de la platja','Tria el nom i l’orientació. Clica una cel·la de platja per posar-hi la guingueta.'],
-  custom:['Els meus edificis','Tria un disseny desat i l’orientació de la façana.'],
+  custom:['Els meus edificis','Tria un disseny del navegador o de la biblioteca compartida i l’orientació de la façana.'],
   townhall:['L’ajuntament de la vila','Tria la mida i la façana. Dues plantes, balcó i senyera que oneja.'],
   church:['L’església del poble','Tria l’orientació de l’entrada. Prepara sis cel·les de terra ferma, carrer o plaça a la mateixa alçada.'],
   market:['El mercat de la vila','Tria la mida i la façana. Clica un espai de terra ferma, carrer o plaça a la mateixa alçada.'],
@@ -195,18 +197,31 @@ function describeTownHall(){
 function selectedDesign(){return designs.find(d=>d.id===$('#custom-design').value);}
 function previewCustom(cell){
   if(tool!=='custom')return;
-  const design=selectedDesign();$('#custom-note').textContent=!design?'Crea un disseny a l’editor o importa-hi una col·lecció JSON.':cell?checkCustomBuilding(world,{x:cell.x,z:cell.z,direction:Number($('#custom-direction').value),design}).message:`${design.width} × ${design.depth} cel·les. Prepara terra ferma, carrer o plaça lliure a la mateixa alçada.`;
+  const design=selectedDesign(),emptyMessage=$('#custom-source').value==='shared'?'Actualitza la biblioteca per consultar els edificis publicats.':'Crea un disseny a l’editor o importa-hi una col·lecció JSON.';
+  $('#custom-note').textContent=!design?emptyMessage:cell?checkCustomBuilding(world,{x:cell.x,z:cell.z,direction:Number($('#custom-direction').value),design}).message:`${design.width} × ${design.depth} cel·les. Prepara terra ferma, carrer o plaça lliure a la mateixa alçada.`;
 }
 function describeCustom(){
+  $('#custom-copy').disabled=!selectedDesign();
   const design=selectedDesign();scene?.setCustomOptions(tool==='custom'&&design?{design,direction:Number($('#custom-direction').value)}:null);previewCustom(scene?.hovered);
 }
 function refreshDesigns(){
-  const previous=$('#custom-design').value;let error='';
-  try{designs=loadDesigns(localStorage);}catch{designs=[];error='No s’han pogut llegir els dissenys. Obre l’editor per gestionar-los.';}
+  const previous=$('#custom-design').value,shared=$('#custom-source').value==='shared';let error='';
+  $('#shared-actions').hidden=!shared;
+  if(shared)designs=sharedDesigns;
+  else try{designs=loadDesigns(localStorage);}catch{designs=[];error='No s’han pogut llegir els dissenys. Obre l’editor per gestionar-los.';}
   $('#custom-design').replaceChildren();for(const d of designs)$('#custom-design').add(new Option(d.name,d.id));
-  if(!designs.length)$('#custom-design').add(new Option('Encara no tens dissenys',''));
+  if(!designs.length)$('#custom-design').add(new Option(shared?'Cap disseny compartit carregat':'Encara no tens dissenys',''));
   if(designs.some(d=>d.id===previous))$('#custom-design').value=previous;
   $('#custom-design').disabled=!designs.length;describeCustom();if(error)$('#custom-note').textContent=error;
+}
+async function refreshSharedDesigns(){
+  if(sharedLoading)return;
+  sharedLoading=true;$('#custom-refresh').disabled=true;$('#shared-status').textContent='Carregant la biblioteca compartida…';
+  try{
+    const next=await loadSharedDesigns();sharedDesigns=next;sharedLoaded=true;
+    $('#shared-status').textContent=next.length?`${next.length} dissenys compartits disponibles.`:'Encara no hi ha edificis publicats.';
+  }catch(error){$('#shared-status').textContent=error.message+(sharedLoaded?' Es conserva l’últim catàleg carregat.':' Pots continuar amb els teus dissenys locals.');}
+  finally{sharedLoading=false;$('#custom-refresh').disabled=false;refreshDesigns();}
 }
 function patioOptions(){return {patioPosition:$('#patio-position').value,patioDirection:Number($('#patio-direction').value),patioFloors:Number($('#patio-floors').value)};}
 function patioMode(){return tool==='house'&&$('#house-action').value==='build'&&$('#house-type').value==='patio';}
@@ -234,7 +249,7 @@ function applyEdit(cell,erase=false){
   if(erase&&bridgeStart){cancelBridge();toast('Pont cancel·lat.');return;}
   const before=structuredClone(world);const roofOnly=tool==='house'&&roof!=='flat'&&$('#roof-direction-only').checked;
   const selectedTool=tool==='house'&&$('#house-action').value==='business'?'business':tool==='house'&&$('#house-action').value==='paint'?'paint-floor':roofOnly?'roof-direction':patioMode()?'patio-house':tool==='pine'?treeSpecies:tool==='land'?terrainType:tool;
-  if(!erase&&selectedTool==='custom'&&!selectedDesign()){toast('Obre l’editor i desa un disseny abans de col·locar-lo.');return;}
+  if(!erase&&selectedTool==='custom'&&!selectedDesign()){toast('Tria un disseny del navegador o de la biblioteca compartida.');return;}
   const result=editWorld(world,cell.x,cell.z,erase?'erase':selectedTool,{...terrainRailingOptions(),hermitageSize:Number($('#hermitage-size').value),farmhouseSize:Number($('#farmhouse-size').value),stairRailing:$('#stairs-railing').value,buildingName:$('#building-sign-name').value,castleSize:Number($('#castle-size').value),cemeterySize:Number($('#cemetery-size').value),civicSize:Number($('#civic-size').value),landmarkDirection:landmarkOptions().direction,playgroundSize:Number($('#playground-size').value),slopeDirection:$('#slope-direction').value==='flat'?null:Number($('#slope-direction').value),slopeFinish:$('#slope-finish').value,...patioOptions(),customDesign:selectedDesign(),customDirection:Number($('#custom-direction').value),color,roof,roofDirection,beachBarDirection:Number($('#beachbar-direction').value),beachBarName:$('#beachbar-name').value,level:!erase&&selectedTool==='paint-floor'&&$('#paint-floor').value!=='pointed'?Number($('#paint-floor').value):cell.level??null,businessFloor:Number($('#business-floor').value),businessType:$('#business-type').value,businessName:$('#business-name').value,businessDirection:Number($('#business-direction').value),businessTerrace:$('#business-terrace').checked,townHallSize:Number($('#townhall-size').value),townHallDirection:Number($('#townhall-direction').value),churchDirection:Number($('#church-direction').value),marketSize:Number($('#market-size').value),marketDirection:Number($('#market-direction').value)});
   if(result.message)toast(result.message);
   if(result.changed){history.push(before);refresh();scene.setCursor(cell.x,cell.z,erase||tool==='erase',cell.level);keyboardCell={...scene.hovered};}
@@ -420,6 +435,16 @@ async function init(){
     catch{toast('La preferència s’aplica ara, però no s’ha pogut desar en aquest navegador.');}
   });
   refreshDesigns();
+  $('#custom-source').addEventListener('change',()=>{refreshDesigns();if($('#custom-source').value==='shared'&&!sharedLoaded)refreshSharedDesigns();});
+  $('#custom-refresh').addEventListener('click',refreshSharedDesigns);
+  $('#custom-copy').addEventListener('click',()=>{
+    const design=selectedDesign();if(!design)return;
+    try{
+      const copy=copySharedDesign(design);saveDesign(localStorage,copy);
+      $('#custom-source').value='local';refreshDesigns();$('#custom-design').value=copy.id;describeCustom();
+      toast('Còpia desada al navegador. La pots modificar a l’editor.');
+    }catch(error){toast(error.message||'No s’ha pogut desar la còpia.');}
+  });
   for(const id of ['custom-design','custom-direction'])$('#'+id).addEventListener('change',describeCustom);
   for(const link of $$('a[href="./editor.html"]'))link.addEventListener('click',persist);
   window.addEventListener('storage',e=>{if(e.key===DESIGN_KEY)refreshDesigns();});

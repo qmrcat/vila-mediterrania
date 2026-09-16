@@ -3,6 +3,7 @@
 // afegeix-les també aquí amb la mateixa definició.
 import * as THREE from '../vendor/three.module.min.js';
 import { SHAPES } from './constants.js';
+import { TEMPLATES } from './personal-shapes.js';
 
 export * from './constants.js';
 
@@ -54,6 +55,7 @@ const external = [
   ['hotelStar', '../lodging-geometry.js', m => m.createHotelStarGeometry()],
   ['stoneBridgeArch', '../stone-bridge.js', m => m.createStoneArchGeometry()],
   ['wallGate', '../wall-geometry.js', m => m.createWallGateGeometry()],
+  ['wallGateTrim', '../wall-geometry.js', m => m.createWallGateGeometry(true)],
   ['barberPoleRed', '../barber-pole.js', m => m.createBarberStripeGeometry(0)],
   ['barberPoleBlue', '../barber-pole.js', m => m.createBarberStripeGeometry(Math.PI)],
 ];
@@ -71,5 +73,52 @@ export async function loadShapes() {
   }
   return geometries;
 }
+
+// ——— formes personals (v91) ———
+
+/** Les que el joc té registrades ara mateix a PERSONAL_GEOMETRIES. */
+export const personalShapes = [];
+const draftShapes = new Set();
+
+/**
+ * Llegeix el registre del joc amb el mateix validador que fa servir ell.
+ * Si la còpia del joc és anterior a la v91, torna un avís i prou.
+ */
+export async function loadPersonalShapes() {
+  try {
+    const { createPersonalGeometries } = await import('../personal-geometries.js');
+    const extra = createPersonalGeometries(THREE, geometries);
+    Object.assign(geometries, extra);
+    personalShapes.length = 0;
+    personalShapes.push(...Object.keys(extra));
+    return { ok: true, count: personalShapes.length };
+  } catch (error) {
+    return { ok: false, message: error?.message ?? 'no s’ha pogut llegir el registre de formes' };
+  }
+}
+
+/**
+ * Construeix les formes que estàs dissenyant al taller perquè es puguin veure a
+ * la vista 3D. Mai no trepitgen una forma que el joc ja tingui.
+ */
+export function applyDrafts(drafts) {
+  for (const id of draftShapes) {
+    geometries[id]?.dispose?.();
+    delete geometries[id];
+  }
+  draftShapes.clear();
+  const applied = [];
+  for (const draft of drafts) {
+    if (Object.hasOwn(geometries, draft.id)) continue;
+    try {
+      geometries[draft.id] = TEMPLATES[draft.template].build(THREE, draft.params);
+      draftShapes.add(draft.id);
+      applied.push(draft.id);
+    } catch { /* una plantilla trencada no ha de tombar l'editor */ }
+  }
+  return applied;
+}
+
+export const shapeExists = id => Object.hasOwn(geometries, id);
 
 export { geometries };

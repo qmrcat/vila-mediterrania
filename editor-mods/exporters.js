@@ -1,6 +1,7 @@
 // Genera el codi que va a mods-personals/. Dos camins: un renderitzador escrit
 // (camí A) o el JSON llegit per un renderitzador genèric (camí B).
 import { footprint } from './format.js';
+import { SHAPES } from './constants.js';
 
 const round = (n, places = 3) => {
   const factor = 10 ** places;
@@ -15,6 +16,22 @@ export const renderName = mod => `render${pascal(mod.id)}`;
 export const moduleFile = mod => `${kebab(mod.id)}-geometry.js`;
 
 const tilted = part => Math.abs(part.rx) > 1e-6 || Math.abs(part.rz) > 1e-6;
+
+/** Formes que no són de les 20 oficials: el mod depèn de geometries.js. */
+export const customShapes = mod =>
+  [...new Set(mod.parts.map(part => part.shape))].filter(shape => !SHAPES.includes(shape));
+
+const shapeSnippet = mod => {
+  const custom = customShapes(mod);
+  if (!custom.length) return [];
+  return [{
+    file: 'mods-personals/geometries.js',
+    code: `// Aquest mod fa servir formes personals: ${custom.join(', ')}.
+` +
+      `// Copia'n el fitxer des d'Exporta → El fitxer geometries.js.`,
+    note: 'Sense aquest fitxer, el joc llança «Forma desconeguda» en dibuixar el mod.',
+  }];
+};
 const quote = text => String(text).replace(/'/g, "\\'");
 
 function callLine(part, fn) {
@@ -68,6 +85,7 @@ export function registerSnippets(mod) {
         `// dins de PERSONAL_LANDMARK_RENDERERS:\n  ${mod.id}:${renderName(mod)},`,
       note: 'Les claus han de coincidir exactament amb les del catàleg.',
     },
+    ...shapeSnippet(mod),
     {
       file: 'Comprovació',
       code: 'node mods-personals/check.mjs\nnode check-mods.mjs',

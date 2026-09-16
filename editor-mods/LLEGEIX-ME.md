@@ -1,9 +1,9 @@
-# Taller de mods · Vila Mediterrània v89
+# Taller de mods · Vila Mediterrània v91
 
 Un editor visual per compondre edificis i monuments amb les mateixes primitives
 que fa servir el joc, i treure'n el codi llest per a `mods-personals/`.
 
-Escriu per a l'**API de mods 1** (`GUIA-MODS.md`). No modifica cap fitxer del
+Escriu per a l'**API de mods 1** (`GUIA-MODS.md`), amb les geometries personals de la v91. No modifica cap fitxer del
 joc ni de la teva carpeta `mods-personals/`: tu tries què hi enganxes.
 
 ## Instal·lació
@@ -34,7 +34,9 @@ la mateixa que escriuries a mà dins d'un renderitzador:
 
 Per treballar amb diverses peces alhora: Ctrl+clic afegeix o treu de la selecció i
 Majúscules+clic a la llista n'agafa un tram. El panell **Biblioteca de peces** desa
-grups amb nom (una galleda, una finestra) i els estampa dins de qualsevol mod.
+grups amb nom (una galleda, una finestra) i els estampa dins de qualsevol mod. El panell
+**Formes personals** llegeix les geometries que el joc té registrades i en genera de noves
+a partir de plantilles (tub, prisma, escala), amb el fitxer `geometries.js` llest per instal·lar.
 
 Dreceres: fletxes mouen la selecció en `u` i `v`, Re Pàg i Av Pàg en `h`
 (amb Majúscules, passos de 0,005), Supr l'esborra, Ctrl+Z desfà i Ctrl+S desa.
@@ -54,6 +56,7 @@ roda per apropar.
 ```sh
 node mods-personals/check.mjs
 node check-mods.mjs
+node editor-mods/check-formes.mjs
 ```
 
 Si el mod té peces inclinades, el renderitzador generat les emet amb
@@ -114,6 +117,8 @@ quedi dins de la mida i l'alçada declarades.
 | `viewport.js` | Vista 3D, guies de parcel·la i selecció |
 | `format.js` | Format del mod, validació i col·lecció |
 | `library.js` | Biblioteca de peces reutilitzables i girs de grup |
+| `personal-shapes.js` | Plantilles de formes personals i generació de `geometries.js` |
+| `check-formes.mjs` | Comprova que el codi generat i la vista 3D coincideixen |
 | `exporters.js` | Generació del renderitzador, del JSON i dels registres |
 | `starters.js` | La torre de guaita i l'obelisc, com a exemples |
 | `json-mods.js`, `json-mods-data.js` | El camí B, per copiar a `mods-personals/` |
