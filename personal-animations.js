@@ -1,4 +1,6 @@
-import * as personal from './mods-personals/renderers.js?v=96';
+// Use the same module URL as personal-geometries.js and personal-renderers.js.
+// Different query strings create separate module instances and cache entries.
+import * as personal from './mods-personals/renderers.js';
 
 /** Optional API 1 extension. Only personal geometries may be animated. */
 export function createPersonalAnimations(THREE,geometries,personalIds,definitions=personal.PERSONAL_GEOMETRY_ANIMATIONS===undefined?{}:personal.PERSONAL_GEOMETRY_ANIMATIONS){
