@@ -19,7 +19,7 @@ import { starterMods } from './starters.js';
 import { bindAi } from './ai-panel.js';
 import {
   loadLibrary, saveLibrary, validateBlock, blockId, uniqueBlockName,
-  normalizeParts, rotateParts, spinParts, halfSpan, starterBlocks,
+  normalizeParts, rotateParts, starterBlocks,
 } from './library.js';
 
 const $ = selector => document.querySelector(selector);
@@ -47,9 +47,7 @@ async function start() {
 
   mods = loadCollection(localStorage);
   if (!mods.length) mods = starterMods();
-  // El taller torna on eres: obre l'últim mod que hi havia obert, i el primer
-  // de la col·lecció només si aquell ja no hi és.
-  mod = structuredClone(mods.find(m => m.id === lastModId()) ?? mods[0]);
+  mod = structuredClone(mods[0]);
   blocks = loadLibrary(localStorage);
   if (!blocks.length) blocks = starterBlocks();
 
@@ -58,24 +56,19 @@ async function start() {
   $('#shapes-state').textContent = registry.ok
     ? `El joc té ${registry.count} forma${registry.count === 1 ? '' : 'es'} personal${registry.count === 1 ? '' : 's'} registrada${registry.count === 1 ? '' : 'es'}.`
     : `No s’ha pogut llegir el registre de formes: ${registry.message}`;
-  viewport = createViewport($('#canvas'), {
-    onPick: (index, mode, alone) => select(index, mode, alone),
-    onDrag: (phase, payload, alone, vertical) => drag(phase, payload, alone, vertical),
-    onResize: (phase, payload) => stretch(phase, payload),
-  });
+  viewport = createViewport($('#canvas'), { onPick: (index, mode) => select(index, mode) });
 
   bindMeta();
   bindParts();
   bindInspector();
   bindRepeat();
-  bindAlign();
-  bindResize();
   bindOutput();
   bindViews();
   bindKeys();
   bindLibrary();
   bindShapes();
   bindFolds();
+  checkIds();
   bindAi(aiBridge());
   refreshCollection();
   renderLibrary();
@@ -133,20 +126,6 @@ async function probeGame() {
   }
 }
 
-// ——— on estàvem ———
-const LAST_MOD_KEY = 'vila-mediterrania-last-mod-1';
-
-const lastModId = () => {
-  try { return localStorage.getItem(LAST_MOD_KEY) ?? ''; }
-  catch { return ''; }
-};
-
-/** Amb una cadena buida, el pròxim cop s'obrirà el primer de la col·lecció. */
-const rememberMod = id => {
-  try { localStorage.setItem(LAST_MOD_KEY, id ?? ''); }
-  catch { /* sense recordar-ho: no és res greu */ }
-};
-
 let toastTimer = 0;
 function toast(message) {
   const element = $('#toast');
@@ -170,40 +149,19 @@ function setPicked(indices) {
   selected = indices.length ? indices[0] : null;
 }
 
-/** Les peces del mateix grup que index (o només ella si no en té). */
-function groupOf(index) {
-  const group = mod.parts[index]?.group;
-  if (!group) return [index];
-  return mod.parts.flatMap((part, i) => (part.group === group ? [i] : []));
-}
-
-/** Amb alone (Alt+clic) es tria la peça sola encara que sigui d'un grup. */
-function select(index, mode = 'single', alone = false) {
+function select(index, mode = 'single') {
   if (index === null || index === undefined) { setPicked([]); render(); return; }
-  const members = alone ? [index] : groupOf(index);
   if (mode === 'toggle') {
-    if (picked.has(index) && picked.size > members.length) {
-      for (const i of members) picked.delete(i);
-      if (!picked.has(selected)) selected = pickedList()[0] ?? null;
-    } else { for (const i of members) picked.add(i); selected = index; }
+    if (picked.has(index) && picked.size > 1) {
+      picked.delete(index);
+      if (selected === index) selected = pickedList()[0] ?? null;
+    } else { picked.add(index); selected = index; }
   } else if (mode === 'range' && selected !== null) {
     const [from, to] = selected < index ? [selected, index] : [index, selected];
-    for (let i = from; i <= to; i++) for (const k of alone ? [i] : groupOf(i)) picked.add(k);
+    for (let i = from; i <= to; i++) picked.add(i);
     selected = index;
-  } else { setPicked(members); selected = index; }
+  } else setPicked([index]);
   render();
-}
-
-function nextGroupId() {
-  const used = mod.parts.map(part => Number(String(part.group ?? '').slice(1)) || 0);
-  return `g${Math.max(0, ...used) + 1}`;
-}
-
-/** Un grup d'una sola peça ja no és un grup. */
-function pruneGroups() {
-  const sizes = new Map();
-  for (const part of mod.parts) if (part.group) sizes.set(part.group, (sizes.get(part.group) ?? 0) + 1);
-  for (const part of mod.parts) if (part.group && sizes.get(part.group) < 2) delete part.group;
 }
 
 const current = () => (selected === null ? null : mod.parts[selected]);
@@ -214,7 +172,6 @@ function render() {
     heights: $('#show-heights').checked,
     neighbours: $('#show-neighbours').checked,
     axes: $('#show-axes').checked,
-    handles: $('#show-handles').checked,
   };
   picked = new Set(pickedList());
   if (selected === null || selected >= mod.parts.length || !picked.has(selected)) selected = pickedList()[0] ?? null;
@@ -234,7 +191,6 @@ function render() {
   $('#collection').value = mods.some(m => m.id === mod.id) ? mod.id : '';
 
   renderParts();
-  renderResize();
   renderInspector();
   renderReadout();
   renderNotes();
@@ -269,26 +225,16 @@ function renderParts() {
       change(() => { mod.parts[index].hidden = part.hidden ? undefined : true; });
     });
     item.classList.toggle('hidden-part', !!part.hidden);
-    item.append(swatch, shape);
-    if (part.group) {
-      const tag = document.createElement('span');
-      tag.className = 'group'; tag.textContent = part.group.toUpperCase();
-      tag.title = `Grup ${part.group.slice(1)} · Alt+clic tria només aquesta peça`;
-      item.append(tag);
-    }
-    item.append(where, eye);
+    item.append(swatch, shape, where, eye);
     const how = event => (event.ctrlKey || event.metaKey ? 'toggle' : event.shiftKey ? 'range' : 'single');
-    item.addEventListener('click', event => select(index, how(event), event.altKey));
-    item.addEventListener('keydown', event => { if (event.key === 'Enter') select(index, how(event), event.altKey); });
+    item.addEventListener('click', event => select(index, how(event)));
+    item.addEventListener('keydown', event => { if (event.key === 'Enter') select(index, how(event)); });
     return item;
   }));
   const chosen = list.children[selected];
   if (chosen) chosen.scrollIntoView({ block: 'nearest' });
   for (const id of ['#duplicate-part', '#mirror-part', '#rotate-part', '#hide-part', '#up-part', '#down-part', '#delete-part'])
     $(id).disabled = !picked.size;
-  $('#select-all').disabled = !mod.parts.length;
-  $('#group-part').disabled = picked.size < 2;
-  $('#ungroup-part').disabled = !pickedList().some(index => mod.parts[index].group);
   const buried = hiddenCount();
   $('#show-all').disabled = !buried;
   $('#show-all').textContent = buried ? `Mostra-les totes (${buried})` : 'Mostra-les totes';
@@ -296,9 +242,6 @@ function renderParts() {
     const list = pickedList();
     $('#hide-part').textContent = list.every(index => mod.parts[index].hidden) ? 'Mostra' : 'Amaga';
   }
-  const spreadable = picked.size > 1 ? pickedBlocks().length : 0;
-  $('#align').hidden = spreadable < 2;
-  for (const button of $('#align').querySelectorAll('button[data-align$=":spread"]')) button.disabled = spreadable < 3;
   $('#repeat').hidden = picked.size !== 1;
   $('#block-save').disabled = !mod.parts.length;
   $('#selection-count').textContent = picked.size > 1 ? `${picked.size} seleccionades` : '';
@@ -311,7 +254,6 @@ function renderInspector() {
   if (!part) return;
   if (document.activeElement !== $('#part-name')) $('#part-name').value = part.name ?? '';
   $('#part-name').placeholder = picked.size > 1 ? `${picked.size} peces seleccionades` : part.shape;
-  renderSizeClipboard();
   $('#part-shape').value = part.shape;
   $('#shape-hint').textContent = SHAPE_HINTS[part.shape] ?? '';
   $('#part-color').value = part.color;
@@ -371,7 +313,7 @@ function renderOutput() {
     runtime: () => runtimeSnippets().map(s => `// ${s.file}\n${s.code}\n// ${s.note}`).join('\n\n'),
     shapes: () => geometriesFile(drafts),
   };
-  $('#code').textContent = blocks[mode]();
+  $('#code').textContent = (blocks[mode] ?? blocks.module)();
   $('#output-note').textContent = {
     module: `Desa’l com a mods-personals/${moduleFile(mod)}.`,
     json: 'Enganxa’l dins de l’array JSON_MODS de mods-personals/json-mods-data.js.',
@@ -400,8 +342,7 @@ function bindMeta() {
   $('#new-mod').addEventListener('click', () => {
     if (!confirmDiscard()) return;
     mod = newMod({ id: uniqueId([...mods, ...takenIds.map(id => ({ id }))], 'modNou'), name: 'Mod nou', parts: [] });
-    selected = null; dirty = true; rememberMod('');
-    render(); viewport.frame(mod);
+    selected = null; dirty = true; render(); viewport.frame(mod);
   });
   $('#save-mod').addEventListener('click', () => save(false));
   $('#copy-mod').addEventListener('click', () => save(true));
@@ -411,7 +352,6 @@ function bindMeta() {
     if (!confirm(`Vols treure «${mod.name}» de la col·lecció del navegador?`)) return;
     mods.splice(index, 1);
     saveCollection(localStorage, mods);
-    if (lastModId() === mod.id) rememberMod('');
     refreshCollection();
     toast('Mod eliminat de la col·lecció.');
   });
@@ -419,7 +359,6 @@ function bindMeta() {
     const found = mods.find(m => m.id === event.target.value);
     if (!found || !confirmDiscard()) { $('#collection').value = mod.id; return; }
     mod = structuredClone(found); selected = null; dirty = false;
-    rememberMod(mod.id);
     render(); viewport.frame(mod);
   });
   $('#import-mod').addEventListener('click', () => $('#file').click());
@@ -446,7 +385,6 @@ function save(asCopy) {
   try { saveCollection(localStorage, mods); }
   catch { toast('El navegador no ha pogut desar. Exporta el JSON per no perdre la feina.'); return; }
   mod = structuredClone(candidate); dirty = false;
-  rememberMod(mod.id);
   refreshCollection(); render();
   toast(asCopy ? 'Còpia desada al navegador.' : 'Mod desat al navegador.');
 }
@@ -475,66 +413,11 @@ function importFile(event) {
   reader.readAsText(file);
 }
 
-// ——— canviar el mod de mida ———
-
-/**
- * Escala el mod sencer d'una parcel·la a una altra. El factor és el més petit
- * dels dos costats, perquè les peces creixin totes igual: escalar l'amplada i
- * la fondària per separat deformaria les teulades i els arcs.
- */
-const resizeFactor = target => {
-  const from = smallestPlot(mod), to = footprint(target);
-  return Math.min(to.width / from.width, to.depth / from.depth);
-};
-
-function renderResize() {
-  const select = $('#resize-target');
-  if (select.dataset.mod !== mod.id) {
-    select.value = String(smallestPlot(mod).size);
-    select.dataset.mod = mod.id;
-  }
-  const from = smallestPlot(mod), to = footprint(Number(select.value));
-  const factor = resizeFactor(Number(select.value));
-  const shown = factor.toFixed(2).replace('.', ',');
-  $('#resize-note').textContent = !mod.parts.length
-    ? 'Encara no hi ha cap peça per escalar.'
-    : factor === 1
-      ? `De ${from.label} a ${to.label}: la geometria es queda com és.`
-      : `De ${from.label} a ${to.label}: posicions, mides i alçada × ${shown}.`;
-  $('#resize-run').disabled = !mod.parts.length;
-}
-
-function bindResize() {
-  fillSelect($('#resize-target'), SIZES.map(s => [s.size, `${s.label} cel·les`]));
-  $('#resize-target').addEventListener('change', renderResize);
-  $('#resize-run').addEventListener('click', resizeMod);
-}
-
-function resizeMod() {
-  if (!mod.parts.length) { toast('Encara no hi ha cap peça per escalar.'); return; }
-  const target = Number($('#resize-target').value);
-  const from = smallestPlot(mod), to = footprint(target);
-  const factor = resizeFactor(target);
-  const tidy = value => Math.round(value * 1000) / 1000;
-  change(() => {
-    for (const part of mod.parts)
-      for (const key of ['u', 'h', 'v', 'sx', 'sy', 'sz']) part[key] = tidy(part[key] * factor);
-    mod.sizes = [target];
-    mod.previewSize = target;
-    // Amb «mesura-la sola» l'alçada es refà tota sola en dibuixar.
-    if (!mod.autoHeight) mod.height = Math.max(tidy(mod.height * factor), .1);
-  });
-  viewport.frame(mod);
-  toast(factor === 1
-    ? `Mod declarat per a ${to.label} cel·les.`
-    : `Mod escalat de ${from.label} a ${to.label}, × ${factor.toFixed(2).replace('.', ',')}.`);
-}
-
 // ——— peces ———
 function bindParts() {
   $('#add-part').addEventListener('click', () => change(() => {
     const model = current();
-    const born = model ? { ...model, h: model.h + model.sy, name: '', group: undefined } : newPart();
+    const born = model ? { ...model, h: model.h + model.sy, name: '' } : newPart();
     mod.parts.push(...stageEast([born]));
     setPicked([mod.parts.length - 1]);
   }));
@@ -548,9 +431,6 @@ function bindParts() {
     const spun = rotateParts(list.map(index => mod.parts[index]), 1);
     change(() => { list.forEach((index, k) => { mod.parts[index] = spun[k]; }); });
   });
-  $('#select-all').addEventListener('click', selectAll);
-  $('#group-part').addEventListener('click', groupPicked);
-  $('#ungroup-part').addEventListener('click', ungroupPicked);
   $('#up-part').addEventListener('click', () => move(-1));
   $('#down-part').addEventListener('click', () => move(1));
   $('#hide-part').addEventListener('click', () => {
@@ -569,59 +449,16 @@ function bindParts() {
     if (!list.length) return;
     change(() => {
       for (const index of [...list].reverse()) mod.parts.splice(index, 1);
-      pruneGroups();
       setPicked(mod.parts.length ? [Math.min(list[0], mod.parts.length - 1)] : []);
     });
   });
-}
-
-/**
- * Totes les peces que es veuen. Les amagades queden fora a posta: les has
- * apartades per treballar amb la resta, i no s'han de moure d'amagat.
- */
-function selectAll() {
-  const visible = mod.parts.flatMap((part, index) => (part.hidden ? [] : [index]));
-  if (!visible.length) {
-    toast(mod.parts.length ? 'Totes les peces estan amagades.' : 'Encara no hi ha cap peça.');
-    return;
-  }
-  setPicked(visible);
-  render();
-  const hidden = mod.parts.length - visible.length;
-  toast(`${visible.length} peç${visible.length === 1 ? 'a seleccionada' : 'es seleccionades'}`
-    + `${hidden ? ` · ${hidden} amagad${hidden === 1 ? 'a' : 'es'}, fora de la selecció` : ''}.`);
-}
-
-function groupPicked() {
-  const list = pickedList();
-  if (list.length < 2) { toast('Selecciona almenys dues peces per agrupar-les.'); return; }
-  const group = nextGroupId();
-  change(() => { for (const index of list) mod.parts[index].group = group; pruneGroups(); });
-  toast(`${list.length} peces agrupades (${group.toUpperCase()}).`);
-}
-
-function ungroupPicked() {
-  const list = pickedList();
-  if (!list.some(index => mod.parts[index].group)) { toast('La selecció no té cap grup.'); return; }
-  change(() => { for (const index of list) delete mod.parts[index].group; pruneGroups(); });
-  toast('Grup desfet.');
 }
 
 /** Duplica la selecció aplicant-hi una transformació, i selecciona les còpies. */
 function stamp(transform) {
   const list = pickedList();
   if (!list.length) return;
-  // Les còpies formen grups nous, paral·lels als originals.
-  const renamed = new Map();
-  let next = Number(nextGroupId().slice(1));
-  const copies = stageEast(list.map(index => {
-    const copy = transform(mod.parts[index]);
-    if (copy.group) {
-      if (!renamed.has(copy.group)) renamed.set(copy.group, `g${next++}`);
-      copy.group = renamed.get(copy.group);
-    }
-    return copy;
-  }));
+  const copies = stageEast(list.map(index => transform(mod.parts[index])));
   const at = list[list.length - 1] + 1;
   change(() => {
     mod.parts.splice(at, 0, ...copies);
@@ -665,8 +502,6 @@ function move(step) {
 
 // ——— inspector ———
 function bindInspector() {
-  $('#copy-size').addEventListener('click', copySize);
-  $('#paste-size').addEventListener('click', pasteSize);
   $('#part-name').addEventListener('change', event => {
     const value = event.target.value.trim().slice(0, 40);
     change(() => {
@@ -704,314 +539,6 @@ function liveEdit(key, value) {
   part[key] = value; dirty = true; render();
 }
 document.addEventListener('focusout', () => { editing = null; });
-
-// ——— arrossegar amb el ratolí ———
-
-// Mentre dura l'arrossegament no s'apunta res a l'historial: hi va una sola
-// entrada al final, perquè un Ctrl+Z desfaci tot el moviment i no l'últim píxel.
-let dragged = null;
-
-const SNAP = .005;
-const MIN_SIZE = .01;
-const snap = value => Math.round(value / SNAP) * SNAP;
-
-const dragMode = vertical => (vertical
-  ? 'Movent en alçada (h). Deixa anar Majúscules per moure-la en planta.'
-  : 'Movent en planta (u · v). Prem Majúscules per pujar-la o baixar-la.');
-
-function drag(phase, payload, alone, vertical) {
-  if (phase === 'start') {
-    const index = payload;
-    if (mod.parts[index]?.hidden) return false;
-    if (!picked.has(index) || alone) select(index, 'single', alone);
-    // Diu en quin mode s'ha agafat, perquè no hi hagi dubte de què farà.
-    toast(dragMode(vertical));
-    dragged = {
-      before: JSON.stringify(mod),
-      from: pickedList().map(i => ({ i, u: mod.parts[i].u, h: mod.parts[i].h, v: mod.parts[i].v })),
-    };
-    return true;
-  }
-  if (!dragged) return true;
-  if (phase === 'mode') { toast(dragMode(vertical)); return true; }
-  if (phase === 'move') {
-    for (const start of dragged.from) {
-      const part = mod.parts[start.i];
-      part.u = snap(start.u + payload.du);
-      part.h = snap(start.h + payload.dh);
-      part.v = snap(start.v + payload.dv);
-    }
-    dirty = true;
-    render();
-    return true;
-  }
-  if (phase === 'end') {
-    undoStack.push(dragged.before);
-    if (undoStack.length > 80) undoStack.shift();
-    dirty = true;
-  } else {
-    mod = JSON.parse(dragged.before);
-    render();
-  }
-  dragged = null;
-  return true;
-}
-
-// ——— estirar per les nanses ———
-
-// La cara que agafes es mou i la de davant es queda on era, com si estiressis
-// la peça. Amb Majúscules creixen les dues alhora i el centre no es mou.
-let stretched = null;
-
-function stretch(phase, payload) {
-  if (phase === 'start') {
-    if (payload.kind === 'group') {
-      const list = pickedList();
-      if (list.length < 2) return false;
-      stretched = {
-        before: JSON.stringify(mod), kind: 'group',
-        extent: payload.extent, anchor: payload.anchor, centre: payload.centre,
-        from: list.map(i => ({ i, ...pose(mod.parts[i]) })),
-      };
-      toast('Escalant la selecció. Les proporcions de dins no canvien.');
-      return true;
-    }
-    const part = mod.parts[payload.index];
-    if (!part || part.hidden) return false;
-    stretched = {
-      before: JSON.stringify(mod),
-      index: payload.index, key: payload.key, per: payload.per,
-      size: part[payload.key], u: part.u, h: part.h, v: part.v,
-    };
-    return true;
-  }
-  if (!stretched) return true;
-  if (phase === 'move' && stretched.kind === 'group') {
-    scaleSelection(payload);
-    return true;
-  }
-  if (phase === 'move') {
-    const part = mod.parts[stretched.index];
-    if (!part) return true;
-    const wanted = stretched.size + payload.grow * (payload.both ? 2 : 1);
-    const size = Math.max(snap(wanted), MIN_SIZE);
-    const growth = size - stretched.size;
-    part[stretched.key] = size;
-    part.u = payload.both ? stretched.u : snap(stretched.u + stretched.per.du * growth);
-    part.h = payload.both ? stretched.h : snap(stretched.h + stretched.per.dh * growth);
-    part.v = payload.both ? stretched.v : snap(stretched.v + stretched.per.dv * growth);
-    dirty = true;
-    render();
-    return true;
-  }
-  if (phase === 'end') {
-    undoStack.push(stretched.before);
-    if (undoStack.length > 80) undoStack.shift();
-    dirty = true;
-  } else {
-    mod = JSON.parse(stretched.before);
-    render();
-  }
-  stretched = null;
-  return true;
-}
-
-/** Les sis xifres que situen i dimensionen una peça. */
-const pose = part => ({
-  u: part.u, h: part.h, v: part.v, sx: part.sx, sy: part.sy, sz: part.sz,
-});
-
-/**
- * Escala la selecció sencera per un sol factor, ancorada a la cara de davant
- * de la que estires —o al centre, amb Majúscules. Com que posicions i mides es
- * multipliquen pel mateix número, el conjunt no es deforma per dins.
- */
-function scaleSelection(payload) {
-  const { extent, anchor, centre } = stretched;
-  const grown = extent + payload.grow * (payload.both ? 2 : 1);
-  const factor = Math.max(grown / extent, .02);
-  const base = payload.both ? centre : anchor;
-  const tidy = value => Math.round(value * 1e4) / 1e4;
-  for (const start of stretched.from) {
-    const part = mod.parts[start.i];
-    if (!part) continue;
-    part.u = tidy(base.u + (start.u - base.u) * factor);
-    part.h = tidy(base.h + (start.h - base.h) * factor);
-    part.v = tidy(base.v + (start.v - base.v) * factor);
-    part.sx = Math.max(tidy(start.sx * factor), MIN_SIZE);
-    part.sy = Math.max(tidy(start.sy * factor), MIN_SIZE);
-    part.sz = Math.max(tidy(start.sz * factor), MIN_SIZE);
-  }
-  dirty = true;
-  render();
-}
-
-// ——— porta-retalls de mides ———
-
-// Només les tres mides: ni posició, ni color, ni girs. Viu mentre la pestanya
-// és oberta, i s'enganxa amb un botó a posta, per no xocar amb Ctrl+C i Ctrl+V,
-// que copien i enganxen peces senceres.
-let sizeClip = null;
-
-const sizeLabel = size => [size.sx, size.sy, size.sz].map(v => v.toFixed(2).replace('.', ',')).join(' × ');
-
-function renderSizeClipboard() {
-  $('#paste-size').disabled = !sizeClip || !picked.size;
-  $('#paste-size').title = sizeClip
-    ? `Posa ${sizeLabel(sizeClip)} a la selecció`
-    : 'Abans has de copiar les mides d’una peça';
-  $('#size-note').textContent = sizeClip ? `Mides desades: ${sizeLabel(sizeClip)}.` : '';
-}
-
-function copySize() {
-  const part = current();
-  if (!part) return;
-  sizeClip = { sx: part.sx, sy: part.sy, sz: part.sz };
-  renderSizeClipboard();
-  toast(`Mides copiades: ${sizeLabel(sizeClip)}.`);
-}
-
-function pasteSize() {
-  const list = pickedList();
-  if (!sizeClip) { toast('Abans copia les mides d’una peça.'); return; }
-  if (!list.length) { toast('Selecciona la peça que ha de rebre les mides.'); return; }
-  change(() => {
-    for (const index of list) Object.assign(mod.parts[index], sizeClip);
-  });
-  toast(`${sizeLabel(sizeClip)} a ${list.length} peç${list.length === 1 ? 'a' : 'es'}.`);
-}
-
-// ——— porta-retalls ———
-
-const CLIPBOARD_KEY = 'vila-mediterrania-clipboard-1';
-let clipboard = [];
-
-/**
- * Les peces passen per validateBlock abans d'entrar: el porta-retalls viu al
- * localStorage per poder copiar d'una pestanya a l'altra, i el que ve de fora
- * no es creu mai. Els grups es tornen a posar a mà, perquè la biblioteca no els
- * coneix.
- */
-function readClipboard() {
-  const raw = clipboard.length ? clipboard : (() => {
-    try { return JSON.parse(localStorage.getItem(CLIPBOARD_KEY)) ?? []; } catch { return []; }
-  })();
-  if (!Array.isArray(raw) || !raw.length) return [];
-  try {
-    const clean = validateBlock({ name: 'Porta-retalls', parts: raw }).parts;
-    return clean.map((part, k) => {
-      const group = String(raw[k]?.group ?? '');
-      const name = String(raw[k]?.name ?? '').trim();
-      return { ...part, ...(/^g\d{1,4}$/.test(group) ? { group } : {}), ...(name ? { name: name.slice(0, 40) } : {}) };
-    });
-  } catch { return []; }
-}
-
-function copyPicked() {
-  const list = pickedList();
-  if (!list.length) { toast('No hi ha res seleccionat.'); return; }
-  clipboard = list.map(index => structuredClone(mod.parts[index]));
-  try { localStorage.setItem(CLIPBOARD_KEY, JSON.stringify(clipboard)); }
-  catch { /* el porta-retalls viu a la pestanya i prou */ }
-  toast(`${list.length} peç${list.length === 1 ? 'a copiada' : 'es copiades'}.`);
-}
-
-function pastePicked() {
-  const source = readClipboard();
-  if (!source.length) { toast('El porta-retalls és buit.'); return; }
-  if (mod.parts.length + source.length > 2000) { toast('Un mod no pot passar de 2000 peces.'); return; }
-  const renamed = new Map();
-  let next = Number(nextGroupId().slice(1));
-  const copies = stageEast(source.map(part => {
-    const copy = { ...part };
-    if (copy.group) {
-      if (!renamed.has(copy.group)) renamed.set(copy.group, `g${next++}`);
-      copy.group = renamed.get(copy.group);
-    }
-    return copy;
-  }));
-  const at = mod.parts.length;
-  change(() => {
-    mod.parts.push(...copies);
-    setPicked(copies.map((_, k) => at + k));
-  });
-  toast(`${copies.length} peç${copies.length === 1 ? 'a enganxada' : 'es enganxades'}.`);
-}
-
-// ——— alinear i distribuir ———
-
-/**
- * La selecció, vista com a blocs: un grup és un sol bloc i es mou sencer,
- * perquè alinear-ne les peces per separat el desmuntaria.
- */
-function pickedBlocks() {
-  const byGroup = new Map();
-  const blocks = [];
-  for (const index of pickedList()) {
-    const group = mod.parts[index].group;
-    if (!group) { blocks.push([index]); continue; }
-    if (!byGroup.has(group)) { const block = []; byGroup.set(group, block); blocks.push(block); }
-    byGroup.get(group).push(index);
-  }
-  return blocks;
-}
-
-/** De quant a quant arriba un bloc en un eix. */
-function blockSpan(block, axis) {
-  let min = Infinity, max = -Infinity;
-  for (const index of block) {
-    const part = mod.parts[index];
-    const half = halfSpan(part)[axis];
-    min = Math.min(min, part[axis] - half);
-    max = Math.max(max, part[axis] + half);
-  }
-  return { min, max, mid: (min + max) / 2 };
-}
-
-/** Mou cada bloc el que li toca, d'una tirada per poder-ho desfer d'un sol cop. */
-function shiftBlocks(axis, deltas, message) {
-  const moved = deltas.filter(delta => Math.abs(delta) > 1e-9).length;
-  if (!moved) { toast('Ja hi eren.'); return; }
-  change(() => {
-    pickedBlocks().forEach((block, k) => {
-      for (const index of block) {
-        const part = mod.parts[index];
-        part[axis] = Math.round((part[axis] + deltas[k]) * 1e6) / 1e6;
-      }
-    });
-  });
-  toast(message(moved));
-}
-
-function alignPicked(axis, edge) {
-  const blocks = pickedBlocks();
-  if (blocks.length < 2) { toast('Selecciona almenys dos blocs per alinear-los.'); return; }
-  const spans = blocks.map(block => blockSpan(block, axis));
-  const target = edge === 'min' ? Math.min(...spans.map(s => s.min))
-    : edge === 'max' ? Math.max(...spans.map(s => s.max))
-      : (Math.min(...spans.map(s => s.min)) + Math.max(...spans.map(s => s.max))) / 2;
-  const deltas = spans.map(span => target - span[edge === 'mid' ? 'mid' : edge]);
-  shiftBlocks(axis, deltas, moved => `${moved} bloc${moved === 1 ? '' : 's'} alineat${moved === 1 ? '' : 's'} en ${axis}.`);
-}
-
-/** Reparteix els blocs de l'un a l'altre extrem, a distàncies iguals de centre a centre. */
-function spreadPicked(axis) {
-  const blocks = pickedBlocks();
-  if (blocks.length < 3) { toast('En calen tres o més per repartir-los.'); return; }
-  const spans = blocks.map((block, k) => ({ k, ...blockSpan(block, axis) }));
-  const order = [...spans].sort((a, b) => a.mid - b.mid);
-  const first = order[0].mid, step = (order[order.length - 1].mid - first) / (order.length - 1);
-  const deltas = new Array(blocks.length).fill(0);
-  order.forEach((span, i) => { deltas[span.k] = first + i * step - span.mid; });
-  shiftBlocks(axis, deltas, () => `${blocks.length} blocs repartits en ${axis}.`);
-}
-
-function bindAlign() {
-  for (const button of $('#align').querySelectorAll('button[data-align]')) {
-    const [axis, what] = button.dataset.align.split(':');
-    button.addEventListener('click', () => (what === 'spread' ? spreadPicked(axis) : alignPicked(axis, what)));
-  }
-}
 
 // ——— repeticions ———
 function bindRepeat() {
@@ -1243,19 +770,12 @@ function bindLibrary() {
   $('#block-insert').addEventListener('click', () => {
     const block = currentBlock();
     if (!block) return;
-    if (mod.parts.length + block.parts.length > 2000) { toast('Un mod no pot passar de 2000 peces.'); return; }
-    // Com les peces noves: si la casella d'espera és marcada, la peça apareix
-    // fora de la parcel·la, on es veu sencera i no queda amagada dins del mod.
-    const staged = $('#stage-new').checked;
-    const group = block.parts.length > 1 ? nextGroupId() : undefined;
-    const copies = stageEast(block.parts.map(part => ({ ...part, ...(group ? { group } : {}) })));
     const at = mod.parts.length;
     change(() => {
-      mod.parts.push(...copies);
-      setPicked(copies.map((_, k) => at + k));
+      mod.parts.push(...block.parts.map(part => ({ ...part })));
+      setPicked(block.parts.map((_, k) => at + k));
     });
-    toast(`«${block.name}» inserida amb ${copies.length} peça${copies.length === 1 ? '' : 'es'}`
-      + `${staged ? ' a la zona d’espera de l’est' : ' al centre de la parcel·la'}. Mou-la amb les fletxes.`);
+    toast(`«${block.name}» inserida al centre. Mou-la amb les fletxes.`);
   });
 
   $('#block-save').addEventListener('click', () => {
@@ -1330,6 +850,17 @@ function bindLibrary() {
   });
 }
 
+/**
+ * Dos elements amb el mateix id fan que $() agafi el que no toca, i el
+ * símptoma apareix lluny de la causa. Val més quatre línies que una tarda.
+ */
+function checkIds() {
+  const seen = new Set(), repeated = new Set();
+  for (const element of document.querySelectorAll('[id]'))
+    if (seen.has(element.id)) repeated.add(element.id); else seen.add(element.id);
+  if (repeated.size) console.error('Taller de mods · ids repetits a index.html:', [...repeated].join(', '));
+}
+
 // ——— seccions plegables ———
 
 const FOLD_STORE = 'vila-mediterrania-folds-1';
@@ -1378,7 +909,6 @@ function bindViews() {
   $('#frame').addEventListener('click', () => viewport.frame(mod));
   $('#show-axes').addEventListener('change', render);
   $('#show-heights').addEventListener('change', render);
-  $('#show-handles').addEventListener('change', render);
   $('#show-neighbours').addEventListener('change', render);
 }
 
@@ -1394,24 +924,7 @@ function bindKeys() {
       mod = JSON.parse(previous); dirty = true; render();
       return;
     }
-    // Si hi ha text marcat a la pàgina, Ctrl+C és del navegador.
-    const marked = () => String(getSelection?.() ?? '').length > 0;
-    if (!typing && (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'c' && !marked()) {
-      event.preventDefault(); copyPicked(); return;
-    }
-    if (!typing && (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'v') {
-      event.preventDefault(); pastePicked(); return;
-    }
-    if (!typing && (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'a') {
-      event.preventDefault(); selectAll(); return;
-    }
-    if (!typing && event.key === 'Escape' && picked.size) { setPicked([]); render(); return; }
     if (typing || !picked.size) return;
-    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'g') {
-      event.preventDefault();
-      if (event.shiftKey) ungroupPicked(); else groupPicked();
-      return;
-    }
     const step = event.shiftKey ? .005 : .02;
     const nudge = (key, amount) => {
       event.preventDefault();
@@ -1424,28 +937,7 @@ function bindKeys() {
     else if (event.key === 'PageUp') nudge('h', step);
     else if (event.key === 'PageDown') nudge('h', -step);
     else if (event.key === 'Delete') { event.preventDefault(); $('#delete-part').click(); }
-    else if (!event.ctrlKey && !event.metaKey && !event.altKey && /^[qe]$/i.test(event.key)) {
-      event.preventDefault();
-      const degrees = (event.shiftKey ? 1 : 15) * (event.key.toLowerCase() === 'q' ? 1 : -1);
-      spin(pickedList(), rad(degrees));
-    }
   });
-}
-
-// Gira les peces al voltant de l'eix vertical. Un grup gira com un bloc al voltant
-// del seu centre, i les peces inclinades conserven la inclinació.
-function spin(indexes, angle) {
-  if (!indexes.length) return;
-  const tidy = value => Math.round(value * 1e6) / 1e6;
-  const spun = spinParts(indexes.map(index => mod.parts[index]), angle);
-  change(() => {
-    indexes.forEach((index, k) => {
-      const part = spun[k];
-      for (const key of ['u', 'v', 'rx', 'ry', 'rz']) part[key] = tidy(part[key]);
-      mod.parts[index] = part;
-    });
-  });
-  toast(`Girat ${Math.round(angle * 180 / Math.PI)}°.`);
 }
 
 start();

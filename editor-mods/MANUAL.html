@@ -42,6 +42,10 @@ code{font-family:var(--mono);font-size:.88em;background:var(--chip);border-radiu
 pre{font-family:var(--mono);font-size:12.8px;line-height:1.55;background:var(--sunk);border:1px solid var(--line);
   border-radius:9px;padding:13px 15px;overflow-x:auto;margin:0 0 15px}
 pre code{background:none;padding:0;font-size:inherit}
+kbd{font-family:var(--mono);font-size:.82em;background:var(--surface);border:1px solid var(--line-strong);
+  border-bottom-width:2px;border-radius:4px;padding:1px 5px;white-space:nowrap}
+tr.head td{background:var(--chip);font-weight:600;font-size:12.5px;text-transform:uppercase;letter-spacing:.04em;
+  color:var(--muted)}
 table{border-collapse:collapse;width:100%;margin:0 0 16px;font-size:13.5px}
 th,td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line);vertical-align:top}
 th{color:var(--muted);font-weight:600;font-size:12.5px;text-transform:uppercase;letter-spacing:.04em}
@@ -99,7 +103,7 @@ footer{border-top:1px solid var(--line);margin-top:56px;padding-top:18px;color:v
 <main>
 <header class="top">
   <h1>Manual del taller de mods</h1>
-  <p class="sub">Com fer edificis i monuments nous per a Vila Mediterrània v91 · API de mods 1</p>
+  <p class="sub">Com fer edificis i monuments nous per a Vila Mediterrània v96 · API de mods 1</p>
 </header>
 
 <p>Aquest manual et porta de la primera peça fins a tenir la teva casa dins del joc.
@@ -126,18 +130,19 @@ afegir per l'API de mods, però s'escriu a mà seguint els exemples de
 <h2 id="pantalla">2 · La pantalla</h2>
 
 <p>Obre el joc amb <code>node server.mjs</code> i ves a <code>/editor-mods/</code>. A dalt a la
-dreta del títol hi ha d'haver la insígnia <b>API de mods 1 · joc v91</b>; si diu «joc no detectat»,
+dreta del títol hi ha d'haver la insígnia <b>API de mods 1 · joc v96</b>; si diu «joc no detectat»,
 la carpeta <code>editor-mods/</code> no està al costat d'<code>index.html</code>.</p>
 
 <table>
 <tr><th>Zona</th><th>Per a què serveix</th></tr>
 <tr><td><b>Columna esquerra, a dalt</b></td><td>Les dades del mod: nom, identificador, si va a Edificis o a Monuments, les mides que podrà triar el jugador, l'alçada i el text d'ajuda.</td></tr>
-<tr><td><b>Columna esquerra, a baix</b></td><td>La llista de peces, en l'ordre en què es dibuixen. Clica-hi per seleccionar; els botons dupliquen, emmirallen, mouen i esborren.</td></tr>
-<tr><td><b>Vista 3D</b></td><td>Arrossega per girar, Majúscules+arrossega per desplaçar, roda per apropar. Clica una peça per seleccionar-la. Els botons Sud, Est, Nord, Oest i Zenital posen la càmera en angles exactes, molt útils per alinear.</td></tr>
+<tr><td><b>Columna esquerra, a baix</b></td><td>La llista de peces, en l'ordre en què es dibuixen. Clica-hi per seleccionar; els botons dupliquen, emmirallen, giren, agrupen, amaguen, mouen i esborren. Les peces d'un grup porten una etiqueta <b>G1</b>, <b>G2</b>…</td></tr>
+<tr><td><b>Vista 3D</b></td><td>Clica una peça per seleccionar-la; estira-la per les nanses daurades de les cares i mou-la amb Alt + botó dret arrossegant; mentre prems Majúscules, la puges i la baixes. Arrossegant amb el botó esquerre gires la càmera, Majúscules+arrossega la desplaça i la roda apropa. Els botons Sud, Est, Nord, Oest i Zenital posen la càmera en angles exactes, molt útils per alinear.</td></tr>
 <tr><td><b>Barra de sota la vista</b></td><td>Quant ocupa el model, l'alçada real i quants materials gastes.</td></tr>
+<tr><td><b>Nanses</b></td><td>La casella que mostra o amaga les nanses daurades per estirar la peça seleccionada. Ve marcada.</td></tr>
 <tr><td><b>Eixos</b></td><td>Les fletxes de terra amb <code>+u</code>, <code>+v</code> i <code>+h</code>, i l'aresta de la façana en to de teula. Es poden amagar amb la casella <b>Eixos</b>.</td></tr>
 <tr><td><b>Avisos</b></td><td>Vermell: el joc ho rebutjarà o quedarà malament. Groc: val la pena mirar-ho. Verd: informatiu.</td></tr>
-<tr><td><b>Columna dreta</b></td><td>La peça seleccionada, les eines de repetició i el codi per exportar.</td></tr>
+<tr><td><b>Columna dreta</b></td><td>La peça seleccionada —amb els botons per copiar-ne i enganxar-ne les mides—, les eines d'alinear i repartir, les repeticions i el codi per exportar.</td></tr>
 </table>
 
 <h2 id="coordenades">3 · Les coordenades</h2>
@@ -154,6 +159,19 @@ la carpeta <code>editor-mods/</code> no està al costat d'<code>index.html</code
 
 <p>Al desplegable de formes, cada opció porta l'identificador anglès i el nom en català separats
 per un guió: <code>gable - frontó</code>. El que va al codi generat sempre és l'identificador.</p>
+
+<p><b>En quines unitats?</b> En cap de coneguda: no són ni metres, ni centímetres, ni píxels, sinó
+les unitats del món 3D del joc, les mateixes per a la posició i per a la mida. Un cub de
+<code>1 × 1 × 1</code> fa exactament una unitat de costat. El que les fa comprensibles és comparar-les
+amb la cel·la i amb el pis, no amb el món real: si prenguessis una unitat per un metre, una casa de
+dues plantes faria un metre setanta i una parcel·la un metre trenta, que és escala de maqueta. Vila
+Mediterrània és un poble en miniatura i les unitats no pretenen ser res més.</p>
+
+<p>Els <b>píxels</b> no hi entren enlloc: la càmera és en perspectiva, i quants píxels ocupa una
+unitat depèn només de com de a prop tinguis la vista. Els <b>graus</b>, en canvi, són graus de debò,
+però només a la pantalla: els camps <code>ry</code>, <code>rx</code> i <code>rz</code> els ensenyen i
+els accepten en graus, i el taller els desa i els exporta en <b>radians</b>, que és el que espera el
+joc. Per això al codi generat hi llegeixes <code>1.5708</code> on tu havies escrit <code>90</code>.</p>
 
 <p>Les mesures que has de tenir al cap:</p>
 
@@ -200,7 +218,8 @@ façana marcada en to de teula. Si et fan nosa, la casella <b>Eixos</b> els amag
 
 <h2 id="fita">4 · Primer exemple · la fita de terme</h2>
 
-<p>Tres peces, per agafar el tacte. Fa 0,90 d'alçada i no arriba ni a mig metre de la cel·la.</p>
+<p>Tres peces, per agafar el tacte. Fa 0,90 d'alçada —una planta llarga— i no ocupa ni mitja
+cel·la.</p>
 
 <ol class="steps">
   <li><b>Comença un mod.</b> Posa-li de nom <i>Fita de terme</i> i d'identificador <code>fita</code>.
@@ -234,7 +253,7 @@ Ocupa una cel·la i fa 1,91 d'alt, una mica més de dos pisos.</p>
 
 <ol class="steps">
   <li><b>El sòcol.</b> <code>box</code> a <code>0 · 0.04 · 0</code>, mida <code>1.24 × 0.08 × 1.24</code>,
-  color <code>#bdae92</code>. Deixa'l dos centímetres per sota de l'amplada de la cel·la: així la casa
+  color <code>#bdae92</code>. Deixa'l sis centèsimes per sota de l'amplada de la cel·la: així la casa
   no frega la del costat.</li>
   <li><b>Les parets.</b> <code>box</code> a <code>0 · 0.60 · 0</code>, mida
   <code>1.16 × 1.04 × 1.16</code>, color <code>#ece0c4</code>. Van de 0,08 a 1,12, just damunt del
@@ -437,7 +456,7 @@ igual que la col·lecció de mods, i s'exporten a un fitxer a part.</p>
 
 <table>
 <tr><th>Botó</th><th>Què fa</th></tr>
-<tr><td><b>Insereix</b></td><td>Estampa la peça al centre de la parcel·la. Les peces inserides queden totes seleccionades: mou-les amb les fletxes fins on van.</td></tr>
+<tr><td><b>Insereix</b></td><td>Estampa la peça de la llista <b>Peces desades</b> dins del mod obert. Els seus elements queden tots seleccionats i agrupats: mou-los amb les fletxes fins on van.</td></tr>
 <tr><td><b>Desa la selecció</b></td><td>Desa les peces seleccionades com una peça nova. Sense res seleccionat, desa el mod sencer.</td></tr>
 <tr><td><b>Reanomena</b> · <b>Duplica</b> · <b>Elimina</b></td><td>Gestionen la biblioteca. Duplica't una peça abans de fer-ne una variant.</td></tr>
 <tr><td><b>Importa</b> · <b>Exporta</b></td><td>Un fitxer JSON amb tota la biblioteca, per compartir-la o guardar-la amb el projecte.</td></tr>
@@ -450,8 +469,17 @@ igual que la col·lecció de mods, i s'exporten a un fitxer a part.</p>
   codi que exportes no depèn de res.</p>
 </div>
 
-<p>Quan deses una peça, el taller la <b>centra en planta i li posa la base a zero</b>. Per això
-en inserir-la apareix al mig de la parcel·la i recolzada a terra, i no on la vas dibuixar.</p>
+<p>Quan deses una peça, el taller la <b>centra en planta i li posa la base a zero</b>: en inserir-la
+apareix recolzada a terra, i no on la vas dibuixar.</p>
+
+<div class="note tip">
+  <p><b>Si l'inserida no es veu enlloc</b>, mira la casella <b>Deixa les peces noves fora de la
+  parcel·la</b>, sota dels botons de peces. Marcada —que és com ve—, la peça apareix a la zona
+  d'espera a l'est de la parcel·la, on la veus sencera; desmarcada, apareix al centre, i si el mod ja
+  hi té parets a sobre et queda amagada a dins. En tots dos casos s'ha inserit de debò: el comptador
+  <b>Peces</b> ha pujat i els elements nous són seleccionats al final de la llista, amb la seva
+  etiqueta de grup.</p>
+</div>
 
 <h3>Treballar amb diverses peces alhora</h3>
 
@@ -461,8 +489,13 @@ en inserir-la apareix al mig de la parcel·la i recolzada a terra, i no on la va
 <tr><th>Acció</th><th>Com</th></tr>
 <tr><td>Afegir o treure una peça de la selecció</td><td>Ctrl+clic (Cmd+clic al Mac), a la llista o a la vista 3D</td></tr>
 <tr><td>Seleccionar un tram sencer</td><td>Majúscules+clic a la llista</td></tr>
-<tr><td>Moure-les totes</td><td>Fletxes, Re Pàg i Av Pàg</td></tr>
+<tr><td>Seleccionar-les totes</td><td><kbd>Ctrl</kbd>+<kbd>A</kbd> o el botó <b>Selecciona-ho tot</b>. Les peces amagades en queden fora</td></tr>
+<tr><td>Deixar-ho tot sense seleccionar</td><td><kbd>Esc</kbd>, o clic al buit de la vista 3D</td></tr>
+<tr><td>Moure-les totes</td><td>Fletxes, Re Pàg i Av Pàg, o Alt + botó dret arrossegant-ne una</td></tr>
 <tr><td>Girar el grup un quart de volta</td><td>El botó <b>Gira 90°</b></td></tr>
+<tr><td>Girar-lo de 15 en 15 graus</td><td><kbd>Q</kbd> i <kbd>E</kbd>; amb Majúscules, d'1 en 1</td></tr>
+<tr><td>Deixar-les unides per sempre</td><td><kbd>Ctrl</kbd>+<kbd>G</kbd> o el botó <b>Agrupa</b></td></tr>
+<tr><td>Alinear-les o repartir-les</td><td>El panell <b>Alinea i distribueix</b> de la columna dreta</td></tr>
 <tr><td>Canviar el color o la forma de totes</td><td>Els camps de l'inspector de color i de forma</td></tr>
 <tr><td>Duplicar-les, emmirallar-les o esborrar-les</td><td>Els botons de sempre</td></tr>
 </table>
@@ -474,6 +507,200 @@ forma s'apliquen a tota la selecció, que és el que se sol voler.</p>
 <p><b>Gira 90°</b> gira el grup al voltant del seu centre en planta i composa el gir amb la
 inclinació que ja tingués cada peça, de la mateixa manera que ho fa <code>orientedPart</code> quan
 el jugador gira l'edifici. Una teulada girada continua sent una teulada.</p>
+
+<h3>Estirar per les nanses</h3>
+
+<p>Quan tens <b>una sola peça</b> seleccionada, a la vista 3D li surten sis nanses daurades, una al
+mig de cada cara. Arrossega'n una amb el botó esquerre i la peça s'estira o s'encongeix per aquella
+banda: la cara que agafes es mou i la de davant es queda clavada on era, com si estiressis la
+massa.</p>
+
+<table>
+<tr><th>Gest</th><th>Què fa</th></tr>
+<tr><td>Arrossegar una nansa</td><td>Estira o contrau la peça per aquella cara</td></tr>
+<tr><td><kbd>Maj</kbd> + arrossegar una nansa</td><td>Creix per les dues bandes alhora i el centre no es mou</td></tr>
+</table>
+
+<ul>
+  <li>Les nanses són als <b>eixos propis de la peça</b>. Si està girada, l'estires cap on mira ella,
+  no cap on miren els eixos del món.</li>
+  <li>Es dibuixen per damunt de tot, també les tres de darrere, perquè les puguis agafar sense haver
+  de girar la vista.</li>
+  <li>Si et fan nosa —en una peça petita poden tapar-la tota—, desmarca la casella <b>Nanses</b>, a
+  dalt a la dreta de la vista, al costat d'<i>Alçades</i>, <i>Eixos</i> i <i>Cases veïnes</i>. Ve
+  marcada de sèrie.</li>
+  <li>Les mides es pengen a la mateixa graella de <b>0,005</b> que el moviment, amb un mínim de 0,01:
+  una peça no pot quedar de gruix zero.</li>
+  <li>Tot l'estirament és <b>un sol pas</b> d'historial, com l'arrossegament.</li>
+  <li>Amb <b>més d'una peça</b> seleccionada, les nanses passen a la capsa que les envolta i
+  escalen tot el conjunt: ho expliquem aquí sota.</li>
+</ul>
+
+<h3>Copiar les mides d'una peça a una altra</h3>
+
+<p>Al panell de la peça seleccionada, sota els camps <b>sx · sy · sz</b>, hi ha dos botons:
+<b>Copia les mides</b> i <b>Enganxa les mides</b>. Serveixen per igualar peces sense haver d'anar
+apuntant números.</p>
+
+<ol class="steps">
+  <li><b>Tria la peça bona</b>, la que ja té la mida que vols, i prem <b>Copia les mides</b>. A sota
+  hi queda escrit què has desat, per exemple <i>Mides desades: 0,16 × 0,16 × 0,64</i>.</li>
+  <li><b>Tria la peça o les peces</b> que l'han d'imitar i prem <b>Enganxa les mides</b>.</li>
+</ol>
+
+<ul>
+  <li>Es copien <b>només les tres mides</b>. La posició, el color, la forma i els girs de la peça que
+  rep no es toquen.</li>
+  <li>Si tens <b>diverses peces</b> seleccionades, totes reben la mateixa mida d'una tirada. Va bé
+  per a una filera de finestres que han quedat desiguals.</li>
+  <li>Són botons, i no <kbd>Ctrl</kbd>+<kbd>C</kbd>, a posta: aquelles tecles copien i enganxen
+  <b>peces senceres</b>, i barrejar-ho seria fàcil d'equivocar.</li>
+  <li>Les mides desades duren mentre tens la pestanya oberta, i serveixen per a qualsevol mod que
+  obris mentrestant. En recarregar es perden.</li>
+  <li>Un sol pas d'historial: <kbd>Ctrl</kbd>+<kbd>Z</kbd> torna les mides d'abans.</li>
+</ul>
+
+<h3>Escalar una selecció o un grup</h3>
+
+<p>Selecciona diverses peces —o clica un grup, que ja es tria sencer— i les sis nanses surten a la
+<b>capsa que les envolta</b>. Arrossegar-ne una escala tot el conjunt per un sol factor: posicions i
+mides es multipliquen pel mateix número, de manera que <b>les proporcions de dins no canvien</b> i
+la peineta del balcó continua sent la peineta del balcó.</p>
+
+<table>
+<tr><th>Gest</th><th>Què fa</th></tr>
+<tr><td>Arrossegar una nansa de la capsa</td><td>Escala la selecció. La cara de davant es queda clavada on era</td></tr>
+<tr><td><kbd>Maj</kbd> + arrossegar</td><td>Escala des del centre de la selecció, que no es mou</td></tr>
+</table>
+
+<p>L'escalat és sempre <b>uniforme</b>: encara que estiris la nansa de l'amplada, el conjunt creix
+també en alçada i en fondària. És el que vol dir mantenir les proporcions. Si el que vols és estirar
+en un sol eix i deformar a posta, fes-ho peça per peça amb els camps <b>sx · sy · sz</b>.</p>
+
+<ul>
+  <li>Els <b>girs no es toquen</b>: una peça inclinada continua amb la mateixa inclinació, només més
+  grossa o més petita.</li>
+  <li>Cap peça no baixa de <b>0,01</b> de gruix, i el conjunt no es pot reduir per sota del 2% de la
+  mida que tenia en agafar la nansa.</li>
+  <li>Com sempre, tot l'escalat és <b>un sol pas</b>: <kbd>Ctrl</kbd>+<kbd>Z</kbd> el desfà sencer.</li>
+</ul>
+
+<div class="note tip">
+  <p><b>Per escalar el mod sencer</b>, de 2 × 2 a 3 × 3 per exemple, no cal seleccionar res: tens el
+  botó <b>Escala</b> de la secció 10, que a més canvia la mida declarada.</p>
+</div>
+
+<h3>Moure amb el ratolí</h3>
+
+<p>Per moure una peça amb el ratolí, prem <kbd>Alt</kbd> i arrossega-la amb el <b>botó dret</b>.
+Llisca pel pla horitzontal que passa pel punt on l'has agafada, com si la fessis rodolar per terra.
+Mentre tens <kbd>Maj</kbd> premut, en canvi, puja i baixa sense moure's en planta.</p>
+
+<p>La <kbd>Maj</kbd> funciona <b>en calent</b>: la pots prémer i deixar anar tantes vegades com
+vulguis sense deixar anar el botó. Comences portant la peça pel terra fins al lloc, prems
+<kbd>Maj</kbd> i la puges fins a l'alçada que toca, la deixes anar i l'acabes d'ajustar en planta.
+Cada canvi continua des d'on és la peça, sense salts, i un avís a baix et diu en quin mode estàs.</p>
+
+<p>Demana dues mans a posta. Amb el botó esquerre sol, n'hi havia prou amb un pols mentre clicaves
+per desplaçar una peça sense adonar-te'n; així el botó esquerre torna a ser només de seleccionar i
+de girar la càmera.</p>
+
+<ul>
+  <li>Si arrossegues una peça que ja era dins de la selecció, es mou <b>tota la selecció</b>. Si no
+  ho era, primer se selecciona ella —o el seu grup— i després es mou.</li>
+  <li>Les posicions es pengen a una graella de <b>0,005</b>, prou fina per no notar-ho i prou basta
+  per no deixar decimals impossibles.</li>
+  <li>Tot l'arrossegament és <b>un sol pas</b> d'historial: un <kbd>Ctrl</kbd>+<kbd>Z</kbd> el desfà
+  sencer.</li>
+  <li>Un clic net no mou res, encara que et tremoli la mà: per sota de sis píxels no es mou gens.</li>
+  <li>Les peces amagades no s'agafen, i amb <kbd>Alt</kbd> + botó dret fora de les peces gires la
+  càmera, com sempre.</li>
+  <li>El menú del botó dret del navegador no surt mai damunt de la vista 3D, ni quan deixes anar el
+  botó a fora mentre arrossegues.</li>
+</ul>
+
+<div class="note tip">
+  <p><b>Per a moure amb precisió</b>, el ratolí et deixa a prop i les fletxes t'hi acaben de portar:
+  0,02 per tecla, o 0,005 amb Majúscules. Per a un valor exacte, els camps <b>u · h · v</b> de
+  l'inspector.</p>
+</div>
+
+<h3>Copiar i enganxar</h3>
+
+<p><kbd>Ctrl</kbd>+<kbd>C</kbd> copia la selecció i <kbd>Ctrl</kbd>+<kbd>V</kbd> l'enganxa. Es pot
+enganxar <b>en un altre mod</b>, i fins i tot en una altra pestanya del taller: el porta-retalls es
+desa al navegador i no es perd en canviar de mod ni en recarregar.</p>
+
+<ul>
+  <li>Les peces enganxades es trien tot seguit, a punt per moure-les.</li>
+  <li>Si els grups venien agrupats, la còpia forma grups nous, sense lligam amb els originals.</li>
+  <li>Amb la casella <b>Deixa les peces noves fora de la parcel·la</b> marcada, la còpia apareix a la
+  zona d'espera de l'est, on la veus sencera abans de portar-la a lloc.</li>
+  <li>Si has marcat text de la pàgina, <kbd>Ctrl</kbd>+<kbd>C</kbd> copia el text, com al navegador.</li>
+</ul>
+
+<h3>Alinear i repartir</h3>
+
+<p>Amb dues peces o més seleccionades, a la columna dreta s'obre <b>Alinea i distribueix</b>. És la
+manera de deixar una fila de finestres a la mateixa alçada sense anar mirant els decimals.</p>
+
+<table>
+<tr><th>Botó</th><th>Què fa</th></tr>
+<tr><td><b>Oest · Est</b>, a la fila <code>u</code></td><td>Porta tots els blocs a la cara més a l'oest, o a la més a l'est, de la selecció</td></tr>
+<tr><td><b>Baix · Dalt</b>, a la fila <code>h</code></td><td>Iguala les bases o els capdamunts</td></tr>
+<tr><td><b>Nord · Sud</b>, a la fila <code>v</code></td><td>El mateix en profunditat</td></tr>
+<tr><td><b>Centre</b></td><td>Posa tots els blocs al centre de la selecció, en aquell eix</td></tr>
+<tr><td><b>Reparteix</b></td><td>Deixa els blocs a distàncies iguals de centre a centre. Els dos dels extrems no es mouen; en calen tres o més</td></tr>
+</table>
+
+<p>Dues coses que val la pena saber. La primera: <b>un grup compta com un sol bloc</b> i es mou
+sencer, perquè alinear-ne les peces per separat el desmuntaria. Si vols alinear les peces de dins
+d'un grup, desagrupa'l primer. La segona: s'alineen les <b>cares</b>, no els centres, i la mida es
+mesura amb els girs comptats —una biga tombada ocupa en alçada el que feia de llarga. És exacte per
+a les caixes; per a les altres formes es fa servir la caixa que les conté, que de vegades deixa un
+pèl de marge.</p>
+
+<div class="note tip">
+  <p><b>Per a una filera de finestres:</b> selecciona-les totes, prem <b>Baix</b> a la fila
+  <code>h</code> perquè quedin a la mateixa alçada, i després <b>Reparteix</b> a la fila
+  <code>u</code> perquè quedin a distàncies iguals. Dues passes i la façana queda regular.</p>
+</div>
+
+<h3>Grups</h3>
+
+<p>Seleccionar diverses peces dura fins al clic següent. Un <b>grup</b>, en canvi, es recorda: les
+peces queden unides fins que el desfàs.</p>
+
+<table>
+<tr><th>Acció</th><th>Com</th></tr>
+<tr><td>Agrupar la selecció</td><td><kbd>Ctrl</kbd>+<kbd>G</kbd> o el botó <b>Agrupa</b>, amb dues peces o més</td></tr>
+<tr><td>Desfer el grup</td><td><kbd>Ctrl</kbd>+<kbd>Maj</kbd>+<kbd>G</kbd> o el botó <b>Desagrupa</b></td></tr>
+<tr><td>Triar el grup sencer</td><td>Clic a qualsevol de les seves peces, a la llista o a la vista 3D</td></tr>
+<tr><td>Triar-ne una de sola</td><td><kbd>Alt</kbd>+clic sobre la peça</td></tr>
+<tr><td>Treure una peça del grup</td><td><kbd>Alt</kbd>+clic i després <kbd>Ctrl</kbd>+<kbd>Maj</kbd>+<kbd>G</kbd></td></tr>
+</table>
+
+<p>Amb un grup triat, tot el que fas afecta totes les seves peces alhora: moure, girar, duplicar,
+emmirallar, amagar i esborrar. És la manera de tractar una xemeneia o una finestra sencera com una
+sola cosa, sense haver-la de tornar a seleccionar cada vegada.</p>
+
+<ul>
+  <li><b>Duplicar o emmirallar</b> un grup en crea un de nou. La còpia no queda lligada a l'original,
+  i així la pots moure sense arrossegar la peça de partida.</li>
+  <li><b>Inserir</b> una peça de la biblioteca que tingui més d'un element la posa directament en un
+  grup. Ja ve unida.</li>
+  <li><b>Afegeix una peça</b> deixa la peça nova fora de qualsevol grup, encara que n'hi hagi un de
+  seleccionat.</li>
+  <li>Si d'un grup només en queda una peça, el grup desapareix tot sol.</li>
+  <li>Els grups es desen amb el mod, tant a la col·lecció com al JSON exportat. Són una eina del
+  taller: el joc no els llegeix i el codi generat no canvia gens.</li>
+</ul>
+
+<div class="note tip">
+  <p><b>Grups i biblioteca no són el mateix.</b> El grup uneix unes peces <i>dins d'aquest mod</i>.
+  La biblioteca desa una peça per tornar-la a fer servir <i>en altres mods</i>. Sovint van juntes:
+  compon el grup, i quan t'agradi, desa'l a la biblioteca amb <b>Desa la selecció</b>.</p>
+</div>
 
 <h3>Exemple · la galleda del pou</h3>
 
@@ -577,7 +804,7 @@ recolzada sobre el pla del vessant. L'extrem estret mira cap a <code>+Z</code>.<
   inclinació. Amb el vessant de la casa de poble, que és a <code>h 1.39 · v 0.308</code> amb 0,06 de
   gruix i 28,9° de pendent, la teula va a <code>h 1.416 · v 0.314</code> amb gir <b>X 28,9°</b>.
   Els 0,026 i els 0,006 de diferència són la mitja llosa mesurada perpendicularment al vessant.</li>
-  <li><b>Dona-li mida.</b> <code>0.16 × 0.16 × 0.64</code>: setze centímetres d'ample i tota la
+  <li><b>Dona-li mida.</b> <code>0.16 × 0.16 × 0.64</code>: setze centèsimes d'ample i tota la
   llargada del vessant. Posa-la al començament de la filera, a <code>u −0.56</code>.</li>
   <li><b>Fes la filera.</b> A <b>Repeteix</b>, mode <i>En filera</i>, 7 còpies amb pas
   <code>u 0.16</code>. Vuit teules que cobreixen de −0,64 a 0,64, dins de la cel·la per un pèl.</li>
@@ -651,6 +878,12 @@ la peça. Si la peça ja està tombada, sumar-hi un gir vertical la torça. <cod
 compon les dues rotacions com cal. El taller ho detecta sol i tria la funció; no has de fer res,
 però val la pena entendre per què el codi surt amb dues crides diferents.</p>
 
+<p>Per girar al voltant de l'eix vertical tens tres eines: els camps <b>ry</b> de l'inspector, per
+a un angle exacte; <kbd>Q</kbd> i <kbd>E</kbd>, que giren de 15 en 15 graus, o d'1 en 1 amb
+Majúscules; i el botó <b>Gira 90°</b>. Les tres componen el gir amb la inclinació que ja tingués la
+peça, i amb diverses peces seleccionades giren el conjunt al voltant del seu centre en planta, sense
+deformar-lo. Una peça sola gira sobre ella mateixa i no es mou de lloc.</p>
+
 <div class="note tip">
   <p><b>Prova-ho sempre girant.</b> Al joc, col·loca el mod i canvia-li l'orientació amb les quatre
   direccions. Una teulada mal composta es veu de seguida: el carener apunta on no toca.</p>
@@ -679,6 +912,40 @@ i el selector del joc les mostrarà.</p>
 
 <p>Recorda que la comprovació de si et surts de la parcel·la es fa contra la <b>mida més petita</b>
 que hagis declarat: és la que et pot fer mal.</p>
+
+<h3>Passar el mod a una parcel·la més gran</h3>
+
+<p>Si el que vols no és una geometria que s'adapti, sinó <b>el mateix mod fet més gros</b>, tens el
+botó <b>Escala</b>, sota les caselles de mides. Tria la parcel·la de destinació i prem-lo: totes les
+peces creixen alhora, posicions i mides, i el mod passa a declarar la mida nova.</p>
+
+<table>
+<tr><th>De</th><th>A</th><th>Factor</th></tr>
+<tr><td>1 × 1</td><td>2 × 2</td><td>× 2,00</td></tr>
+<tr><td>2 × 2</td><td>3 × 3</td><td>× 1,50</td></tr>
+<tr><td>1 × 1</td><td>4 × 4</td><td>× 4,00</td></tr>
+<tr><td>3 × 3</td><td>2 × 2</td><td>× 0,67 — també serveix per empetitir</td></tr>
+</table>
+
+<ul>
+  <li>El factor es calcula des de la <b>mida més petita</b> que tinguis declarada, que és la
+  parcel·la per a la qual has dibuixat el mod, i és el <b>menor dels dos costats</b>. Amb parcel·les
+  que no són quadrades, com passar de 3 × 2 a 3 × 3, l'amplada no canvia i per tant no s'escala res:
+  només canvia la mida declarada. Escalar els dos costats per separat deformaria les teulades, els
+  arcs i les columnes, i no val la pena.</li>
+  <li>L'<b>alçada declarada</b> es refà sola si tens marcat <i>mesura-la sola</i>; si l'escrius tu,
+  es multiplica pel mateix factor.</li>
+  <li>El mod passa a declarar <b>només</b> la mida nova. Si en vols oferir més d'una, torna-les a
+  marcar després d'escalar.</li>
+  <li>Tot plegat és <b>un sol pas</b>: si no t'agrada com ha quedat, <kbd>Ctrl</kbd>+<kbd>Z</kbd>.</li>
+</ul>
+
+<div class="note tip">
+  <p><b>Les proporcions del poble no creixen.</b> El pis fa 0,86 i l'esglaó de terreny 0,42 sigui
+  quina sigui la parcel·la. Un mod escalat × 2 tindrà les portes i les finestres del doble d'alt que
+  les de les cases del costat. Si el que vols és una casa més ampla però de la mateixa alçada,
+  escala-la i després torna a baixar les alçades a mà.</p>
+</div>
 
 <h2 id="colors">11 · Colors i materials</h2>
 
@@ -800,20 +1067,65 @@ funcionament.</p>
 
 <h2 id="dreceres">16 · Dreceres</h2>
 
+<p>Les tecles de peces demanen que hi hagi alguna cosa seleccionada i que el cursor no estigui dins
+d'un camp de text. Al Mac, <kbd>Ctrl</kbd> es pot canviar per <kbd>Cmd</kbd>.</p>
+
 <table>
 <tr><th>Tecla</th><th>Acció</th></tr>
-<tr><td>Fletxes</td><td>Mou la selecció en <code>u</code> i <code>v</code>, de 0,02 en 0,02</td></tr>
-<tr><td>Majúscules + fletxes</td><td>El mateix, de 0,005 en 0,005</td></tr>
-<tr><td>Re Pàg · Av Pàg</td><td>Puja i baixa la selecció</td></tr>
-<tr><td>Ctrl+clic</td><td>Afegeix o treu una peça de la selecció</td></tr>
-<tr><td>Majúscules+clic a la llista</td><td>Selecciona un tram sencer</td></tr>
-<tr><td>Supr</td><td>Esborra les peces seleccionades</td></tr>
-<tr><td>Ctrl+Z</td><td>Desfés</td></tr>
-<tr><td>Ctrl+S</td><td>Desa el mod al navegador</td></tr>
-<tr><td>Arrossegar</td><td>Gira la càmera</td></tr>
-<tr><td>Majúscules + arrossegar</td><td>Desplaça la càmera</td></tr>
+
+<tr class="head"><td colspan="2">Seleccionar</td></tr>
+<tr><td>Clic</td><td>Tria la peça. Si és d'un grup, tria el grup sencer</td></tr>
+<tr><td><kbd>Ctrl</kbd>+clic</td><td>Afegeix o treu una peça —o un grup— de la selecció</td></tr>
+<tr><td><kbd>Maj</kbd>+clic a la llista</td><td>Selecciona un tram sencer</td></tr>
+<tr><td><kbd>Alt</kbd>+clic</td><td>Tria només aquella peça, encara que sigui d'un grup</td></tr>
+<tr><td><kbd>Ctrl</kbd>+<kbd>A</kbd></td><td>Selecciona totes les peces visibles; les amagades en queden fora</td></tr>
+<tr><td><kbd>Esc</kbd></td><td>Deixa-ho tot sense seleccionar</td></tr>
+<tr><td>Clic al buit de la vista 3D</td><td>Deixa-ho tot sense seleccionar</td></tr>
+
+<tr class="head"><td colspan="2">Moure</td></tr>
+<tr><td><kbd>Alt</kbd> + botó dret arrossegant una peça</td><td>Mou la selecció pel pla de terra, de 0,005 en 0,005</td></tr>
+<tr><td><kbd>Maj</kbd> a mig arrossegament</td><td>Mentre la tens premuda, puja i baixa la selecció; en deixar-la anar, torna a planta</td></tr>
+<tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>Mou la selecció en <code>u</code>, de 0,02 en 0,02</td></tr>
+<tr><td><kbd>↑</kbd> <kbd>↓</kbd></td><td>Mou la selecció en <code>v</code></td></tr>
+<tr><td><kbd>Re Pàg</kbd> <kbd>Av Pàg</kbd></td><td>Puja i baixa la selecció en <code>h</code></td></tr>
+<tr><td><kbd>Maj</kbd> + qualsevol d'aquestes</td><td>El mateix, de 0,005 en 0,005</td></tr>
+
+<tr class="head"><td colspan="2">Estirar</td></tr>
+<tr><td>Arrossegar una nansa de la peça</td><td>Estira o contrau per aquella cara, de 0,005 en 0,005</td></tr>
+<tr><td>Arrossegar una nansa amb diverses peces triades</td><td>Escala tota la selecció mantenint-ne les proporcions</td></tr>
+<tr><td><kbd>Maj</kbd> + arrossegar una nansa</td><td>Creix per les dues bandes, amb el centre clavat</td></tr>
+
+<tr class="head"><td colspan="2">Girar</td></tr>
+<tr><td><kbd>Q</kbd></td><td>Gira 15° en sentit antihorari, vist des de dalt</td></tr>
+<tr><td><kbd>E</kbd></td><td>Gira 15° en sentit horari</td></tr>
+<tr><td><kbd>Maj</kbd>+<kbd>Q</kbd> · <kbd>Maj</kbd>+<kbd>E</kbd></td><td>El mateix, d'1 en 1 grau</td></tr>
+
+<tr class="head"><td colspan="2">Grups</td></tr>
+<tr><td><kbd>Ctrl</kbd>+<kbd>G</kbd></td><td>Agrupa la selecció, si hi ha dues peces o més</td></tr>
+<tr><td><kbd>Ctrl</kbd>+<kbd>Maj</kbd>+<kbd>G</kbd></td><td>Desfà el grup de la selecció</td></tr>
+
+<tr class="head"><td colspan="2">Editar</td></tr>
+<tr><td><kbd>Supr</kbd></td><td>Esborra les peces seleccionades</td></tr>
+<tr><td><kbd>Ctrl</kbd>+<kbd>C</kbd></td><td>Copia la selecció al porta-retalls del taller</td></tr>
+<tr><td><kbd>Ctrl</kbd>+<kbd>V</kbd></td><td>Enganxa el porta-retalls, també en un altre mod</td></tr>
+<tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd></td><td>Desfés. No hi ha refer</td></tr>
+<tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd></td><td>Desa el mod al navegador</td></tr>
+<tr><td><kbd>Retorn</kbd> a la llista de peces</td><td>Selecciona la peça que tinguis marcada amb el teclat</td></tr>
+
+<tr class="head"><td colspan="2">Càmera</td></tr>
+<tr><td>Arrossegar</td><td>Gira la càmera al voltant del model</td></tr>
+<tr><td><kbd>Maj</kbd> + arrossegar, o botó del mig</td><td>Desplaça la càmera</td></tr>
 <tr><td>Roda</td><td>Apropa i allunya</td></tr>
 </table>
+
+<p>No hi ha tecles per canviar la mida ni per inclinar una peça: això es fa als camps
+<b>sx · sy · sz</b> i <b>rx · rz</b> de l'inspector.</p>
+
+<div class="note tip">
+  <p><b>El taller torna on eres.</b> En obrir-lo surt l'últim mod que hi tenies obert, no el primer
+  de la llista. Si aquell mod ja no hi és —l'has esborrat, o encara no l'havies desat— s'obre el
+  primer de la col·lecció.</p>
+</div>
 
 <div class="note warn">
   <p><b>La col·lecció viu al navegador.</b> Es desa al <code>localStorage</code> d'aquesta adreça i

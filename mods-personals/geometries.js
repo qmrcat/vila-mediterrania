@@ -3,7 +3,10 @@
  * Es creen una sola vegada i es comparteixen entre totes les instàncies.
  * No cridis dispose() ni modifiquis la geometria des dels renderitzadors.
  */
+import {ISRAEL_FLAG_GEOMETRIES} from './israel-flag-geometries.js';
+
 export const PERSONAL_GEOMETRIES={
+
   // Cúpula oberta per sota: diàmetre 1, alçada 1, base a Y=0.
   // Exemple d’ús: part('cupulaPersonal', '#cbbd9d', 0, 2, 0, 1, .6, 1);
   cupulaPersonal(THREE){
@@ -35,6 +38,7 @@ export const PERSONAL_GEOMETRIES={
     geometry.computeVertexNormals();
     return geometry;
   },
+  ...ISRAEL_FLAG_GEOMETRIES,
 };
 
 

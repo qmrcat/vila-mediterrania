@@ -38,7 +38,9 @@ function callLine(part, fn) {
   const args = [`'${part.shape}'`, `'${part.color}'`, round(part.u), round(part.h), round(part.v), round(part.sx), round(part.sy), round(part.sz)];
   const spin = [part.ry, part.rx, part.rz].map(value => round(value, 5));
   while (spin.length && spin[spin.length - 1] === '0') spin.pop();
-  return `  ${fn}(${[...args, ...spin].join(',')});`;
+  // El nom que li hagis posat al taller acaba com a comentari, que és on és útil.
+  const label = part.name ? ` // ${part.name.replace(/\r?\n/g, ' ')}` : '';
+  return `  ${fn}(${[...args, ...spin].join(',')});${label}`;
 }
 
 /** Camí A · el renderitzador que desaràs a mods-personals/. */

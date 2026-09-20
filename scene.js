@@ -1,4 +1,5 @@
 import {createPersonalGeometries} from './personal-geometries.js';
+import {createPersonalAnimations} from './personal-animations.js';
 import {renderTerrainRailings} from './terrain-railing-geometry.js';
 import {PERSONAL_TREE_RENDERERS} from './personal-renderers.js';
 import {createGoatGeometry,createSheepGeometry,createCowGeometry,createPoultryGeometry} from './goat-geometry.js';
@@ -80,7 +81,9 @@ for(let i=0;i<18;i++){
 }
 geometries.fan=new THREE.BufferGeometry();geometries.fan.setAttribute('position',new THREE.Float32BufferAttribute(fanVertices,3));geometries.fan.computeVertexNormals();
 
-Object.assign(geometries,createPersonalGeometries(THREE,geometries));
+const personalGeometries=createPersonalGeometries(THREE,geometries);
+Object.assign(geometries,personalGeometries);
+const personalAnimations=createPersonalAnimations(THREE,geometries,Object.keys(personalGeometries));
 export const GEOMETRY_NAMES=Object.freeze(Object.keys(geometries));
 
 export function solidAtHeight(tile,height){
@@ -92,12 +95,13 @@ export function solidAtHeight(tile,height){
 
 /** Separate hit volumes for terrain, every floor (including openings), and roof. */
 export function createPickingGeometry(world,pickingMaterial){
-  const targets=[],transforms=[];const helper=new THREE.Object3D();
+  const targets=[],transforms=[];let entity;const helper=new THREE.Object3D();
   const push=(t,level,bottom,height)=>{
     helper.position.set(t.x*UNIT,bottom+height/2,t.z*UNIT);helper.scale.set(UNIT,height,UNIT);helper.updateMatrix();
-    targets.push({x:t.x,z:t.z,level});transforms.push(helper.matrix.clone());
+    targets.push({x:t.x,z:t.z,level,entity});transforms.push(helper.matrix.clone());
   };
-  for(const t of world.tiles){
+  for(const [index,t] of (world.tiles??[]).entries()){
+    entity={collection:'tiles',index};
     const base=terrainY(t);
     if(t.terrainRailing)push(t,t.kind==='house'?0:null,base,.41);
     if(t.kind==='beach'){if(t.beachBar)push(t,null,.26,BEACH_BAR_TOP-.26);continue;}
@@ -111,23 +115,28 @@ export function createPickingGeometry(world,pickingMaterial){
       if(hasSlope(t)&&isFirmGround(t.kind)&&!isAgricultural(t.kind))transforms.at(-1).premultiply(slopeShearMatrix(t,UNIT));
     }
   }
-  for(const l of world.landmarks??[]){
+  for(const [index,l] of (world.landmarks??[]).entries()){
+    entity={collection:'landmarks',index};
     const ground=world.tiles.find(t=>t.x===l.x&&t.z===l.z);
     for(const p of landmarkCells(l))push(p,null,isFlagpole(l)?poleGroundY(ground,l,UNIT):terrainY(ground),landmarkHeight(l));
   }
-  for(const m of world.markets??[]){
+  for(const [index,m] of (world.markets??[]).entries()){
+    entity={collection:'markets',index};
     const tile=world.tiles.find(t=>t.x===m.x&&t.z===m.z);
     for(const c of marketCells(m))push(c,null,terrainY(tile),1.70);
   }
-  for(const c of world.churches??[]){
+  for(const [index,c] of (world.churches??[]).entries()){
+    entity={collection:'churches',index};
     const ground=world.tiles.find(t=>t.x===c.x&&t.z===c.z),tower=churchTowerCell(c);
     for(const p of churchCells(c))push(p,null,terrainY(ground),p.x===tower.x&&p.z===tower.z?4.16:2.52);
   }
-  for(const h of world.townHalls??[]){
+  for(const [index,h] of (world.townHalls??[]).entries()){
+    entity={collection:'townHalls',index};
     const ground=world.tiles.find(t=>t.x===h.x&&t.z===h.z);
     for(const p of townHallCells(h))push(p,null,terrainY(ground),2.53);
   }
-  for(const b of world.customBuildings??[]){
+  for(const [index,b] of (world.customBuildings??[]).entries()){
+    entity={collection:'customBuildings',index};
     const ground=world.tiles.find(t=>t.x===b.x&&t.z===b.z);
     for(let i=0;i<b.design.ground.length;i++){
       const p=customCell(b,i),floors=customFloors(b.design,i);
@@ -135,9 +144,11 @@ export function createPickingGeometry(world,pickingMaterial){
       push(p,floors-1,terrainY(ground)+floors*FLOOR,b.design.roof[i].type==='attic'?ATTIC_ROOF_HEIGHT:.62);
     }
   }
-  for(const t of world.tiles.filter(t=>t.patio))push(patioCell(t),null,terrainY(t),.42);
+  for(const t of world.tiles.filter(t=>t.patio)){entity={collection:'tiles',index:world.tiles.indexOf(t)};push(patioCell(t),null,terrainY(t),.42);}
+  const ownerEntity=owner=>{const custom=customAt(world,owner.x,owner.z);return custom?{collection:'customBuildings',index:world.customBuildings.indexOf(custom)}:{collection:'tiles',index:world.tiles.findIndex(t=>t.x===owner.x&&t.z===owner.z)};};
   for(const [id,owner] of diningTerraces(world)){
-    const [x,z]=id.split(',').map(Number);push({x,z},null,businessY(owner),.40);
+    entity=ownerEntity(owner);
+    const [x,z]=id.split(',').map(Number);push({x,z},owner.businessFloor??0,businessY(owner),.40);
   }
   for(const owner of businessSpaces(world).values()){
     if(owner.business.type!=='greengrocer')continue;
@@ -145,15 +156,16 @@ export function createPickingGeometry(world,pickingMaterial){
     for(const u of [-.38,.38]){
       helper.position.set(owner.x*UNIT+dx*.81+dz*u,businessY(owner)+.32,owner.z*UNIT+dz*.81-dx*u);
       helper.scale.set(d%2?.24:.34,.56,d%2?.34:.24);helper.updateMatrix();
-      targets.push({x:owner.x,z:owner.z,level:owner.businessFloor??0});transforms.push(helper.matrix.clone());
+      targets.push({x:owner.x,z:owner.z,level:owner.businessFloor??0,entity:ownerEntity(owner)});transforms.push(helper.matrix.clone());
     }
   }
-  for(const b of world.bridges??[]){
+  for(const [index,b] of (world.bridges??[]).entries()){
+    entity={collection:'bridges',index};
     const cells=bridgeCells(b),alongX=b.a.z===b.b.z;
     for(let i=1;i<cells.length-1;i++){
       const c=cells[i],h=bridgeHeight(world,b,i/(cells.length-1));
       helper.position.set(c.x*UNIT,h+.12,c.z*UNIT);helper.scale.set(alongX?UNIT:.88,.42,alongX?.88:UNIT);helper.updateMatrix();
-      targets.push({...c,level:null});transforms.push(helper.matrix.clone());
+      targets.push({...c,level:null,entity});transforms.push(helper.matrix.clone());
     }
   }
   const mesh=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),pickingMaterial,targets.length);
@@ -1053,6 +1065,7 @@ export function createVillageGeometry(world){
     flag.rotation.y=a;flag.userData.placement={...placement};flags.push(flag);
   }
   const group=new THREE.Group();group.name='village';group.userData.flags=flags;for(const flag of flags)group.add(flag);
+  group.userData.animatedGeometryNames=[...new Set([...batches.values()].map(b=>b.shape).filter(id=>personalAnimations.has(id)))];
   for(const {shape,color,matrices} of batches.values()){
     const mesh=new THREE.InstancedMesh(geometries[shape],material(color),matrices.length);
     matrices.forEach((m,i)=>mesh.setMatrixAt(i,m));
@@ -1067,8 +1080,8 @@ export function createVillageGeometry(world){
 }
 
 export class VillageScene{
-  constructor(canvas,{onClick,onHover,onError,onCameraChange=()=>{},onTerrainStrokeStart=()=>false,onTerrainStrokeMove=()=>{},onTerrainStrokeEnd=()=>{}}){
-    this.canvas=canvas;this.onClick=onClick;this.onHover=onHover;this.onError=onError;this.onCameraChange=onCameraChange;
+  constructor(canvas,{onClick,onHover,onError,onInspect=()=>{},onCameraChange=()=>{},onTerrainStrokeStart=()=>false,onTerrainStrokeMove=()=>{},onTerrainStrokeEnd=()=>{}}){
+    this.canvas=canvas;this.onClick=onClick;this.onHover=onHover;this.onError=onError;this.onInspect=onInspect;this.onCameraChange=onCameraChange;
     this.onTerrainStrokeStart=onTerrainStrokeStart;this.onTerrainStrokeMove=onTerrainStrokeMove;this.onTerrainStrokeEnd=onTerrainStrokeEnd;
     this.renderer=new THREE.WebGLRenderer({canvas,antialias:true,preserveDrawingBuffer:true,alpha:false,powerPreference:'high-performance'});
     this.renderer.setPixelRatio(Math.min(globalThis.devicePixelRatio||1,2));
@@ -1344,7 +1357,10 @@ export class VillageScene{
     const finish=(e,cancelled=false)=>{
       if(!this.pointers.has(e.pointerId))return;
       if(gesture?.paint){if(!cancelled&&e.altKey)paintAt(e);this.endTerrainStroke();}
-      if(!cancelled&&!this.navigationOnly&&gesture&&!gesture.moved&&!gesture.multi&&gesture.button!==1){const p=this.pick(e.clientX,e.clientY);if(p)this.onClick(p,gesture.button===2);}
+      if(!cancelled&&gesture&&!gesture.moved&&!gesture.multi&&gesture.button!==1&&Math.hypot(e.clientX-gesture.startX,e.clientY-gesture.startY)<=6){
+        const p=this.pick(e.clientX,e.clientY);
+        if(p){if(this.navigationOnly){if(gesture.button===0)this.onInspect(p);}else this.onClick(p,gesture.button===2);}
+      }
       this.pointers.delete(e.pointerId);if(!this.pointers.size)gesture=null;
     };
     canvas.addEventListener('pointerup',e=>finish(e),{signal});canvas.addEventListener('pointercancel',e=>finish(e,true),{signal});canvas.addEventListener('lostpointercapture',e=>finish(e,true),{signal});
@@ -1360,6 +1376,7 @@ export class VillageScene{
     if(document.hidden)return;
     if(this.animalsMoving){this.village?.userData.goats?.update(dt);this.village?.userData.sheep?.update(dt);this.village?.userData.cows?.update(dt);this.village?.userData.poultry?.update(dt);}
     if(!this.reducedMotion){this.time.value=time/1000;for(const flag of this.village?.userData.flags??[]){if(flag.userData.festiveFlag)waveFestiveFlag(flag,this.time.value);else waveSenyera(flag,this.time.value);}this.boats.children.forEach((b,i)=>{b.position.y=.05+Math.sin(time*.0013+i)*.025;b.rotation.z=Math.sin(time*.001+i)*.035;});}
+    if(!this.reducedMotion)personalAnimations.update(time/1000,this.village?.userData.animatedGeometryNames??[]);
     this.renderer.render(this.scene,this.camera);
   }
   async photograph(){

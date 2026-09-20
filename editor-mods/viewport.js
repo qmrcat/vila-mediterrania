@@ -8,7 +8,7 @@ import { footprint } from './format.js';
 const LINE_PLOT = 0x1c565b, LINE_CELL = 0x8fa2a0, LINE_FLOOR = 0xb0553a, LINE_STEP = 0xc9bca0;
 const LINE_SOUTH = 0xb0553a, LINE_AXIS = 0x1c565b;
 
-export function createViewport(canvas, { onPick }) {
+export function createViewport(canvas, { onPick, onDrag, onResize }) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.shadowMap.enabled = true;
@@ -31,6 +31,7 @@ sun.shadow.camera.updateProjectionMatrix();
   ground.position.y = -.002; ground.receiveShadow = true; scene.add(ground);
 
   const guides = new THREE.Group(); scene.add(guides);
+  const handles = new THREE.Group(); scene.add(handles);
   const ghosts = new THREE.Group(); scene.add(ghosts);
   const parts = new THREE.Group(); scene.add(parts);
 
@@ -65,6 +66,90 @@ sun.shadow.camera.updateProjectionMatrix();
     }
   }
 
+  // Una nansa per cara: es dibuixen sense provar la profunditat perquè les tres
+  // de darrere també es puguin agafar sense haver de girar la vista.
+  const HANDLE_GEOMETRY = new THREE.BoxGeometry(1, 1, 1);
+  const HANDLE_MATERIAL = new THREE.MeshBasicMaterial({
+    color: 0xa8802f, depthTest: false, transparent: true, opacity: .5,
+  });
+  const AXES = [['sx', 'x'], ['sy', 'y'], ['sz', 'z']];
+  const _quat = new THREE.Quaternion(), _euler = new THREE.Euler(), _scale = new THREE.Vector3();
+  const _local = new THREE.Vector3(), _w0 = new THREE.Vector3();
+
+  /**
+   * Les nanses viuen als eixos propis de la peça, no als del món: si la peça
+   * està girada, estirar-la cap a «la dreta» la fa créixer cap on mira ella.
+   */
+  function buildHandles(mod, chosen, options) {
+    handles.clear();
+    if (!onResize || options.handles === false || !chosen.length) return;
+    // Una peça s'estira cara per cara; una selecció, sencera i proporcionada.
+    if (chosen.length > 1) { buildBoxHandles(); return; }
+    const part = mod.parts[chosen[0]];
+    if (!part || part.hidden) return;
+    const mesh = parts.children.find(item => item.userData.index === chosen[0]);
+    if (!mesh) return;
+    if (!mesh.geometry.boundingBox) mesh.geometry.computeBoundingBox();
+    const box = mesh.geometry.boundingBox;
+    _quat.setFromEuler(_euler.set(part.rx, part.ry, part.rz));
+    _scale.set(part.sx, part.sy, part.sz);
+    for (const [key, axis] of AXES) {
+      for (const sign of [1, -1]) {
+        // Fins on arriba la cara en la geometria sense escalar: les formes del
+        // joc no sempre van de −0,5 a +0,5.
+        const half = Math.abs(sign > 0 ? box.max[axis] : box.min[axis]);
+        if (!(half > 1e-6)) continue;
+        const handle = new THREE.Mesh(HANDLE_GEOMETRY, HANDLE_MATERIAL);
+        handle.renderOrder = 3;
+        _local.set(0, 0, 0)[axis] = sign * half;
+        handle.position.copy(_local).multiply(_scale).applyQuaternion(_quat)
+          .add(new THREE.Vector3(part.u, part.h, part.v));
+        const dir = new THREE.Vector3(0, 0, 0);
+        dir[axis] = 1;
+        dir.applyQuaternion(_quat);
+        handle.userData = { key, sign, half, dir, index: chosen[0] };
+        handles.add(handle);
+      }
+    }
+    sizeHandles();
+  }
+
+  /**
+   * Les nanses de la capsa que envolta la selecció. Estirar-ne una escala tot
+   * el conjunt pel mateix factor, amb la cara de davant clavada, de manera que
+   * les proporcions de dins no canvien.
+   */
+  const _span = new THREE.Vector3(), _mid = new THREE.Vector3();
+  function buildBoxHandles() {
+    if (!selection.visible) return;
+    const box = selection.box;
+    box.getSize(_span); box.getCenter(_mid);
+    for (const axis of ['x', 'y', 'z']) {
+      const extent = _span[axis];
+      if (!(extent > 1e-6)) continue;
+      for (const sign of [1, -1]) {
+        const handle = new THREE.Mesh(HANDLE_GEOMETRY, HANDLE_MATERIAL);
+        handle.renderOrder = 3;
+        handle.position.copy(_mid)[axis] = sign > 0 ? box.max[axis] : box.min[axis];
+        const anchor = _mid.clone();
+        anchor[axis] = sign > 0 ? box.min[axis] : box.max[axis];
+        const dir = new THREE.Vector3(0, 0, 0); dir[axis] = 1;
+        handle.userData = {
+          group: true, sign, dir, extent,
+          anchor: { u: anchor.x, h: anchor.y, v: anchor.z },
+          centre: { u: _mid.x, h: _mid.y, v: _mid.z },
+        };
+        handles.add(handle);
+      }
+    }
+    sizeHandles();
+  }
+
+  const sizeHandles = () => {
+    const size = Math.max(orbit.radius * .011, .014);
+    for (const handle of handles.children) handle.scale.setScalar(size);
+  };
+
   const selection = new THREE.Box3Helper(new THREE.Box3(), 0xa8802f);
   selection.visible = false; scene.add(selection);
 
@@ -89,17 +174,132 @@ sun.shadow.camera.updateProjectionMatrix();
     camera.lookAt(orbit.target);
   }
 
+  // ——— arrossegar peces ———
+  // Moure una peça demana Alt + botó dret: amb el botó esquerre sol n'hi havia
+  // prou amb un pols per desplaçar-la sense voler.
+  //
+  // El ratolí es mou en dues dimensions i la peça en tres, així que cal decidir
+  // sobre quin pla llisca: l'horitzontal que passa pel punt agafat, o un de
+  // vertical encarat a la càmera quan també es prem Majúscules.
+  const _normal = new THREE.Vector3(), _point = new THREE.Vector3();
+
+  /** El pla on llisca la peça: horitzontal, o vertical i encarat a la càmera. */
+  function dragPlane(vertical, point) {
+    const plane = new THREE.Plane();
+    if (vertical) {
+      _normal.subVectors(camera.position, point); _normal.y = 0;
+      if (_normal.lengthSq() < 1e-9) _normal.set(0, 0, 1);
+      return plane.setFromNormalAndCoplanarPoint(_normal.normalize(), point);
+    }
+    return plane.setFromNormalAndCoplanarPoint(_normal.set(0, 1, 0), point);
+  }
+
+  /**
+   * L'arrossegament es fa a trams: cada cop que prems o deixes anar Majúscules
+   * en comença un de nou, amb el pla que toca, des d'on és ara el punt agafat.
+   * base és el que s'havia mogut abans del tram; last, el total fins ara.
+   */
+  function grab(event) {
+    if (!onDrag) return null;
+    const hit = trace(event);
+    if (!hit) return null;
+    if (onDrag('start', hit.object.userData.index, false, event.shiftKey) === false) return null;
+    const zero = { du: 0, dh: 0, dv: 0 };
+    return {
+      x: event.clientX, y: event.clientY, part: true,
+      vertical: event.shiftKey, plane: dragPlane(event.shiftKey, hit.point),
+      from: hit.point.clone(), base: { ...zero }, last: { ...zero },
+    };
+  }
+
+  /** Majúscules ha canviat a mig arrossegament: nou tram des del punt actual. */
+  function switchPlane(vertical) {
+    const { from, base, last } = dragging;
+    from.x += last.du - base.du; from.y += last.dh - base.dh; from.z += last.dv - base.dv;
+    dragging.base = { ...last };
+    dragging.vertical = vertical;
+    dragging.plane = dragPlane(vertical, from);
+    onDrag('mode', null, false, vertical);
+  }
+
+  function grabHandle(event) {
+    if (!onResize || !handles.children.length) return null;
+    aim(event);
+    const hit = ray.intersectObjects(handles.children, false)[0];
+    if (!hit) return null;
+    const data = hit.object.userData;
+    if (data.group) {
+      const { sign, dir, extent, anchor, centre } = data;
+      if (onResize('start', { kind: 'group', extent, anchor, centre }) === false) return null;
+      return {
+        x: event.clientX, y: event.clientY, resize: true, group: true,
+        sign, dir: dir.clone(), from: hit.object.position.clone(),
+      };
+    }
+    const { key, sign, half, dir, index } = data;
+    const from = hit.object.position.clone();
+    // Quant s'ha de moure el centre de la peça per cada unitat de creixement:
+    // la cara oposada s'ha de quedar clavada on era. Creix mig gruix a cada
+    // banda, i el centre en recupera la meitat.
+    const per = { du: dir.x * sign * half, dh: dir.y * sign * half, dv: dir.z * sign * half };
+    if (onResize('start', { index, key, per }) === false) return null;
+    return { x: event.clientX, y: event.clientY, resize: true, sign, half, dir: dir.clone(), from };
+  }
+
+  /**
+   * Quant ha lliscat el punter al llarg de l'eix de la nansa: el punt de la
+   * recta de l'eix més proper al raig del ratolí. Null si el mires de cantell.
+   */
+  function alongAxis(event, from, dir) {
+    aim(event);
+    const r = ray.ray.direction;
+    _w0.subVectors(ray.ray.origin, from);
+    const b = r.dot(dir), rw = r.dot(_w0), dw = dir.dot(_w0);
+    const denom = 1 - b * b;
+    if (Math.abs(denom) < 1e-6) return null;
+    return (dw - b * rw) / denom;
+  }
+
+  /** On cau el punter sobre el pla de l'arrossegament. Null si hi és paral·lel. */
+  function onPlane(event, plane) {
+    aim(event);
+    return ray.ray.intersectPlane(plane, _point) ? _point : null;
+  }
+
   let dragging = null, moved = 0;
   canvas.addEventListener('pointerdown', event => {
     canvas.setPointerCapture(event.pointerId);
-    dragging = { x: event.clientX, y: event.clientY, pan: event.shiftKey || event.button === 1 };
     moved = 0;
+    if (event.button === 2) rightDown = performance.now();
+    const stretching = event.button === 0 && !event.shiftKey && !event.ctrlKey && !event.metaKey && !event.altKey;
+    // AltGr, als teclats catalans i castellans, arriba com a Ctrl+Alt: també val.
+    const holding = event.button === 2 && event.altKey;
+    dragging = (stretching ? grabHandle(event) : null)
+      ?? (holding ? grab(event) : null)
+      // Alt + botó dret és per moure peces: si no n'agafa cap, no gira la càmera.
+      ?? (holding ? { x: event.clientX, y: event.clientY, idle: true }
+        : { x: event.clientX, y: event.clientY, pan: event.shiftKey || event.button === 1 });
   });
   canvas.addEventListener('pointermove', event => {
-    if (!dragging) return;
+    if (!dragging || dragging.idle) return;
     const dx = event.clientX - dragging.x, dy = event.clientY - dragging.y;
     dragging.x = event.clientX; dragging.y = event.clientY; moved += Math.abs(dx) + Math.abs(dy);
-    if (dragging.pan) {
+    if (dragging.resize) {
+      const slid = alongAxis(event, dragging.from, dragging.dir);
+      if (slid === null || moved < 3) return;
+      onResize('move', dragging.group
+        ? { grow: dragging.sign * slid, both: event.shiftKey }
+        : { grow: dragging.sign * slid / (2 * dragging.half), both: event.shiftKey });
+    } else if (dragging.part) {
+      if (event.shiftKey !== dragging.vertical) switchPlane(event.shiftKey);
+      const point = onPlane(event, dragging.plane);
+      if (!point || moved < 3) return;
+      const { from, base } = dragging;
+      dragging.last = dragging.vertical
+        ? { du: base.du, dh: base.dh + point.y - from.y, dv: base.dv }
+        : { du: base.du + point.x - from.x, dh: base.dh, dv: base.dv + point.z - from.z };
+      onDrag('move', dragging.last);
+    } else if (dragging.pan) {
       const scale = orbit.radius * .0022;
       orbit.target.x -= (dx * Math.cos(orbit.theta) - dy * Math.sin(orbit.theta) * Math.cos(orbit.phi)) * scale;
       orbit.target.z += (dx * Math.sin(orbit.theta) + dy * Math.cos(orbit.theta) * Math.cos(orbit.phi)) * scale;
@@ -110,24 +310,52 @@ sun.shadow.camera.updateProjectionMatrix();
     place();
   });
   canvas.addEventListener('pointerup', event => {
-    if (dragging && moved < 6) pick(event);
+    // Un clic net sobre una peça no l'ha de moure: desfà l'arrossegament.
+    if (dragging?.resize) onResize(moved < 6 ? 'cancel' : 'end');
+    else if (dragging?.part) onDrag(moved < 6 ? 'cancel' : 'end');
+    else if (dragging && moved < 6 && event.button === 0) pick(event);
     dragging = null;
   });
-  canvas.addEventListener('pointercancel', () => { dragging = null; });
+  canvas.addEventListener('pointercancel', () => {
+    if (dragging?.resize) onResize('cancel');
+    else if (dragging?.part) onDrag('cancel');
+    dragging = null;
+  });
   canvas.addEventListener('wheel', event => {
     event.preventDefault();
     orbit.radius *= event.deltaY > 0 ? 1.1 : 1 / 1.1;
     place();
   }, { passive: false });
-  canvas.addEventListener('contextmenu', event => event.preventDefault());
+  // El menú del botó dret mai no ha de sortir sobre la vista. No n'hi ha prou
+  // amb el llenç: les etiquetes dels eixos i els botons de càmera hi són a
+  // sobre, i en deixar anar el botó fora de la vista —cosa fàcil mentre
+  // arrossegues— el menú sortiria on hagi caigut el punter.
+  const stage = canvas.parentElement ?? canvas;
+  stage.addEventListener('contextmenu', event => event.preventDefault());
+
+  let rightDown = 0;
+  addEventListener('contextmenu', event => {
+    if (!dragging && performance.now() - rightDown > 600) return;
+    event.preventDefault();
+    rightDown = 0;
+  }, true);
 
   const ray = new THREE.Raycaster(), pointer = new THREE.Vector2();
-  function pick(event) {
+  function aim(event) {
     const rect = canvas.getBoundingClientRect();
     pointer.set((event.clientX - rect.left) / rect.width * 2 - 1, -((event.clientY - rect.top) / rect.height) * 2 + 1);
     ray.setFromCamera(pointer, camera);
-    const hit = ray.intersectObjects(parts.children, false)[0];
-    onPick(hit ? hit.object.userData.index : null, event.ctrlKey || event.metaKey ? 'toggle' : 'single');
+  }
+
+  /** La peça visible més propera sota el punter, si n'hi ha cap. */
+  function trace(event) {
+    aim(event);
+    return ray.intersectObjects(parts.children.filter(mesh => mesh.visible), false)[0] ?? null;
+  }
+
+  function pick(event) {
+    const hit = trace(event);
+    onPick(hit ? hit.object.userData.index : null, event.ctrlKey || event.metaKey ? 'toggle' : 'single', event.altKey);
   }
 
   function line(points, color) {
@@ -195,12 +423,16 @@ sun.shadow.camera.updateProjectionMatrix();
       mesh.scale.set(part.sx || .001, part.sy || .001, part.sz || .001);
       mesh.castShadow = true; mesh.receiveShadow = true;
       mesh.userData.index = index;
+      // Una peça amagada no es dibuixa ni es pot clicar, però la malla existeix
+      // igualment perquè les mesures del mod no depenguin del que estiguis mirant.
+      mesh.visible = !part.hidden;
       parts.add(mesh);
     });
     const box = new THREE.Box3();
     let any = false;
+    const byIndex = new Map(parts.children.map(mesh => [mesh.userData.index, mesh]));
     for (const index of chosen) {
-      const mesh = parts.children[index];
+      const mesh = byIndex.get(index);
       if (!mesh) continue;
       box.expandByObject(mesh);
       any = true;
@@ -209,10 +441,27 @@ sun.shadow.camera.updateProjectionMatrix();
     if (any) selection.box.copy(box);
   }
 
+  /**
+   * Les mesures es calculen a mà des de la geometria de cada malla, sense passar
+   * per setFromObject(): així una peça amagada continua comptant i l'alçada
+   * declarada no canvia pel fet d'amagar-ne una.
+   */
+  const _box = new THREE.Box3(), _total = new THREE.Box3();
   function measure(mod) {
     if (!mod.parts.length) return null;
-    const box = new THREE.Box3().setFromObject(parts);
-    return { minU: box.min.x, maxU: box.max.x, minH: box.min.y, maxH: box.max.y, minV: box.min.z, maxV: box.max.z };
+    _total.makeEmpty();
+    for (const mesh of parts.children) {
+      if (!mesh.geometry.boundingBox) mesh.geometry.computeBoundingBox();
+      mesh.updateMatrixWorld(true);
+      _box.copy(mesh.geometry.boundingBox).applyMatrix4(mesh.matrixWorld);
+      _total.union(_box);
+    }
+    if (_total.isEmpty()) return null;
+    return {
+      minU: _total.min.x, maxU: _total.max.x,
+      minH: _total.min.y, maxH: _total.max.y,
+      minV: _total.min.z, maxV: _total.max.z,
+    };
   }
 
   function resize() {
@@ -224,11 +473,11 @@ sun.shadow.camera.updateProjectionMatrix();
   new ResizeObserver(resize).observe(canvas);
 
   let request = 0;
-  function loop() { request = requestAnimationFrame(loop); placeLabels(); renderer.render(scene, camera); }
+  function loop() { request = requestAnimationFrame(loop); placeLabels(); sizeHandles(); renderer.render(scene, camera); }
   place(); resize(); loop();
 
   return {
-    update(mod, chosen, options) { buildGuides(mod, options); buildParts(mod, chosen); return measure(mod); },
+    update(mod, chosen, options) { buildGuides(mod, options); buildParts(mod, chosen); buildHandles(mod, chosen, options); return measure(mod); },
     frame(mod) {
       const { width, depth } = footprint(mod.previewSize);
       orbit.target.set(0, Math.max(mod.height, 1) * .42, 0);

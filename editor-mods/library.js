@@ -105,9 +105,14 @@ function eulerFromQuat(q) {
  */
 export function rotateParts(parts, quarterTurns) {
   const turns = ((Math.round(quarterTurns) % 4) + 4) % 4;
-  if (!turns || !parts.length) return parts.map(p => ({ ...p }));
-  const angle = turns * Math.PI / 2;
-  const cos = Math.round(Math.cos(angle)), sin = Math.round(Math.sin(angle));
+  return spinParts(parts, turns * Math.PI / 2);
+}
+
+/** Gira el grup un angle qualsevol (radians) al voltant del seu centre en planta. */
+export function spinParts(parts, angle) {
+  if (!angle || !parts.length) return parts.map(p => ({ ...p }));
+  const tidy = value => (Math.abs(value - Math.round(value)) < 1e-9 ? Math.round(value) : value);
+  const cos = tidy(Math.cos(angle)), sin = tidy(Math.sin(angle));
   const midU = parts.reduce((sum, p) => sum + p.u, 0) / parts.length;
   const midV = parts.reduce((sum, p) => sum + p.v, 0) / parts.length;
   const yaw = quatFromEuler(0, angle, 0);
@@ -121,6 +126,23 @@ export function rotateParts(parts, quarterTurns) {
       rx: spun.rx, ry: spun.ry, rz: spun.rz,
     };
   });
+}
+
+/**
+ * Mitja mida de la peça en cada eix del món. Els girs compten: una biga
+ * tombada ocupa en alçada el que feia de llarga. És exacte per a les caixes i
+ * una bona aproximació per a la resta de formes, que caben dins la seva caixa.
+ */
+export function halfSpan(part) {
+  const { x, y, z, w } = quatFromEuler(part.rx, part.ry, part.rz);
+  const rows = [
+    [1 - 2 * (y * y + z * z), 2 * (x * y - w * z), 2 * (x * z + w * y)],
+    [2 * (x * y + w * z), 1 - 2 * (x * x + z * z), 2 * (y * z - w * x)],
+    [2 * (x * z - w * y), 2 * (y * z + w * x), 1 - 2 * (x * x + y * y)],
+  ];
+  const size = [Math.abs(part.sx), Math.abs(part.sy), Math.abs(part.sz)];
+  const reach = row => (Math.abs(row[0]) * size[0] + Math.abs(row[1]) * size[1] + Math.abs(row[2]) * size[2]) / 2;
+  return { u: reach(rows[0]), h: reach(rows[1]), v: reach(rows[2]) };
 }
 
 // ——— peces d'exemple ———

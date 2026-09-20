@@ -69,3 +69,13 @@
 
 #interface-toggle{display:inline-grid;place-items:center;flex-shrink:0}#interface-toggle svg{width:22px;height:22px}#interface-toggle[aria-pressed=false]{background:#fcfcf8e8;border-color:#1c565b;color:#1c565b}
 @media(max-width:520px){.topbar{display:grid;grid-template-columns:1fr;gap:8px}.brand{grid-row:1}.top-actions{grid-row:2;justify-self:end;margin-left:0}.region-switch{position:static;grid-row:3;justify-self:start}.palette{top:178px}.compass{top:176px}}
+
+/* Informació dels elements en mode Navega. */
+#element-dialog{width:min(460px,calc(100vw - 24px));max-height:85dvh;overflow:auto}
+#element-dialog h2{overflow-wrap:anywhere;padding-right:22px}
+#element-facts{display:grid;grid-template-columns:minmax(100px,.8fr) minmax(0,1.2fr);gap:9px 16px;margin:22px 0}
+#element-facts dt{font-weight:600}#element-facts dd{margin:0;overflow-wrap:anywhere}
+#element-description{line-height:1.5}
+#element-copy-status{font-size:13px;line-height:1.5;margin-bottom:0}
+#element-copy-status:empty{display:none}
+#element-json{width:100%;min-height:160px;margin-top:14px;padding:10px;box-sizing:border-box;font:12px/1.5 monospace;resize:vertical;user-select:text}

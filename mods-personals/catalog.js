@@ -6,6 +6,8 @@
  */
 export const REQUIRES_MOD_API=1;
 
+import {ISRAEL_FLAG_DEFINITION} from './israel-flag-definition.js';
+
 /**
  * id: {name, sizes:[1|2|4|6|9|16], height, help, category?:'monument'}
  */
@@ -15,6 +17,19 @@ export const PERSONAL_LANDMARKS={
     sizes:[1],
     height:2.60,
     help:'Ocupa una cel·la de terra ferma o conreu, lliure i anivellada. Tria cap on mira el portal.',
+  },
+  flagIsrael:ISRAEL_FLAG_DEFINITION,
+  casaMercadalReus2:{
+    name:'Casa de la plaça del Mercadal',
+    sizes:[4],
+    height:3.63,
+    help:'Col·loca-la entre mitgeres laterals i posteriors, en dues cel·les anivellades, amb els balcons orientats cap a la plaça.',
+  },
+  ajuntamentAmbRellotge:{
+    name:'Ajuntament amb torre del rellotge',
+    sizes:[9],
+    height:5.70,
+    help:'Col·loca l\'Ajuntament de Reus en una parcel·la de dues per dues cel·les, amb la façana principal orientada cap a la plaça.',
   },
 };
 

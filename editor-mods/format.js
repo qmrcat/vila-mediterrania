@@ -41,6 +41,17 @@ export function newPart(patch = {}) {
   return { shape: 'box', color: '#d4cab3', u: 0, h: .25, v: 0, sx: .5, sy: .5, sz: .5, ry: 0, rx: 0, rz: 0, ...patch };
 }
 
+/**
+ * name, hidden i group són del taller, no del joc: el renderitzador només llegeix la
+ * forma, el color, la posició, la mida i els girs. El nom surt com a comentari
+ * al codi generat; amagar una peça només afecta la vista, i s'exporta igualment.
+ */
+const partExtras = p => ({
+  ...(String(p.name ?? '').trim() ? { name: String(p.name).trim().slice(0, 40) } : {}),
+  ...(p.hidden === true ? { hidden: true } : {}),
+  ...(/^g\d{1,4}$/.test(String(p.group ?? '')) ? { group: String(p.group) } : {}),
+});
+
 export function newMod(patch = {}) {
   return {
     format: MOD_FORMAT, version: MOD_VERSION, requiresModApi: REQUIRES_MOD_API,
@@ -69,6 +80,7 @@ export function validateMod(input) {
       u: num(p.u), h: num(p.h), v: num(p.v),
       sx: num(p.sx, 1), sy: num(p.sy, 1), sz: num(p.sz, 1),
       ry: num(p.ry), rx: num(p.rx), rz: num(p.rz),
+      ...partExtras(p),
     });
   });
   const unique = [...new Set(sizes)].sort((a, b) => a - b);
@@ -109,6 +121,11 @@ export function reviewMod(mod, bounds, taken = [], pending = []) {
   const missing = [...new Set(mod.parts.map(p => p.shape))].filter(shape => pending.includes(shape));
   if (missing.length) notes.push({ level: 'error',
     text: `Aquestes formes encara no són al joc: ${missing.join(', ')}. Instal·la mods-personals/geometries.js i recarrega.` });
+  const buried = mod.parts.filter(p => p.hidden).length;
+  if (buried) notes.push({ level: 'info',
+    text: buried === 1
+      ? '1 peça amagada a la vista. S’exporta igualment.'
+      : `${buried} peces amagades a la vista. S’exporten igualment.` });
   const colors = new Set(mod.parts.map(p => p.color));
   if (colors.size > 14) notes.push({ level: 'warn', text: `${colors.size} colors diferents: cadascun crea un material nou. Mira si en pots reaprofitar.` });
   return notes;

@@ -1,11 +1,12 @@
 import {groupBuildings} from './building-categories.js?v=94';
+import {createElementInspector} from './element-inspector.js';
 import {MENU_RULES,initPersonalMenus} from './personal-menus.js?v=94';
 import {loadSharedDesigns,copySharedDesign} from './shared-designs.js';
 import {RAILING_SIDES} from './terrain-railings.js';
 import {AGRICULTURAL_TERRAINS} from './agricultural-types.js';
 import {PERSONAL_BUSINESSES,PERSONAL_LANDMARKS} from './personal-content.js';
 import {captureClone,pasteClone,cloneBounds,clonePlacement,captureAppearance,pasteAppearance,houseToDesign} from './cloning.js';
-import {CONFIG} from './config.js';
+import {CONFIG} from './config.js?v=95';
 import {initControlDrawers} from './control-drawers.js';
 import {initVersionNotice} from './version-notice.js';
 import {TerrainStroke} from './terrain-stroke.js';
@@ -45,6 +46,7 @@ let terrainStroke=null,controlDrawers;
 let cloneStart=null,cloneClipboard=null,cloneStyle=null;
 let world,scene,tool='house',treeSpecies='pine',terrainType='land',color=0,roof='tile',roofDirection=0,keyboardCell={x:0,z:0},toastTimer;
 const history=new History();
+const elementInspector=createElementInspector($('#element-dialog'),{allowJsonCopy:CONFIG.inspection?.allowJsonCopy===true});
 for(const id of ['terrain-type','slope-finish']){
   const group=document.createElement('optgroup');group.label='Terrenys agrícoles';
   for(const [value,definition] of Object.entries(AGRICULTURAL_TERRAINS))group.append(new Option(definition.name,value));
@@ -55,7 +57,7 @@ for(const [id,definition] of Object.entries(PERSONAL_BUSINESSES))personalBusines
 if(['localhost','127.0.0.1','[::1]'].includes(location.hostname))$('#download-code').hidden=true;
 const instructions={
   clone:['Clona elements','Tria què vols copiar. La còpia és independent de l’original i es pot desfer.'],
-  navigate:['Explora la vila','Arrossega per girar, Majúscules + arrossegar per desplaçar i roda per apropar. Al mòbil, arrossega o fes pinça amb dos dits. Els clics i els tocs no construeixen ni esborren res.'],
+  navigate:['Explora la vila','Arrossega per girar, Majúscules + arrossegar per desplaçar i roda per apropar. Al mòbil, arrossega o fes pinça amb dos dits. Clica o toca un element per veure’n la informació. No es construeix ni s’esborra res.'],
   parliament:['El Parlament','Palau de 4 × 4 cel·les, amb porxada de banda a banda, balcó de la mateixa amplada al damunt i el pal de la senyera al centre. Prepara tota la base lliure a la mateixa alçada.'],
   institution:['Edifici institucional','Model de 3 × 2 cel·les, amb dues plantes, pòrtic central, balcó i senyera. Canvia el rètol per dedicar-lo a una altra institució.'],
   barracksSenyera:['Caserna militar amb senyera','Recinte de 3 × 3 cel·les, amb allotjaments, pati obert i garita. La senyera oneja al costat de l’entrada. Tria l’orientació i prepara la base a la mateixa alçada.'],
@@ -128,6 +130,7 @@ function persist(){
   catch{$('#save-status').textContent='No s’ha pogut desar al navegador. Exporta una còpia .json per conservar la vila.';toast('No s’ha pogut desar. Utilitza «Desa una còpia».');return false;}
 }
 function refresh(save=true){
+  elementInspector.close();
   cancelBridge();
   scene.update(world);
   $('#diada-toggle').setAttribute('aria-pressed',String(world.diada));
@@ -236,7 +239,7 @@ function describePatio(){
   previewPatio(scene?.hovered);
 }
 function applyEdit(cell,erase=false){
-  if(tool==='navigate')return;
+  if(tool==='navigate'){if(!erase)elementInspector.open(world,cell);return;}
   if(tool==='clone'){if(erase)resetClone();else applyClone(cell);return;}
   if(tool==='bridge'&&!erase){
     if(!bridgeStart){
@@ -287,6 +290,7 @@ function applyClone(p){
   }catch(error){toast(error.message);}
 }
 function selectTool(next){
+  elementInspector.close();
   resetClone();
   scene?.endTerrainStroke();
   cancelBridge();
@@ -412,8 +416,8 @@ async function init(){
     }
     world=createWorld();storageWarning='No s’ha pogut llegir el desament del navegador.';
   }
-  const {VillageScene}=await import('./scene.js');
-  scene=new VillageScene($('#world'),{onClick:applyEdit,
+  const {VillageScene}=await import('./scene.js?v=96');
+  scene=new VillageScene($('#world'),{onClick:applyEdit,onInspect:point=>{if(tool==='navigate')elementInspector.open(world,point);},
     onTerrainStrokeStart:()=>{
       if(tool!=='land'||$$('dialog').some(d=>d.open))return false;
       terrainStroke=new TerrainStroke(world,terrainType,{...terrainRailingOptions(),color,roof,slopeDirection:$('#slope-direction').value==='flat'?null:Number($('#slope-direction').value),slopeFinish:$('#slope-finish').value},history);
