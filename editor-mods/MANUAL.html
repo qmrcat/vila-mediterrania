@@ -141,7 +141,7 @@ la carpeta <code>editor-mods/</code> no està al costat d'<code>index.html</code
 <tr><td><b>Barra de sota la vista</b></td><td>Quant ocupa el model, l'alçada real i quants materials gastes.</td></tr>
 <tr><td><b>Nanses</b></td><td>La casella que mostra o amaga les nanses daurades per estirar la peça seleccionada. Ve marcada.</td></tr>
 <tr><td><b>Eixos</b></td><td>Les fletxes de terra amb <code>+u</code>, <code>+v</code> i <code>+h</code>, i l'aresta de la façana en to de teula. Es poden amagar amb la casella <b>Eixos</b>.</td></tr>
-<tr><td><b>Avisos</b></td><td>Vermell: el joc ho rebutjarà o quedarà malament. Groc: val la pena mirar-ho. Verd: informatiu.</td></tr>
+<tr><td><b>Avisos</b></td><td>Vermell: el joc ho rebutjarà o quedarà malament. Groc: val la pena mirar-ho. Verd: informatiu. Els avisos que parlen de peces concretes porten un botó <b>Selecciona-les</b> que te les tria.</td></tr>
 <tr><td><b>Columna dreta</b></td><td>La peça seleccionada —amb els botons per copiar-ne i enganxar-ne les mides—, les eines d'alinear i repartir, les repeticions i el codi per exportar.</td></tr>
 </table>
 
@@ -651,6 +651,7 @@ manera de deixar una fila de finestres a la mateixa alçada sense anar mirant el
 <tr><td><b>Nord · Sud</b>, a la fila <code>v</code></td><td>El mateix en profunditat</td></tr>
 <tr><td><b>Centre</b></td><td>Posa tots els blocs al centre de la selecció, en aquell eix</td></tr>
 <tr><td><b>Reparteix</b></td><td>Deixa els blocs a distàncies iguals de centre a centre. Els dos dels extrems no es mouen; en calen tres o més</td></tr>
+<tr><td><b>Al terra</b>, al costat dels botons de peces</td><td>Baixa —o puja— la selecció fins que la seva base toqui el terra, a <code>h</code> = 0. Funciona amb una sola peça i amb tota una selecció</td></tr>
 </table>
 
 <p>Dues coses que val la pena saber. La primera: <b>un grup compta com un sol bloc</b> i es mou
@@ -739,6 +740,25 @@ export const PERSONAL_GEOMETRIES={
 <p>Després, al renderitzador, <code>part('cupulaPersonal', '#cbbd9d', 0, 2, 0, 1, .6, 1)</code>.
 El registre es reexporta des de <code>renderers.js</code>, i els mods antics que no el tinguin
 continuen funcionant.</p>
+
+<h3>Les formes registrades, al taller</h3>
+
+<p>El taller llegeix el registre del joc en obrir-se i les posa totes al desplegable de formes, al
+grup <b>Formes personals instal·lades</b>, amb el nom desglossat: <code>marcRectangularBuit - marc
+rectangular buit</code>. A dalt del panell de formes hi diu quantes n'ha trobat. Si n'hi afegeixes,
+recarrega la pàgina i hi són.</p>
+
+<p>Sota del desplegable, el taller <b>mesura la forma</b> i t'explica com és, perquè no en pots
+suposar res: «Forma personal instal·lada · 1,00 × 1,00 × 1,00 abans d'escalar, i el punt d'inserció
+és a la base».</p>
+
+<div class="note">
+  <p><b>El punt d'inserció no sempre és al centre.</b> Les formes oficials van de −0,5 a 0,5 en els
+  tres eixos, i per això <code>h</code> n'és el centre. Una forma personal pot estar col·locada com
+  vulgui: les <i>peces buides</i> dels mods personals, per exemple, van de 0 a 1 en alçada, de manera
+  que <code>h</code> és la <b>base</b> i la peça creix cap amunt. El taller ho té en compte a l'hora
+  de mesurar el mod, d'alinear, de repartir i de posar les nanses.</p>
+</div>
 
 <h3>El generador del taller</h3>
 
@@ -1031,6 +1051,7 @@ comprova que la vila es recupera del JSON. Si passa, el mod no petarà.</p>
 <tr><td>El catàleg no carrega</td><td>Identificador repetit, reservat, o sense el camp <code>help</code>. L'editor t'ho avisa en vermell abans.</td></tr>
 <tr><td>La teulada queda torçada en girar l'edifici</td><td>La peça inclinada s'ha exportat amb <code>part</code> en comptes d'<code>orientedPart</code>. Passa si has editat el codi a mà.</td></tr>
 <tr><td>El model es clava a la casa del costat</td><td>Alguna peça passa de ±0,65 per cel·la. Mira la barra <i>Ocupa</i> i l'avís vermell.</td></tr>
+<tr><td>«Hi ha peces per sota de la base»</td><td>Alguna peça baixa de <code>h</code> = 0. Mentre n'hi hagi cap, el terra de la vista es torna translúcid i les veus; prem <b>Selecciona-les</b> a l'avís i després <b>Al terra</b>, o puja-les amb Re Pàg.</td></tr>
 <tr><td>El marc de selecció no encaixa amb l'edifici</td><td>L'alçada declarada no és la real. Deixa marcat <i>mesura-la sola</i>.</td></tr>
 <tr><td>Una vila desada no s'obre</td><td>Aquella còpia del joc no té els mods. El JSON de la vila no inclou el codi: has de copiar-hi també <code>mods-personals/</code>.</td></tr>
 <tr><td>«Forma desconeguda» en carregar la vila</td><td>El mod fa servir una forma personal que no és a <code>geometries.js</code>, o el nom no s'escriu igual als dos llocs.</td></tr>

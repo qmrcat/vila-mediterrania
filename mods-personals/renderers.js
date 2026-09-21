@@ -11,6 +11,7 @@ import {renderIsraelFlag} from './israel-flag.js';
 
 import {renderCasaMercadalReus2} from './mods-geometry/casa-mercadal-reus2-geometry.js';
 import {renderAjuntamentAmbRellotge} from './mods-geometry/ajuntament-amb-rellotge-geometry.js';
+import {renderCasaTomasBarbera} from './mods-geometry/casa-tomas-barbera-geometry.js'
 
 /** renderer(landmark, part, unit, {box,beam,orientedPart}) */
 export const PERSONAL_LANDMARK_RENDERERS={
@@ -18,6 +19,7 @@ export const PERSONAL_LANDMARK_RENDERERS={
     flagIsrael:renderIsraelFlag,
     casaMercadalReus2:renderCasaMercadalReus2,
     ajuntamentAmbRellotge:renderAjuntamentAmbRellotge,
+    casaTomasBarbera:renderCasaTomasBarbera,
 };
 
 /** renderer(tile, {add,surfaceBox,unit,exclude,branch,root,emit,row,soil,ox,oz}) */

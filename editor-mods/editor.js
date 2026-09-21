@@ -1,4 +1,4 @@
-import { loadShapes, missingShapes, loadPersonalShapes, applyDrafts, personalShapes } from './shapes.js';
+import { loadShapes, missingShapes, loadPersonalShapes, applyDrafts, personalShapes, shapeBounds } from './shapes.js';
 import { SHAPES, SHAPE_HINTS, SHAPE_NAMES, UNIT } from './constants.js';
 import {
   TEMPLATES, defaultParams, validateDraft, loadDrafts, saveDrafts,
@@ -19,7 +19,7 @@ import { starterMods } from './starters.js';
 import { bindAi } from './ai-panel.js';
 import {
   loadLibrary, saveLibrary, validateBlock, blockId, uniqueBlockName,
-  normalizeParts, rotateParts, spinParts, halfSpan, starterBlocks,
+  normalizeParts, rotateParts, spinParts, partSpan, starterBlocks,
 } from './library.js';
 
 const $ = selector => document.querySelector(selector);
@@ -284,7 +284,7 @@ function renderParts() {
   }));
   const chosen = list.children[selected];
   if (chosen) chosen.scrollIntoView({ block: 'nearest' });
-  for (const id of ['#duplicate-part', '#mirror-part', '#rotate-part', '#hide-part', '#up-part', '#down-part', '#delete-part'])
+  for (const id of ['#duplicate-part', '#mirror-part', '#rotate-part', '#ground-part', '#hide-part', '#up-part', '#down-part', '#delete-part'])
     $(id).disabled = !picked.size;
   $('#select-all').disabled = !mod.parts.length;
   $('#group-part').disabled = picked.size < 2;
@@ -313,7 +313,7 @@ function renderInspector() {
   $('#part-name').placeholder = picked.size > 1 ? `${picked.size} peces seleccionades` : part.shape;
   renderSizeClipboard();
   $('#part-shape').value = part.shape;
-  $('#shape-hint').textContent = SHAPE_HINTS[part.shape] ?? '';
+  $('#shape-hint').textContent = shapeHint(part.shape);
   $('#part-color').value = part.color;
   if (document.activeElement !== $('#part-color-hex')) $('#part-color-hex').value = part.color;
   for (const key of ['u', 'h', 'v', 'sx', 'sy', 'sz']) {
@@ -358,8 +358,42 @@ function renderNotes() {
   $('#notes').replaceChildren(...notes.map(note => {
     const item = document.createElement('li');
     item.className = note.level; item.textContent = note.text;
+    const guilty = note.find ? offenders(note.find) : [];
+    if (guilty.length) {
+      const button = document.createElement('button');
+      button.type = 'button'; button.className = 'find';
+      button.textContent = `Selecciona-les (${guilty.length})`;
+      button.title = 'Tria les peces del problema i porta-les a la llista';
+      button.addEventListener('click', () => {
+        setPicked(guilty);
+        render();
+        toast(`${guilty.length} peç${guilty.length === 1 ? 'a seleccionada' : 'es seleccionades'}.`);
+      });
+      item.append(' ', button);
+    }
     return item;
   }));
+}
+
+/** On arriba una peça en cada eix, comptant girs i formes no centrades. */
+function reach(part) {
+  const span = partSpan(part, shapeBounds(part.shape));
+  const axis = key => ({ min: part[key] + span[key].offset - span[key].half, max: part[key] + span[key].offset + span[key].half });
+  return { u: axis('u'), h: axis('h'), v: axis('v') };
+}
+
+/** Les peces culpables d'un avís, per poder-les triar d'un clic. */
+function offenders(kind) {
+  const { width, depth } = smallestPlot(mod);
+  const limitU = width * UNIT / 2, limitV = depth * UNIT / 2, margin = .001;
+  return mod.parts.flatMap((part, index) => {
+    const box = reach(part);
+    const guilty = kind === 'below'
+      ? box.h.min < -margin
+      : box.u.max > limitU + margin || box.u.min < -limitU - margin
+        || box.v.max > limitV + margin || box.v.min < -limitV - margin;
+    return guilty ? [index] : [];
+  });
 }
 
 function renderOutput() {
@@ -551,6 +585,7 @@ function bindParts() {
   $('#select-all').addEventListener('click', selectAll);
   $('#group-part').addEventListener('click', groupPicked);
   $('#ungroup-part').addEventListener('click', ungroupPicked);
+  $('#ground-part').addEventListener('click', groundPicked);
   $('#up-part').addEventListener('click', () => move(-1));
   $('#down-part').addEventListener('click', () => move(1));
   $('#hide-part').addEventListener('click', () => {
@@ -780,7 +815,7 @@ function stretch(phase, payload) {
     if (!part || part.hidden) return false;
     stretched = {
       before: JSON.stringify(mod),
-      index: payload.index, key: payload.key, per: payload.per,
+      index: payload.index, key: payload.key, per: payload.per, mid: payload.both,
       size: part[payload.key], u: part.u, h: part.h, v: part.v,
     };
     return true;
@@ -796,10 +831,13 @@ function stretch(phase, payload) {
     const wanted = stretched.size + payload.grow * (payload.both ? 2 : 1);
     const size = Math.max(snap(wanted), MIN_SIZE);
     const growth = size - stretched.size;
+    // Amb Majúscules la forma creix a banda i banda del seu centre; sense,
+    // la cara oposada a la nansa es queda clavada on era.
+    const per = payload.both ? stretched.mid : stretched.per;
     part[stretched.key] = size;
-    part.u = payload.both ? stretched.u : snap(stretched.u + stretched.per.du * growth);
-    part.h = payload.both ? stretched.h : snap(stretched.h + stretched.per.dh * growth);
-    part.v = payload.both ? stretched.v : snap(stretched.v + stretched.per.dv * growth);
+    part.u = snap(stretched.u + per.du * growth);
+    part.h = snap(stretched.h + per.dh * growth);
+    part.v = snap(stretched.v + per.dv * growth);
     dirty = true;
     render();
     return true;
@@ -961,9 +999,10 @@ function blockSpan(block, axis) {
   let min = Infinity, max = -Infinity;
   for (const index of block) {
     const part = mod.parts[index];
-    const half = halfSpan(part)[axis];
-    min = Math.min(min, part[axis] - half);
-    max = Math.max(max, part[axis] + half);
+    const { half, offset } = partSpan(part, shapeBounds(part.shape))[axis];
+    // offset: les formes que no estan centrades no arriben igual als dos costats.
+    min = Math.min(min, part[axis] + offset - half);
+    max = Math.max(max, part[axis] + offset + half);
   }
   return { min, max, mid: (min + max) / 2 };
 }
@@ -981,6 +1020,17 @@ function shiftBlocks(axis, deltas, message) {
     });
   });
   toast(message(moved));
+}
+
+/**
+ * Seu la selecció a terra. Cada grup baixa sencer, com a l'alineació, i les
+ * formes que no estan centrades es mesuren per on arriben de debò.
+ */
+function groundPicked() {
+  const blocks = pickedBlocks();
+  if (!blocks.length) { toast('Selecciona alguna peça.'); return; }
+  const deltas = blocks.map(block => -blockSpan(block, 'h').min);
+  shiftBlocks('h', deltas, moved => `${moved} bloc${moved === 1 ? '' : 's'} a terra, amb la base a 0.`);
 }
 
 function alignPicked(axis, edge) {
@@ -1071,14 +1121,51 @@ function refreshShapes() {
 
 const pendingShapes = () => drafts.map(draft => draft.id).filter(id => !personalShapes.includes(id));
 
+/**
+ * El que el model d'IA ha de saber d'una forma personal: com es diu, què ocupa
+ * i on té el punt d'inserció. Surt de mesurar la geometria, no de cap llista
+ * escrita a mà, així que val per a qualsevol forma que registris.
+ */
+function shapeNote(id) {
+  const box = shapeBounds(id);
+  const [low, high] = [box.min[1], box.max[1]];
+  return {
+    id,
+    label: readableShape(id),
+    size: [0, 1, 2].map(i => box.max[i] - box.min[i]),
+    low,
+    base: Math.abs(low) < 1e-6 ? 'bottom' : Math.abs(low + high) < 1e-6 ? 'centre' : 'other',
+  };
+}
+
+/** marcRectangularBuit → «marc rectangular buit». */
+const readableShape = id => id.replace(/([a-z0-9])([A-Z])/g, '$1 $2').toLowerCase();
+
+/**
+ * Les formes del joc porten la pista escrita; de les personals, el taller en
+ * mesura la geometria i diu com són i on tenen el punt d'inserció, que no
+ * sempre és al centre.
+ */
+function shapeHint(id) {
+  if (SHAPE_HINTS[id]) return SHAPE_HINTS[id];
+  const box = shapeBounds(id);
+  const size = [0, 1, 2].map(i => (box.max[i] - box.min[i]).toFixed(2).replace('.', ',')).join(' × ');
+  const [low, high] = [box.min[1], box.max[1]];
+  const where = Math.abs(low) < 1e-6 ? 'el punt d’inserció és a la base'
+    : Math.abs(low + high) < 1e-6 ? 'està centrada en alçada'
+      : `la base queda ${(-low).toFixed(2).replace('.', ',')} per damunt del punt d’inserció`;
+  const family = personalShapes.includes(id) ? 'Forma personal instal·lada' : 'Forma del taller, pendent d’instal·lar';
+  return `${family} · ${size} abans d’escalar, i ${where}.`;
+}
+
 function fillShapeSelect() {
   const select = $('#part-shape');
   if (!select) return;
   const chosen = select.value;
   const groups = [
     ['Formes del joc', SHAPES.map(id => [id, `${id} - ${SHAPE_NAMES[id] ?? id}`])],
-    ['Formes personals instal·lades', personalShapes.map(id => [id, id])],
-    ['Formes del taller, pendents d’instal·lar', pendingShapes().map(id => [id, id])],
+    ['Formes personals instal·lades', personalShapes.map(id => [id, `${id} - ${readableShape(id)}`])],
+    ['Formes del taller, pendents d’instal·lar', pendingShapes().map(id => [id, `${id} - ${readableShape(id)}`])],
   ];
   select.replaceChildren(...groups.filter(([, items]) => items.length).map(([label, items]) => {
     const group = document.createElement('optgroup');
@@ -1184,6 +1271,7 @@ function aiBridge() {
     // Dades que canvien: es demanen a cada generació, no es capturen una vegada.
     context: () => ({
       personalShapes: [...personalShapes],
+      shapeNotes: personalShapes.map(shapeNote),
       takenIds,
       example: mods.find(item => item.id === 'casaDePoble') ?? null,
     }),

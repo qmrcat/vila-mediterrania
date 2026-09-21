@@ -91,6 +91,7 @@ export async function loadPersonalShapes() {
     Object.assign(geometries, extra);
     personalShapes.length = 0;
     personalShapes.push(...Object.keys(extra));
+    forgetBounds();
     return { ok: true, count: personalShapes.length };
   } catch (error) {
     return { ok: false, message: error?.message ?? 'no s’ha pogut llegir el registre de formes' };
@@ -102,6 +103,7 @@ export async function loadPersonalShapes() {
  * la vista 3D. Mai no trepitgen una forma que el joc ja tingui.
  */
 export function applyDrafts(drafts) {
+  forgetBounds();
   for (const id of draftShapes) {
     geometries[id]?.dispose?.();
     delete geometries[id];
@@ -120,5 +122,25 @@ export function applyDrafts(drafts) {
 }
 
 export const shapeExists = id => Object.hasOwn(geometries, id);
+
+const boxes = new Map();
+
+/**
+ * La caixa que ocupa una forma abans d'escalar-la. Les formes del joc van de
+ * −0,5 a 0,5, però les personals no tenen per què: les peces buides van de 0 a
+ * 1 en alçada. Es calcula una sola vegada per forma.
+ */
+export function shapeBounds(id) {
+  if (boxes.has(id)) return boxes.get(id);
+  const geometry = geometries[id] ?? geometries.box;
+  if (!geometry.boundingBox) geometry.computeBoundingBox();
+  const { min, max } = geometry.boundingBox;
+  const box = { min: [min.x, min.y, min.z], max: [max.x, max.y, max.z] };
+  boxes.set(id, box);
+  return box;
+}
+
+/** Les formes noves i els esborranys canvien el registre: cal tornar a mesurar. */
+export const forgetBounds = () => boxes.clear();
 
 export { geometries };

@@ -94,6 +94,27 @@ dedueixi de la imatge.
 L'ordre importa: **la primera foto hauria de ser la façana**, perquè és la cara
 que el joc dibuixa cap al sud.
 
+## Les formes personals també hi compten
+
+Al catàleg que s'envia al model no hi ha només les vint formes oficials: també
+hi van les que el joc tingui registrades a `PERSONAL_GEOMETRIES`, amb el nom
+desglossat, la mida mesurada i on tenen el punt d'inserció. Per exemple:
+
+```
+marcRectangularBuit (marc rectangular buit) — forma personal; 1.00 × 1.00 × 1.00
+  abans d'escalar; h és la BASE: la peça creix cap amunt
+```
+
+Les mesures surten de mesurar la geometria en obrir el taller, no de cap llista
+escrita a mà: registra una forma nova i el prompt la porta tot sol la propera
+vegada que recarreguis.
+
+El prompt també explica al model que les faci servir quan el nom digui
+clarament què són —un marc buit, un arc obert, un mur amb finestres— en comptes
+d'imitar-les amb quatre caixes, i que no toqui les que no entengui. Com que
+moltes peces personals tenen la base a Y=0 i no estan centrades, se li recorda
+que per a aquelles `h` és la base.
+
 ## Veure què s'envia
 
 El botó **Mira què s'enviarà** obre el prompt sencer abans de gastar cap crida:

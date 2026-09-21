@@ -31,6 +31,12 @@ export const PERSONAL_LANDMARKS={
     height:5.70,
     help:'Col·loca l\'Ajuntament de Reus en una parcel·la de dues per dues cel·les, amb la façana principal orientada cap a la plaça.',
   },
+  casaTomasBarbera:{
+    name:'Casa Tomàs Barberà',
+    sizes:[4],
+    height:3.92,
+    help:'Col·loca-la en terreny pla, amb els porxos al sud, un carrer lateral a l\'esquerra i la mitgera a la dreta.',
+  },
 };
 
 /**

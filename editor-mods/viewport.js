@@ -25,9 +25,11 @@ export function createViewport(canvas, { onPick, onDrag, onResize }) {
 sun.shadow.camera.updateProjectionMatrix();
   scene.add(sky, sun);
 
+  // El terra es torna translúcid quan el mod té peces enterrades: així es veuen
+  // sense haver de moure res ni posar la càmera sota terra.
   const ground = new THREE.Mesh(
     new THREE.PlaneGeometry(40, 40).rotateX(-Math.PI / 2),
-    new THREE.MeshStandardMaterial({ color: 0xcdc3ab, roughness: 1 }));
+    new THREE.MeshStandardMaterial({ color: 0xcdc3ab, roughness: 1, transparent: false, opacity: 1 }));
   ground.position.y = -.002; ground.receiveShadow = true; scene.add(ground);
 
   const guides = new THREE.Group(); scene.add(guides);
@@ -93,21 +95,29 @@ sun.shadow.camera.updateProjectionMatrix();
     const box = mesh.geometry.boundingBox;
     _quat.setFromEuler(_euler.set(part.rx, part.ry, part.rz));
     _scale.set(part.sx, part.sy, part.sz);
+    box.getCenter(_mid);
     for (const [key, axis] of AXES) {
+      // On són les dues cares dins de la geometria sense escalar. Ni totes les
+      // formes del joc van de −0,5 a 0,5, ni les peces buides personals, que
+      // van de 0 a 1 en alçada.
+      const span = box.max[axis] - box.min[axis];
+      if (!(span > 1e-6)) continue;
       for (const sign of [1, -1]) {
-        // Fins on arriba la cara en la geometria sense escalar: les formes del
-        // joc no sempre van de −0,5 a +0,5.
-        const half = Math.abs(sign > 0 ? box.max[axis] : box.min[axis]);
-        if (!(half > 1e-6)) continue;
+        const face = sign > 0 ? box.max[axis] : box.min[axis];
+        const opposite = sign > 0 ? box.min[axis] : box.max[axis];
         const handle = new THREE.Mesh(HANDLE_GEOMETRY, HANDLE_MATERIAL);
         handle.renderOrder = 3;
-        _local.set(0, 0, 0)[axis] = sign * half;
+        _local.copy(_mid)[axis] = face;
         handle.position.copy(_local).multiply(_scale).applyQuaternion(_quat)
           .add(new THREE.Vector3(part.u, part.h, part.v));
         const dir = new THREE.Vector3(0, 0, 0);
         dir[axis] = 1;
         dir.applyQuaternion(_quat);
-        handle.userData = { key, sign, half, dir, index: chosen[0] };
+        // Per cada unitat de mida guanyada, quant s'ha de moure la peça perquè
+        // la cara de davant no es bellugui —o, amb Majúscules, el centre.
+        const per = { du: -dir.x * opposite, dh: -dir.y * opposite, dv: -dir.z * opposite };
+        const fromMid = { du: -dir.x * _mid[axis], dh: -dir.y * _mid[axis], dv: -dir.z * _mid[axis] };
+        handle.userData = { key, sign, span, dir, per, both: fromMid, index: chosen[0] };
         handles.add(handle);
       }
     }
@@ -236,14 +246,10 @@ sun.shadow.camera.updateProjectionMatrix();
         sign, dir: dir.clone(), from: hit.object.position.clone(),
       };
     }
-    const { key, sign, half, dir, index } = data;
+    const { key, sign, span, dir, per, both, index } = data;
     const from = hit.object.position.clone();
-    // Quant s'ha de moure el centre de la peça per cada unitat de creixement:
-    // la cara oposada s'ha de quedar clavada on era. Creix mig gruix a cada
-    // banda, i el centre en recupera la meitat.
-    const per = { du: dir.x * sign * half, dh: dir.y * sign * half, dv: dir.z * sign * half };
-    if (onResize('start', { index, key, per }) === false) return null;
-    return { x: event.clientX, y: event.clientY, resize: true, sign, half, dir: dir.clone(), from };
+    if (onResize('start', { index, key, per, both }) === false) return null;
+    return { x: event.clientX, y: event.clientY, resize: true, sign, span, dir: dir.clone(), from };
   }
 
   /**
@@ -289,7 +295,7 @@ sun.shadow.camera.updateProjectionMatrix();
       if (slid === null || moved < 3) return;
       onResize('move', dragging.group
         ? { grow: dragging.sign * slid, both: event.shiftKey }
-        : { grow: dragging.sign * slid / (2 * dragging.half), both: event.shiftKey });
+        : { grow: dragging.sign * slid / dragging.span, both: event.shiftKey });
     } else if (dragging.part) {
       if (event.shiftKey !== dragging.vertical) switchPlane(event.shiftKey);
       const point = onPlane(event, dragging.plane);
@@ -477,7 +483,17 @@ sun.shadow.camera.updateProjectionMatrix();
   place(); resize(); loop();
 
   return {
-    update(mod, chosen, options) { buildGuides(mod, options); buildParts(mod, chosen); buildHandles(mod, chosen, options); return measure(mod); },
+    update(mod, chosen, options) {
+      buildGuides(mod, options);
+      buildParts(mod, chosen);
+      buildHandles(mod, chosen, options);
+      const measured = measure(mod);
+      const buried = !!measured && measured.minH < -.001;
+      ground.material.opacity = buried ? .35 : 1;
+      ground.material.transparent = buried;
+      ground.receiveShadow = !buried;
+      return measured;
+    },
     frame(mod) {
       const { width, depth } = footprint(mod.previewSize);
       orbit.target.set(0, Math.max(mod.height, 1) * .42, 0);

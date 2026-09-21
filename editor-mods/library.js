@@ -128,21 +128,33 @@ export function spinParts(parts, angle) {
   });
 }
 
+/** Una forma que va de −0,5 a 0,5 en els tres eixos: la caixa de tota la vida. */
+export const UNIT_BOX = { min: [-.5, -.5, -.5], max: [.5, .5, .5] };
+
 /**
- * Mitja mida de la peça en cada eix del món. Els girs compten: una biga
- * tombada ocupa en alçada el que feia de llarga. És exacte per a les caixes i
- * una bona aproximació per a la resta de formes, que caben dins la seva caixa.
+ * Fins on arriba la peça en cada eix del món: mitja mida i el desplaçament del
+ * centre de la forma respecte del punt on la col·loques. Els girs compten: una
+ * biga tombada ocupa en alçada el que feia de llarga.
+ *
+ * El desplaçament importa perquè no totes les formes estan centrades. Les peces
+ * buides dels mods personals van de 0 a 1 en alçada: el punt d'inserció és a la
+ * base i no al mig. Passa-li la caixa de la geometria i les mesures surten bé;
+ * sense caixa, es fa servir la unitària.
  */
-export function halfSpan(part) {
+export function partSpan(part, box = UNIT_BOX) {
   const { x, y, z, w } = quatFromEuler(part.rx, part.ry, part.rz);
   const rows = [
     [1 - 2 * (y * y + z * z), 2 * (x * y - w * z), 2 * (x * z + w * y)],
     [2 * (x * y + w * z), 1 - 2 * (x * x + z * z), 2 * (y * z - w * x)],
     [2 * (x * z - w * y), 2 * (y * z + w * x), 1 - 2 * (x * x + y * y)],
   ];
-  const size = [Math.abs(part.sx), Math.abs(part.sy), Math.abs(part.sz)];
+  const scale = [part.sx, part.sy, part.sz];
+  const size = scale.map((s, i) => Math.abs(s) * (box.max[i] - box.min[i]));
+  const mid = scale.map((s, i) => s * (box.max[i] + box.min[i]) / 2);
   const reach = row => (Math.abs(row[0]) * size[0] + Math.abs(row[1]) * size[1] + Math.abs(row[2]) * size[2]) / 2;
-  return { u: reach(rows[0]), h: reach(rows[1]), v: reach(rows[2]) };
+  const shift = row => row[0] * mid[0] + row[1] * mid[1] + row[2] * mid[2];
+  const axis = row => ({ half: reach(row), offset: shift(row) });
+  return { u: axis(rows[0]), h: axis(rows[1]), v: axis(rows[2]) };
 }
 
 // ——— peces d'exemple ———

@@ -6,14 +6,49 @@
 import { SHAPES, SHAPE_NAMES, SHAPE_HINTS, UNIT, FLOOR_HEIGHT, TERRAIN_STEP } from './constants.js';
 import { SIZES, footprint } from './format.js';
 
-const shapeTable = extra => {
+/**
+ * Una línia per forma personal. El taller mesura la geometria abans d'enviar
+ * res, de manera que el model sap com és de gran i, sobretot, si el punt
+ * d'inserció és al centre o a la base: és l'error que més cara costa.
+ */
+const personalRow = note => {
+  const size = note.size.map(value => value.toFixed(2)).join(' × ');
+  const where = note.base === 'bottom' ? 'h és la BASE: la peça creix cap amunt'
+    : note.base === 'centre' ? 'h és el centre, com les oficials'
+      : `la base queda ${Math.abs(note.low).toFixed(2)} per ${note.low >= 0 ? 'damunt' : 'sota'} de h`;
+  return `  ${note.id} (${note.label}) — forma personal; ${size} abans d'escalar; ${where}`;
+};
+
+const shapeTable = (extra, notes) => {
   const rows = SHAPES.map(id => `  ${id} (${SHAPE_NAMES[id] ?? id}) — ${SHAPE_HINTS[id] ?? ''}`);
-  if (extra.length) {
-    rows.push('  --- formes personals ja instal·lades en aquesta còpia del joc ---');
-    for (const id of extra) rows.push(`  ${id} — forma personal; cap dins d'un cub unitat, com les altres`);
+  if (!extra.length) return rows.join('\n');
+  rows.push('  --- formes personals ja instal·lades en aquesta còpia del joc ---');
+  const byId = new Map(notes.map(note => [note.id, note]));
+  for (const id of extra) {
+    const note = byId.get(id);
+    rows.push(note ? personalRow(note)
+      : `  ${id} — forma personal; cap dins d'un cub unitat, com les altres`);
   }
   return rows.join('\n');
 };
+
+/** Com fer-les servir. Només surt si la còpia del joc en té cap. */
+const personalNotes = extra => (extra.length ? `
+## Les formes personals
+
+Aquesta còpia del joc en té ${extra.length}, i són tan bones com les oficials.
+El nom en diu la intenció: si n'hi ha una que ja és un marc buit, un arc obert,
+un mur amb finestres o un recipient, fes-la servir en comptes d'imitar-la amb
+quatre caixes. Queda més neta i gasta menys peces.
+
+Si pel nom no saps què és una forma, no la facis servir: val més una caixa que
+una sorpresa.
+
+Mira't la línia del catàleg abans de col·locar-ne cap: moltes tenen la BASE a
+Y=0 en comptes d'estar centrades, i per a aquestes h és la base i no el centre.
+Les que fan de marc o de mur solen quedar bé amb la fondària baixada a 0.10-0.25
+amb sz; escalar la peça escala també les vores i el forat.
+` : '');
 
 const plotTable = () => SIZES.map(s => {
   const halfU = (s.width * UNIT / 2).toFixed(3), halfV = (s.depth * UNIT / 2).toFixed(3);
@@ -21,7 +56,7 @@ const plotTable = () => SIZES.map(s => {
 }).join('\n');
 
 /** Les regles del joc. Va com a system prompt. */
-export function systemPrompt({ personalShapes = [] } = {}) {
+export function systemPrompt({ personalShapes = [], shapeNotes = [] } = {}) {
   return `Ets un modelador del joc Vila Mediterrània, un constructor de viles inspirat en
 Townscaper i en l'arquitectura de la Costa Brava i la Costa Daurada. Component
 edificis i monuments a partir de formes primitives instanciades.
@@ -72,7 +107,7 @@ que arriba a 1.30 frega la casa del costat.
 
 ## Catàleg de formes
 
-${shapeTable(personalShapes)}
+${shapeTable(personalShapes, shapeNotes)}
 
 Notes de les formes que costen més:
 - gable és un triangle que mira a +Z. Per fer el frontó d'una teulada a dues
@@ -82,7 +117,7 @@ Notes de les formes que costen més:
 - ring és un tor dret com una roda; per posar-lo pla, rx = PI/2. Estirat per
   l'eix (sz gran) fa una paret cilíndrica buida d'una sola peça.
 - rock és un dodecàedre: escalat i girat desigual fa pedra i fullatge.
-
+${personalNotes(personalShapes)}
 ## Girs
 
 - Un gir només en ry és un gir normal.

@@ -57,7 +57,10 @@ export function buildTurns({ photos, brief, sizes, category, id, name, example =
 
 /** El mateix que s'enviarà, en text pla, per ensenyar-ho o copiar-ho. */
 export function previewPrompt(options) {
-  const system = systemPrompt({ personalShapes: options.personalShapes ?? [] });
+  const system = systemPrompt({
+    personalShapes: options.personalShapes ?? [],
+    shapeNotes: options.shapeNotes ?? [],
+  });
   const turns = buildTurns(options);
   // L'exemple treballat és fix i molt llarg; el marquem perquè es vegi d'un cop
   // d'ull què és contingut teu i què no.
@@ -91,13 +94,13 @@ export function previewPrompt(options) {
 export async function generateMod({
   photos, brief, sizes, category, id, name,
   provider, model, apiKey, mode,
-  rounds = 2, personalShapes = [], takenIds = [], example = null,
+  rounds = 2, personalShapes = [], shapeNotes = [], takenIds = [], example = null,
   render = null, onStep = () => {}, signal = null,
 }) {
   if (!photos.length) throw new Error('Afegeix almenys una fotografia.');
   setExtraShapes(personalShapes);
 
-  const system = systemPrompt({ personalShapes });
+  const system = systemPrompt({ personalShapes, shapeNotes });
   const turns = buildTurns({ photos, brief, sizes, category, id, name, example });
   const labelled = labelPhotos(photos);
 

@@ -52,6 +52,10 @@ El panell **Genera des de fotografies** compon un primer esbós amb Claude o
 OpenAI a partir de fotos d'un edifici real. Consulta `LLEGEIX-ME-IA.md`: cal
 posar-hi una clau d'API.
 
+El botó **Al terra** seu la selecció a la cota 0, i cada grup hi baixa sencer.
+Si alguna peça queda sota terra, el terra de la vista es torna translúcid i
+l'avís porta un botó **Selecciona-les**.
+
 Amb dues peces o més seleccionades, el panell **Alinea i distribueix** de la
 columna dreta iguala les cares en `u`, `h` o `v`, les centra, o les reparteix a
 distàncies iguals. Cada grup hi compta com un sol bloc.

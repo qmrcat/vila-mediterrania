@@ -111,8 +111,8 @@ export function reviewMod(mod, bounds, taken = [], pending = []) {
     const { width, depth, label } = smallestPlot(mod);
     const limitU = width * UNIT / 2, limitV = depth * UNIT / 2, margin = .001;
     if (bounds.maxU > limitU + margin || bounds.minU < -limitU - margin || bounds.maxV > limitV + margin || bounds.minV < -limitV - margin)
-      notes.push({ level: 'error', text: `Alguna peça surt de la parcel·la de ${label} i es clavarà dins de la casa del costat.` });
-    if (bounds.minH < -margin) notes.push({ level: 'warn', text: 'Hi ha peces per sota de la base; quedaran enterrades al terreny.' });
+      notes.push({ level: 'error', find: 'outside', text: `Alguna peça surt de la parcel·la de ${label} i es clavarà dins de la casa del costat.` });
+    if (bounds.minH < -margin) notes.push({ level: 'warn', find: 'below', text: 'Hi ha peces per sota de la base; quedaran enterrades al terreny.' });
     if (!mod.autoHeight && Math.abs(mod.height - bounds.maxH) > .05)
       notes.push({ level: 'warn', text: `L’alçada declarada (${mod.height.toFixed(2)}) no coincideix amb la real (${bounds.maxH.toFixed(2)}). El volum de clic no encaixarà.` });
   }
