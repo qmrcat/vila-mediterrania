@@ -3,6 +3,7 @@
  * Es creen una sola vegada i es comparteixen entre totes les instàncies.
  * No cridis dispose() ni modifiquis la geometria des dels renderitzadors.
  */
+import {PECES_BUIDES} from './peces-buides.js';
 import {ISRAEL_FLAG_GEOMETRIES} from './israel-flag-geometries.js';
 
 export const PERSONAL_GEOMETRIES={
@@ -39,6 +40,7 @@ export const PERSONAL_GEOMETRIES={
     return geometry;
   },
   ...ISRAEL_FLAG_GEOMETRIES,
+  ...PECES_BUIDES,
 };
 
 

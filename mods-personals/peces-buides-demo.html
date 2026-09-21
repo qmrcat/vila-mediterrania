@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ca">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Peces buides · Vila Mediterrània</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#16353a;color:#f3ebd9;font:16px system-ui}main{max-width:1000px;margin:auto;padding:22px}h1{font-size:26px;margin:0 0 8px}p{line-height:1.5}label{display:inline-block;margin:8px 16px 8px 0}select,input,button{font:inherit;accent-color:#dfb46b}select,button{background:#244a50;color:inherit;border:1px solid #759495;border-radius:8px;padding:8px}canvas{display:block;width:100%;height:min(60vh,540px);border-radius:16px;touch-action:none;background:#91bcc1}#error{color:#ffd4a4}code{color:#ffe1a5}button{cursor:pointer}
+</style>
+<main>
+<h1>Peces buides</h1><p>Arrossega per girar la peça. Els forats deixen veure el fons de l’escena.</p>
+<label>Peça <select id="shape"></select></label>
+<label>Fondària <input id="depth" type="range" min="0.08" max="1" step="0.01" value="0.25"></label>
+<label><input id="wire" type="checkbox"> Mostra triangles</label>
+<button id="reset">Restableix la vista</button>
+<canvas id="view" aria-label="Vista 3D de la peça buida seleccionada"></canvas>
+<p id="details"></p><p id="error" role="alert"></p>
+</main>
+<script type="module">
+import * as THREE from '../vendor/three.module.min.js';
+import {PECES_BUIDES} from './peces-buides.js';
+const names=['Marc rectangular','Marc circular','Arc de mig punt','Arc apuntat','Tub buit','Caixa oberta','Mur amb una finestra','Mur amb tres finestres'];
+const $=id=>document.getElementById(id),ids=Object.keys(PECES_BUIDES);
+ids.forEach((id,i)=>$('shape').add(new Option(names[i],id)));
+try{
+  const canvas=$('view'),renderer=new THREE.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  const scene=new THREE.Scene();scene.background=new THREE.Color('#91bcc1');
+  scene.add(new THREE.HemisphereLight('#ffffff','#6a7263',2));
+  const sun=new THREE.DirectionalLight('#fff1d9',3);sun.position.set(3,5,4);scene.add(sun);
+  const camera=new THREE.PerspectiveCamera(35,1,.01,30);camera.position.set(0,.5,3.7);camera.lookAt(0,.5,0);
+  const pivot=new THREE.Group();pivot.position.y=.5;scene.add(pivot);
+  const material=new THREE.MeshStandardMaterial({color:'#e4c595',roughness:.85});
+  let mesh,drag=null;
+  function reset(){pivot.rotation.set(.24,-.45,0);}
+  function choose(){
+    if(mesh){pivot.remove(mesh);mesh.geometry.dispose();}
+    const id=$('shape').value;mesh=new THREE.Mesh(PECES_BUIDES[id](THREE),material);mesh.position.y=-.5;mesh.scale.z=Number($('depth').value);pivot.add(mesh);
+    $('details').replaceChildren();const code=document.createElement('code');code.textContent=id;$('details').append(code,' · Amplada 1, alçada 1; base a Y = 0.');
+  }
+  $('shape').addEventListener('change',choose);$('depth').addEventListener('input',()=>mesh.scale.z=Number($('depth').value));
+  $('wire').addEventListener('change',()=>material.wireframe=$('wire').checked);$('reset').addEventListener('click',reset);
+  canvas.addEventListener('pointerdown',e=>{if(e.button!==0||drag)return;drag={id:e.pointerId,x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId);});
+  canvas.addEventListener('pointermove',e=>{if(drag?.id!==e.pointerId)return;pivot.rotation.y+=(e.clientX-drag.x)*.01;pivot.rotation.x+=(e.clientY-drag.y)*.01;drag.x=e.clientX;drag.y=e.clientY;});
+  for(const event of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(event,e=>{if(drag?.id===e.pointerId)drag=null;});
+  new ResizeObserver(()=>{const w=canvas.clientWidth,h=canvas.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}).observe(canvas);
+  choose();reset();renderer.setAnimationLoop(()=>renderer.render(scene,camera));
+}catch(error){$('error').textContent='No s’ha pogut obrir la vista 3D: '+error.message;}
+</script>
+</html>
