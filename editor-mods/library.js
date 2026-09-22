@@ -4,7 +4,7 @@
 //
 // Fitxer pur: ni DOM ni Three.js. Els girs es componen a mà amb quaternions
 // per no dependre de la llibreria.
-import { newPart, num, isKnownShape } from './format.js';
+import { newPart, num, isKnownShape, partMaterial, partGroup } from './format.js';
 
 export const LIBRARY_KEY = 'vila-mediterrania-blocks-1';
 export const BLOCK_FORMAT = 'vila-block';
@@ -22,12 +22,21 @@ export function validateBlock(input) {
   if (input.parts.length > 400) throw new Error('Una peça de biblioteca no pot passar de 400 elements.');
   const parts = input.parts.map(p => {
     if (!isKnownShape(p?.shape)) throw new Error(`La forma «${p?.shape}» no existeix ni al joc ni al taller.`);
-    if (!/^#[0-9a-fA-F]{6}$/.test(String(p.color))) throw new Error('Els colors han de ser hexadecimals de sis xifres.');
+    const paint = p.color && typeof p.color === 'object' ? p.color : { color: p.color };
+    if (!/^#[0-9a-fA-F]{6}$/.test(String(paint.color))) throw new Error('Els colors han de ser hexadecimals de sis xifres.');
+    const label = String(p.name ?? '').trim();
+    const group = partGroup(p.group);
+    // Una peça de biblioteca es desa sencera: nom, grup i material hi van
+    // inclosos. L'únic que no es desa és si la tenies amagada, perquè en
+    // inserir-la l'has de poder veure.
     return newPart({
-      shape: p.shape, color: String(p.color).toLowerCase(),
+      shape: p.shape, color: String(paint.color).toLowerCase(),
       u: num(p.u), h: num(p.h), v: num(p.v),
       sx: num(p.sx, 1), sy: num(p.sy, 1), sz: num(p.sz, 1),
       ry: num(p.ry), rx: num(p.rx), rz: num(p.rz),
+      ...partMaterial({ ...paint, ...p }),
+      ...(label ? { name: label.slice(0, 40) } : {}),
+      ...(group ? { group } : {}),
     });
   });
   const name = String(input.name ?? 'Peça').slice(0, 40);

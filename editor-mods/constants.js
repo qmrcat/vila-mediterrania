@@ -38,7 +38,7 @@ export const SHAPE_NAMES = {
 // Pistes curtes per al desplegable: què és cada forma i com s'orienta.
 export const SHAPE_HINTS = {
   box: 'Cub d’1 × 1 × 1, centrat. La base de gairebé tot.',
-  cylinder: 'Cilindre vertical de 12 cares fixes; sy és l’alçada, sx i sz el diàmetre. Per a més cares, fes-te’n un de personal amb la plantilla Prisma.',
+  cylinder: 'Cilindre vertical; sy és l’alçada, sx i sz el diàmetre. Les cares són les de geometry.cylinderSegments de config.js, iguals per a tot el poble.',
   cone: 'Con vertical amb la punta amunt, de 8 cares fixes. Amb la plantilla Prisma i el radi superior a 0 en pots fer un de les cares que vulguis.',
   carrot: 'Con amb la punta avall.',
   sphere: 'Esfera de poca resolució, 10 × 6, fixa: és així a posta perquè el poble sembli fet de la mateixa pasta.',

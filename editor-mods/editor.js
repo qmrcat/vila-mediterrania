@@ -1,4 +1,4 @@
-import { loadShapes, missingShapes, loadPersonalShapes, applyDrafts, personalShapes, shapeBounds } from './shapes.js';
+import { loadShapes, missingShapes, loadPersonalShapes, applyDrafts, personalShapes, shapeBounds, cylinderFaces } from './shapes.js';
 import { SHAPES, SHAPE_HINTS, SHAPE_NAMES, UNIT } from './constants.js';
 import {
   TEMPLATES, defaultParams, validateDraft, loadDrafts, saveDrafts,
@@ -298,6 +298,7 @@ function renderParts() {
     $('#hide-part').textContent = list.every(index => mod.parts[index].hidden) ? 'Mostra' : 'Amaga';
   }
   const spreadable = picked.size > 1 ? pickedBlocks().length : 0;
+  $('#stack-part').disabled = spreadable < 2;
   $('#align').hidden = spreadable < 2;
   for (const button of $('#align').querySelectorAll('button[data-align$=":spread"]')) button.disabled = spreadable < 3;
   $('#repeat').hidden = picked.size !== 1;
@@ -315,6 +316,7 @@ function renderInspector() {
   renderSizeClipboard();
   $('#part-shape').value = part.shape;
   $('#shape-hint').textContent = shapeHint(part.shape);
+  renderFaces(part);
   $('#part-color').value = part.color;
   if (document.activeElement !== $('#part-color-hex')) $('#part-color-hex').value = part.color;
   for (const key of ['u', 'h', 'v', 'sx', 'sy', 'sz']) {
@@ -441,7 +443,7 @@ function bindMeta() {
   $('#new-mod').addEventListener('click', () => {
     if (!confirmDiscard()) return;
     mod = newMod({ id: uniqueId([...mods, ...takenIds.map(id => ({ id }))], 'modNou'), name: 'Mod nou', parts: [] });
-    selected = null; dirty = true; rememberMod('');
+    selected = null; dirty = true; rememberMod(''); stopEditingBlock();
     render(); viewport.frame(mod);
   });
   $('#save-mod').addEventListener('click', () => save(false));
@@ -460,7 +462,7 @@ function bindMeta() {
     const found = mods.find(m => m.id === event.target.value);
     if (!found || !confirmDiscard()) { $('#collection').value = mod.id; return; }
     mod = structuredClone(found); selected = null; dirty = false;
-    rememberMod(mod.id);
+    rememberMod(mod.id); stopEditingBlock();
     render(); viewport.frame(mod);
   });
   $('#import-mod').addEventListener('click', () => $('#file').click());
@@ -593,6 +595,7 @@ function bindParts() {
   $('#group-part').addEventListener('click', groupPicked);
   $('#ungroup-part').addEventListener('click', ungroupPicked);
   $('#ground-part').addEventListener('click', groundPicked);
+  $('#stack-part').addEventListener('click', stackPicked);
   $('#up-part').addEventListener('click', () => move(-1));
   $('#down-part').addEventListener('click', () => move(1));
   $('#hide-part').addEventListener('click', () => {
@@ -647,6 +650,26 @@ function ungroupPicked() {
   if (!list.some(index => mod.parts[index].group)) { toast('La selecció no té cap grup.'); return; }
   change(() => { for (const index of list) delete mod.parts[index].group; pruneGroups(); });
   toast('Grup desfet.');
+}
+
+/**
+ * Còpies amb grups nous: els que portava la peça es conserven, cadascun amb el
+ * seu identificador propi dins d'aquest mod. Si no en portava cap i hi ha més
+ * d'un element, s'agrupen tots, que és el que fa falta per moure-la de peça.
+ */
+function regroup(parts) {
+  const renamed = new Map();
+  let next = Number(nextGroupId().slice(1));
+  const loose = parts.length > 1 && !parts.some(part => part.group)
+    ? `g${next++}` : undefined;
+  return parts.map(part => {
+    const copy = { ...part };
+    if (copy.group) {
+      if (!renamed.has(copy.group)) renamed.set(copy.group, `g${next++}`);
+      copy.group = renamed.get(copy.group);
+    } else if (loose) copy.group = loose;
+    return copy;
+  });
 }
 
 /** Duplica la selecció aplicant-hi una transformació, i selecciona les còpies. */
@@ -723,7 +746,60 @@ function paintPicked(key, value) {
   });
 }
 
+// El cilindre del joc és un de sol per a tot el poble: les cares surten de
+// config.js i no es poden canviar peça a peça. El que sí que es pot és fer-se
+// un cilindre propi amb les cares que calguin, i és el que fa aquest camp.
+const ROUND_SHAPES = { cylinder: 'prisma', cone: 'prisma' };
+
+function facesOf(part) {
+  const draft = drafts.find(item => item.id === part.shape);
+  if (draft && Object.hasOwn(draft.params, 'cares')) return draft.params.cares;
+  if (part.shape === 'cylinder') return cylinderFaces();
+  if (part.shape === 'cone') return 8;
+  return null;
+}
+
+function renderFaces(part) {
+  const draft = drafts.find(item => item.id === part.shape);
+  const editable = Object.hasOwn(ROUND_SHAPES, part.shape) || (draft && Object.hasOwn(draft.params, 'cares'));
+  $('#faces-row').hidden = !editable;
+  if (!editable) return;
+  const input = $('#part-faces');
+  if (document.activeElement !== input) input.value = facesOf(part);
+  $('#part-faces-apply').textContent = draft ? 'Canvia-les' : 'Fes-la pròpia';
+}
+
+/**
+ * Amb una forma del taller, canvia les cares de la forma mateixa. Amb una del
+ * joc, en crea una de personal —un prisma de N cares, que és un cilindre— i la
+ * posa a la selecció. La forma nova encara s'ha d'instal·lar al joc.
+ */
+function applyFaces() {
+  const part = current();
+  if (!part) return;
+  const wanted = Math.min(Math.max(Math.round(num($('#part-faces').value, 0)), 3), 256);
+  const draft = drafts.find(item => item.id === part.shape);
+  if (draft) {
+    if (draft.params.cares === wanted) { toast('Ja en tenia aquestes.'); return; }
+    draft.params = TEMPLATES[draft.template].clean({ ...draft.params, cares: wanted });
+    persistDrafts(); refreshShapes(); renderShapes(); render();
+    toast(`«${draft.id}» passa a ${draft.params.cares} cares.`);
+    return;
+  }
+  const base = part.shape === 'cone' ? 'con' : 'cilindre';
+  const id = `${base}${wanted}`;
+  if (!drafts.some(item => item.id === id)) {
+    if (personalShapes.includes(id) || SHAPES.includes(id)) { toast(`Ja hi ha una forma que es diu «${id}».`); return; }
+    const params = TEMPLATES.prisma.clean({ cares: wanted, dalt: part.shape === 'cone' ? 0 : 1 });
+    drafts.push(validateDraft({ id, template: 'prisma', params }));
+    persistDrafts(); refreshShapes(); renderShapes();
+  }
+  change(() => { for (const index of pickedList()) mod.parts[index].shape = id; });
+  toast(`«${id}» creada al taller i posada a la selecció. Instal·la-la al joc quan et vagi bé.`);
+}
+
 function bindInspector() {
+  $('#part-faces-apply').addEventListener('click', applyFaces);
   for (const [key, id] of MATERIAL_FIELDS) {
     $(id).addEventListener('change', event => {
       const value = Math.min(Math.max(num(event.target.value, MATERIAL_DEFAULTS[key]), 0), 1);
@@ -1064,6 +1140,23 @@ function groundPicked() {
   shiftBlocks('h', deltas, moved => `${moved} bloc${moved === 1 ? '' : 's'} a terra, amb la base a 0.`);
 }
 
+/**
+ * Posa la selecció damunt d'una de les peces, que fa de terra. La que fa de
+ * terra és la que arriba menys amunt: la resta hi seu a sobre, sense tocar-ne
+ * la planta. Els grups pugen sencers, com a tot arreu.
+ */
+function stackPicked() {
+  const blocks = pickedBlocks();
+  if (blocks.length < 2) { toast('Selecciona la peça que fa de terra i la que hi va a sobre.'); return; }
+  const spans = blocks.map(block => blockSpan(block, 'h'));
+  let floor = 0;
+  for (let i = 1; i < spans.length; i++) if (spans[i].max < spans[floor].max) floor = i;
+  const top = spans[floor].max;
+  const deltas = spans.map((span, index) => (index === floor ? 0 : top - span.min));
+  shiftBlocks('h', deltas, moved =>
+    `${moved} bloc${moved === 1 ? '' : 's'} damunt de la peça de sota, a ${top.toFixed(2)} d'alçada.`);
+}
+
 function alignPicked(axis, edge) {
   const blocks = pickedBlocks();
   if (blocks.length < 2) { toast('Selecciona almenys dos blocs per alinear-los.'); return; }
@@ -1178,6 +1271,7 @@ const readableShape = id => id.replace(/([a-z0-9])([A-Z])/g, '$1 $2').toLowerCas
  * sempre és al centre.
  */
 function shapeHint(id) {
+  if (id === 'cylinder') return `${SHAPE_HINTS[id]} Ara en té ${cylinderFaces()}.`;
   if (SHAPE_HINTS[id]) return SHAPE_HINTS[id];
   const box = shapeBounds(id);
   const size = [0, 1, 2].map(i => (box.max[i] - box.min[i]).toFixed(2).replace('.', ',')).join(' × ');
@@ -1224,10 +1318,16 @@ function renderShapes() {
     const label = document.createElement('label');
     const caption = document.createElement('span');
     caption.textContent = field.label;
-    const input = document.createElement('input');
-    input.type = 'number'; input.min = field.min; input.max = field.max;
-    input.step = field.step; input.value = draft.params[field.key];
-    input.addEventListener('input', () => {
+    // Hi ha camps que són una llista d'opcions i no un número.
+    const input = document.createElement(field.choices ? 'select' : 'input');
+    if (field.choices) {
+      fillSelect(input, field.choices.map((label, index) => [index, label]));
+      input.value = String(draft.params[field.key]);
+    } else {
+      input.type = 'number'; input.min = field.min; input.max = field.max;
+      input.step = field.step; input.value = draft.params[field.key];
+    }
+    input.addEventListener(field.choices ? 'change' : 'input', () => {
       draft.params = TEMPLATES[draft.template].clean({ ...draft.params, [field.key]: input.value });
       persistDrafts(); refreshShapes(); render();
     });
@@ -1346,9 +1446,15 @@ function renderLibrary() {
   fillSelect($('#block-list'), blocks.map(block => [block.id, `${block.name} · ${block.parts.length}`]));
   if (blocks.some(block => block.id === chosen)) $('#block-list').value = chosen;
   const empty = !blocks.length;
-  for (const id of ['#block-insert', '#block-rename', '#block-duplicate', '#block-delete', '#block-export'])
+  for (const id of ['#block-insert', '#block-open', '#block-rename', '#block-duplicate', '#block-delete', '#block-export'])
     $(id).disabled = empty;
   $('#block-empty').hidden = !empty;
+  const editing = blocks.find(block => block.id === editingBlock);
+  if (!editing) editingBlock = null;
+  $('#block-update').disabled = !editing;
+  $('#block-editing').textContent = editing
+    ? `Estàs editant «${editing.name}». Amb Actualitza la peça, el mod obert hi torna.`
+    : '';
 }
 
 const currentBlock = () => blocks.find(block => block.id === $('#block-list').value) ?? null;
@@ -1358,7 +1464,91 @@ function persistLibrary() {
   catch { toast('El navegador no ha pogut desar la biblioteca. Exporta-la per no perdre-la.'); }
 }
 
+/** En canviar de mod, el recordatori d'edició deixa de tenir sentit. */
+const stopEditingBlock = () => { editingBlock = null; renderLibrary(); };
+
+/**
+ * La peça de biblioteca que estem editant al taller, si n'hi ha cap. És només
+ * un recordatori: el mod obert és un mod normal i corrent, i pots desar-lo a la
+ * col·lecció, exportar-lo o oblidar-te'n.
+ */
+let editingBlock = null;
+
+/** La parcel·la més petita on cap la peça, per no encendre avisos de seguida. */
+function plotFor(parts) {
+  let reach = 0;
+  for (const part of parts) {
+    const span = partSpan(part, shapeBounds(part.shape));
+    for (const axis of ['u', 'v'])
+      reach = Math.max(reach, Math.abs(part[axis] + span[axis].offset) + span[axis].half);
+  }
+  return SIZES.find(size => Math.min(size.width, size.depth) * UNIT / 2 >= reach)?.size ?? 16;
+}
+
+/**
+ * Comença una peça de zero: una caixa sola, desada a la biblioteca i oberta al
+ * taller, a punt per anar-hi afegint elements.
+ */
+function newBlock() {
+  if (!confirmDiscard()) return;
+  const suggested = uniqueBlockName(blocks, 'Peça nova');
+  const name = prompt('Nom de la peça nova:', suggested);
+  if (name === null) return;
+  const clean = name.trim();
+  if (!clean) { toast('La peça necessita un nom.'); return; }
+  let block;
+  try { block = validateBlock({ name: clean, id: blockId(clean), parts: [newPart()] }); }
+  catch (error) { toast(error.message); return; }
+  if (blocks.some(item => item.id === block.id)) { toast(`Ja hi ha una peça anomenada «${clean}».`); return; }
+  blocks.push(block);
+  persistLibrary();
+  $('#block-list').value = block.id;
+  openBlock(block);
+  toast(`«${block.name}» començada. Afegeix-hi peces i prem Actualitza la peça.`);
+}
+
+/** Obre una peça de biblioteca com un mod de treball. */
+function openBlock(chosen) {
+  const block = chosen ?? currentBlock();
+  if (!block || (!chosen && !confirmDiscard())) return;
+  const parts = block.parts.map(part => ({ ...part }));
+  mod = newMod({
+    id: blockId(block.name), name: block.name,
+    sizes: [plotFor(parts)], previewSize: plotFor(parts),
+    help: 'Peça de biblioteca oberta al taller per retocar-la.',
+    parts,
+  });
+  mod.previewSize = mod.sizes[0];
+  editingBlock = block.id;
+  selected = null; picked = new Set(); dirty = false;
+  rememberMod('');
+  refreshCollection(); renderLibrary(); render();
+  viewport.frame(mod);
+  toast(`«${block.name}» oberta al taller amb ${parts.length} elements.`);
+}
+
+/** Torna el mod obert a la peça de la qual va sortir. */
+function updateBlock() {
+  const target = blocks.findIndex(block => block.id === editingBlock);
+  if (target < 0) { toast('Aquesta peça ja no és a la biblioteca.'); return; }
+  if (!mod.parts.length) { toast('El mod no té cap peça.'); return; }
+  let updated;
+  try {
+    updated = validateBlock({
+      name: blocks[target].name, id: blocks[target].id, parts: normalizeParts(mod.parts),
+    });
+  } catch (error) { toast(error.message); return; }
+  blocks[target] = updated;
+  persistLibrary(); renderLibrary();
+  $('#block-list').value = updated.id;
+  dirty = false;
+  toast(`«${updated.name}» actualitzada amb ${updated.parts.length} elements.`);
+}
+
 function bindLibrary() {
+  $('#block-new').addEventListener('click', newBlock);
+  $('#block-open').addEventListener('click', () => openBlock());
+  $('#block-update').addEventListener('click', updateBlock);
   $('#block-insert').addEventListener('click', () => {
     const block = currentBlock();
     if (!block) return;
@@ -1366,14 +1556,15 @@ function bindLibrary() {
     // Com les peces noves: si la casella d'espera és marcada, la peça apareix
     // fora de la parcel·la, on es veu sencera i no queda amagada dins del mod.
     const staged = $('#stage-new').checked;
-    const group = block.parts.length > 1 ? nextGroupId() : undefined;
-    const copies = stageEast(block.parts.map(part => ({ ...part, ...(group ? { group } : {}) })));
+    const copies = stageEast(regroup(block.parts));
     const at = mod.parts.length;
     change(() => {
       mod.parts.push(...copies);
       setPicked(copies.map((_, k) => at + k));
     });
+    const groups = new Set(copies.map(part => part.group).filter(Boolean)).size;
     toast(`«${block.name}» inserida amb ${copies.length} peça${copies.length === 1 ? '' : 'es'}`
+      + `${groups > 1 ? ` en ${groups} grups` : ''}`
       + `${staged ? ' a la zona d’espera de l’est' : ' al centre de la parcel·la'}. Mou-la amb les fletxes.`);
   });
 
@@ -1393,7 +1584,9 @@ function bindLibrary() {
     if (index >= 0) blocks[index] = block; else blocks.push(block);
     persistLibrary(); renderLibrary();
     $('#block-list').value = block.id;
-    toast(`«${block.name}» desada amb ${block.parts.length} elements.`);
+    const saved = new Set(block.parts.map(part => part.group).filter(Boolean)).size;
+    toast(`«${block.name}» desada amb ${block.parts.length} elements`
+      + `${saved ? ` i ${saved} grup${saved === 1 ? '' : 's'}` : ''}.`);
   });
 
   $('#block-rename').addEventListener('click', () => {

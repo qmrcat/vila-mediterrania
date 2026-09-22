@@ -9,7 +9,7 @@ export * from './constants.js';
 
 const geometries = {
   box: new THREE.BoxGeometry(1, 1, 1),
-  cylinder: new THREE.CylinderGeometry(.5, .5, 1, 12),
+  cylinder: new THREE.CylinderGeometry(.5, .5, 1, 32),
   cone: new THREE.ConeGeometry(.5, 1, 8),
   carrot: new THREE.ConeGeometry(.5, 1, 8).rotateZ(Math.PI),
   rock: new THREE.DodecahedronGeometry(.5, 0),
@@ -62,7 +62,29 @@ const external = [
 
 export const missingShapes = [];
 
+// Des de la v98 les cares del cilindre surten de config.js i són globals per a
+// tot el poble. El taller les llegeix d'allà mateix perquè la vista i el joc
+// dibuixin el mateix contorn.
+const DEFAULT_SEGMENTS = 32;
+let segments = DEFAULT_SEGMENTS;
+
+/** Les cares que té ara el cilindre del joc. */
+export const cylinderFaces = () => segments;
+
+async function readCylinderSegments() {
+  try {
+    const { CONFIG } = await import('../config.js');
+    const wanted = Math.round(Number(CONFIG?.geometry?.cylinderSegments));
+    if (!Number.isFinite(wanted)) return;
+    segments = Math.min(Math.max(wanted, 3), 256);
+    if (segments === DEFAULT_SEGMENTS) return;
+    geometries.cylinder.dispose?.();
+    geometries.cylinder = new THREE.CylinderGeometry(.5, .5, 1, segments);
+  } catch { /* una còpia antiga del joc no té config.geometry: 32 i avall */ }
+}
+
 export async function loadShapes() {
+  await readCylinderSegments();
   for (const [name, path, build] of external) {
     try {
       geometries[name] = build(await import(path));

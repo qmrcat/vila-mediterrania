@@ -457,10 +457,43 @@ igual que la col·lecció de mods, i s'exporten a un fitxer a part.</p>
 <table>
 <tr><th>Botó</th><th>Què fa</th></tr>
 <tr><td><b>Insereix</b></td><td>Estampa la peça de la llista <b>Peces desades</b> dins del mod obert. Els seus elements queden tots seleccionats i agrupats: mou-los amb les fletxes fins on van.</td></tr>
-<tr><td><b>Desa la selecció</b></td><td>Desa les peces seleccionades com una peça nova. Sense res seleccionat, desa el mod sencer.</td></tr>
+<tr><td><b>Peça nova</b></td><td>Comença'n una de zero: demana el nom, la desa amb una caixa sola i te l'obre al taller</td></tr>
+<tr><td><b>Obre al taller</b></td><td>Carrega la peça com un mod de treball per retocar-la, amb la parcel·la més petita on càpiga</td></tr>
+<tr><td><b>Actualitza la peça</b></td><td>Torna el mod obert a la peça de la qual va sortir, conservant-ne el nom i el lloc a la llista</td></tr>
+<tr><td><b>Desa la selecció</b></td><td>Desa les peces seleccionades com una peça nova. Sense res seleccionat, desa el mod sencer. Es desa tot: el nom de cada element, els grups i els materials</td></tr>
 <tr><td><b>Reanomena</b> · <b>Duplica</b> · <b>Elimina</b></td><td>Gestionen la biblioteca. Duplica't una peça abans de fer-ne una variant.</td></tr>
 <tr><td><b>Importa</b> · <b>Exporta</b></td><td>Un fitxer JSON amb tota la biblioteca, per compartir-la o guardar-la amb el projecte.</td></tr>
 </table>
+
+<h4>Començar-ne una de zero</h4>
+
+<p>Prem <b>Peça nova</b>, posa-li nom i ja la tens oberta al taller amb una caixa per començar.
+Afegeix-hi el que vulguis amb les eines de sempre i prem <b>Actualitza la peça</b> cada cop que
+vulguis desar com va. No cal passar per <i>Mod nou</i> ni desar res a la col·lecció.</p>
+
+<h4>Retocar una peça que ja tens</h4>
+
+<p>No cal cap editor a part: el taller ja ho és. Prem <b>Obre al taller</b> i la peça s'obre com un
+mod qualsevol, amb tots els seus elements, els grups i els materials. Retoca-la amb les eines de
+sempre i prem <b>Actualitza la peça</b>: torna a la biblioteca al mateix lloc, amb el mateix nom, i
+es torna a centrar i a seure a terra sola.</p>
+
+<ul>
+  <li>Sota els botons hi diu quina peça estàs editant. El recordatori desapareix quan obres un altre
+  mod o en comences un de nou; llavors <b>Actualitza</b> queda desactivat.</li>
+  <li>El mod de treball és un mod normal: el pots desar a la col·lecció o exportar-lo si t'interessa,
+  però no cal. Porta un text d'ajuda de mentida perquè els avisos no et renyin.</li>
+  <li>Si el que vols és una variant i no un canvi, fes <b>Duplica</b> a la biblioteca primer i obre
+  la còpia. L'original queda intacte.</li>
+</ul>
+
+<div class="note tip">
+  <p><b>Els grups viatgen amb la peça.</b> Si el que deses té grups a dins —cos, barana, vidre—, la
+  peça els recorda, i en inserir-la els torna a crear amb identificadors nous dins del mod: clicant
+  qualsevol element del cos, el tries sencer. Si el que deses no té cap grup i té més d'un element,
+  en inserir-lo s'agrupa tot, que és el que fa falta per portar-lo a lloc d'una peça. En qualsevol
+  cas, just després d'inserir tens tots els elements seleccionats i els pots moure junts.</p>
+</div>
 
 <div class="note">
   <p><b>S'estampa, no s'enllaça.</b> En inserir una peça, els seus elements passen a ser peces
@@ -652,6 +685,7 @@ manera de deixar una fila de finestres a la mateixa alçada sense anar mirant el
 <tr><td><b>Centre</b></td><td>Posa tots els blocs al centre de la selecció, en aquell eix</td></tr>
 <tr><td><b>Reparteix</b></td><td>Deixa els blocs a distàncies iguals de centre a centre. Els dos dels extrems no es mouen; en calen tres o més</td></tr>
 <tr><td><b>Al terra</b>, al costat dels botons de peces</td><td>Baixa —o puja— la selecció fins que la seva base toqui el terra, a <code>h</code> = 0. Funciona amb una sola peça i amb tota una selecció</td></tr>
+<tr><td><b>Damunt</b>, al seu costat</td><td>Fa que una peça serveixi de terra a l'altra: la que arriba menys amunt es queda on és i la resta hi seuen a sobre, sense moure's en planta</td></tr>
 </table>
 
 <p>Dues coses que val la pena saber. La primera: <b>un grup compta com un sol bloc</b> i es mou
@@ -769,12 +803,32 @@ suposar res: «Forma personal instal·lada · 1,00 × 1,00 × 1,00 abans d'escal
 </div>
 
 <div class="note">
-  <p><b>Les formes del joc no es poden afinar.</b> El <code>cylinder</code> té 12 cares, el
-  <code>cone</code> 8 i la <code>sphere</code> 10 × 6, i no hi ha cap camp per canviar-ho: el joc les
-  crea una sola vegada i les comparteix entre tots els edificis del poble, que és el que fa que tot
-  sembli de la mateixa pasta. Si necessites un cilindre de 24 cares, fes-te'l com a forma personal
-  amb la plantilla <b>Prisma</b> i el radi superior a 1; amb el radi superior a 0 en surt un con.</p>
+  <p><b>Les cares de les formes del joc són globals, no de cada peça.</b> El joc crea cada forma una
+  sola vegada i la comparteix entre tots els edificis del poble: per això totes les peces
+  <code>cylinder</code> d'una vila tenen les mateixes cares. Des de la <b>v98</b>, quantes en tenen
+  ho diu <code>geometry.cylinderSegments</code> de <code>config.js</code> —32 de sèrie, de 3 a 256—,
+  i el taller ho llegeix d'allà mateix perquè la vista i el joc dibuixin el mateix contorn. El
+  <code>cone</code> en té 8 i l'<code>sphere</code> és 10 × 6, encara fixos.</p>
 </div>
+
+<h3>Una peça amb les seves pròpies cares</h3>
+
+<p>Si el que vols és <b>aquesta</b> columna més fina i la resta com estaven, el camí és una forma
+personal. Amb una peça <code>cylinder</code> o <code>cone</code> seleccionada, al panell de la peça
+hi surt el camp <b>Cares</b> amb un botó:</p>
+
+<ol class="steps">
+  <li>Escriu-hi les cares que vols, de 3 a 256, i prem <b>Fes-la pròpia</b>.</li>
+  <li>El taller crea una forma nova —<code>cilindre64</code>, o <code>con12</code> si parties d'un
+  con— amb la plantilla <b>Prisma</b>, i la posa a tota la selecció.</li>
+  <li>Si tornes a tocar el camp amb una forma del taller seleccionada, el botó passa a dir
+  <b>Canvia-les</b> i ajusta la forma en comptes de crear-ne una altra.</li>
+</ol>
+
+<p>La forma nova viu al taller fins que la instal·les al joc: apareix al desplegable com a
+<i>pendent d'instal·lar</i> i els avisos t'ho recorden. Copia el seu bloc a
+<code>mods-personals/geometries.js</code>, dins del teu <code>PERSONAL_GEOMETRIES</code>, i ja la
+tindràs també al joc.</p>
 
 <h3>El generador del taller</h3>
 
@@ -788,7 +842,32 @@ immediatament i la pots fer servir a la vista 3D com qualsevol altra.</p>
 <tr><td><b>Prisma</b></td><td>Cares, radi superior</td><td>Amb el radi superior a 1, un prisma recte de N cares; a 0, una piràmide; enmig, un tronc de con.</td></tr>
 <tr><td><b>Escala</b></td><td>Graons</td><td>Una escala massissa que puja cap a +X dins d'un cub unitat. L'amplada va per <code>sz</code>.</td></tr>
 <tr><td><b>Teula romana</b></td><td>Cares, gruix, estretiment</td><td>Una teula corba buida per sota, amb les testes tancades. Amplada 1, llargada 1, alçada 0,5, base a Y=0.</td></tr>
+<tr><td><b>Resta</b></td><td>Forma de base, forma del forat, per on travessa, amplada, alçada, alçada del centre, desplaçament, cares</td><td>Un cub o un cilindre d'1 × 1 × 1 amb un forat de debò que el travessa. Base a Y=0. Necessita el joc v97</td></tr>
 </table>
+
+<h4>La plantilla Resta, forat a forat</h4>
+
+<p>És la que fa els forats de veritat, els que la transparència no pot fer. Tria la <b>forma de
+base</b> —cub o cilindre—, la <b>forma del forat</b>, i <b>per on travessa</b>: en fondària, en
+amplada o de dalt a baix. Després dona-li mida amb <b>amplada</b> i <b>alçada</b>, puja-la o baixa-la
+amb l'<b>alçada del centre</b> i mou-la de costat amb el <b>desplaçament</b>.</p>
+
+<table>
+<tr><th>Vols</th><th>Posa-hi</th></tr>
+<tr><td>Un mur amb finestra</td><td>Base cub, forat cub, travessa en fondària. Amplada i alçada 0,5</td></tr>
+<tr><td>Un cub amb un túnel rodó</td><td>Base cub, forat cilindre, travessa en fondària. Amplada i alçada 0,46</td></tr>
+<tr><td>Un tub</td><td>Base cilindre, forat cilindre, travessa vertical. Amplada i alçada 0,72</td></tr>
+<tr><td>Una espitllera de costat</td><td>Forat cilindre, travessa en amplada, amplada 0,3, centre 0,35, desplaçament 0,2</td></tr>
+</table>
+
+<p>El tallador sempre es fa el doble de llarg que la peça, perquè travessi de banda a banda: dues
+cares just enganxades són el que fa petar les restes booleanes. Compta que un forat rodó de 24 cares
+deixa la peça en uns 250 triangles i un tub de 32, en uns 800: n'hi ha prou i de sobra, però no
+abusis de les cares.</p>
+
+<p>En exportar, el <b>fitxer geometries.js</b> porta l'<code>import</code> de
+<code>solid-geometry.js</code> a dalt. Si enganxes només el bloc de la forma dins del teu registre,
+com toca fer, <b>copia també aquesta línia</b> o el joc no la trobarà.</p>
 
 <p>Les tres primeres caben dins d'un cub d'1 × 1 × 1 centrat a l'origen, com les formes del joc,
 i la teula hi cap amb la base a Y=0: així les escales de <code>part()</code> volen dir el mateix per
@@ -1113,7 +1192,7 @@ funcionament.</p>
 <table>
 <tr><th>Forma</th><th>Què és</th><th>Per a què va bé</th></tr>
 <tr><td><code>box</code><br><span class="lbl">cub</span></td><td>Cub d'1 × 1 × 1, centrat</td><td>Tot. Parets, lloses, bigues, obertures.</td></tr>
-<tr><td><code>cylinder</code><br><span class="lbl">cilindre</span></td><td>Cilindre vertical, 12 cares</td><td>Columnes, torres, pous, troncs.</td></tr>
+<tr><td><code>cylinder</code><br><span class="lbl">cilindre</span></td><td>Cilindre vertical; les cares les diu <code>config.js</code>, 32 de sèrie</td><td>Columnes, torres, pous, troncs.</td></tr>
 <tr><td><code>cone</code><br><span class="lbl">con</span></td><td>Con amb la punta amunt</td><td>Teulades còniques, xiprers, agulles.</td></tr>
 <tr><td><code>carrot</code><br><span class="lbl">con invertit</span></td><td>Con amb la punta avall</td><td>Penjolls, embuts, campanes.</td></tr>
 <tr><td><code>sphere</code><br><span class="lbl">esfera</span></td><td>Esfera de poca resolució</td><td>Boles, copes d'arbre, cúpules.</td></tr>

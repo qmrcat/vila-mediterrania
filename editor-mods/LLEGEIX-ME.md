@@ -86,6 +86,19 @@ Al panell de la peça, els camps **Opacitat · Rugositat · Metall** i la casell
 d'1, la peça surt de vidre. Mentre no els toquis, el mod s'exporta amb el color
 sol i val per a qualsevol versió.
 
+Les cares del `cylinder` són globals i surten de `geometry.cylinderSegments`
+de `config.js` (32 de sèrie); el taller les llegeix d'allà. Si en vols unes de
+diferents només per a una peça, el camp **Cares** del panell de la peça et
+crea un cilindre personal amb les cares que li diguis.
+
+Les peces de la biblioteca conserven el nom de cada element, els grups i els
+materials; en inserir-les, els grups es refan amb identificadors nous. Amb
+**Obre al taller** i **Actualitza la peça** en pots retocar una sense sortir de
+l'editor.
+
+Al taller de formes, la plantilla **Resta** fa forats de debò —un mur amb
+finestra, un cub amb túnel, un tub— amb les operacions booleanes del joc v97.
+
 Dreceres: fletxes mouen la selecció en `u` i `v`, Re Pàg i Av Pàg en `h`
 (amb Majúscules, passos de 0,005), Q i E giren 15° al voltant de l’eix vertical
 (amb Majúscules, 1°; un grup gira sencer al voltant del seu centre), Supr

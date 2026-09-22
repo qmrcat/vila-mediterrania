@@ -74,6 +74,7 @@
         <button type="button" id="group-part" disabled title="Uneix la selecció en un grup que es tria i es mou sencer (Ctrl+G)">Agrupa</button>
         <button type="button" id="ungroup-part" disabled title="Desfà el grup de la selecció (Ctrl+Maj+G)">Desagrupa</button>
         <button type="button" id="ground-part" disabled title="Baixa la selecció fins que la base toqui el terra (h = 0)">Al terra</button>
+        <button type="button" id="stack-part" disabled title="Posa la resta de la selecció damunt de la peça que queda més baixa">Damunt</button>
         <button type="button" id="hide-part" disabled title="Treu la selecció de la vista; s’exporta igualment">Amaga</button>
         <button type="button" id="show-all" disabled>Mostra-les totes</button>
         <button type="button" id="up-part" disabled>↑</button>
@@ -118,6 +119,11 @@
         <label class="field"><span>Forma</span>
           <select id="part-shape"></select></label>
         <p class="hint" id="shape-hint"></p>
+        <div class="faces-row" id="faces-row" hidden>
+          <span>Cares</span>
+          <input type="number" id="part-faces" min="3" max="256" step="1">
+          <button type="button" id="part-faces-apply" title="Crea una forma personal amb aquestes cares i posa-la a la selecció">Fes-la pròpia</button>
+        </div>
         <label class="field"><span>Color</span>
           <span class="color-row">
             <input type="color" id="part-color">
@@ -244,7 +250,10 @@
         <select id="block-list"></select></label>
       <p class="empty" id="block-empty" hidden>Encara no hi ha cap peça desada.</p>
       <div class="part-tools">
+        <button type="button" id="block-new">Peça nova</button>
         <button type="button" id="block-insert" class="primary">Insereix</button>
+        <button type="button" id="block-open" title="Obre la peça com un mod de treball per retocar-la">Obre al taller</button>
+        <button type="button" id="block-update" disabled>Actualitza la peça</button>
         <button type="button" id="block-save">Desa la selecció</button>
         <button type="button" id="block-rename">Reanomena</button>
         <button type="button" id="block-duplicate">Duplica</button>
@@ -252,6 +261,7 @@
         <button type="button" id="block-import">Importa…</button>
         <button type="button" id="block-export">Exporta</button>
       </div>
+      <p class="hint" id="block-editing"></p>
       <p class="hint">Sense res seleccionat, <b>Desa la selecció</b> desa el mod sencer com a peça.</p>
       <input type="file" id="block-file" accept="application/json,.json" hidden>
     </section>

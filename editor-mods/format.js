@@ -48,7 +48,7 @@ export function newPart(patch = {}) {
  */
 export const MATERIAL_DEFAULTS = { opacity: 1, roughness: .92, metalness: 0, doubleSide: false };
 
-const partMaterial = source => {
+export const partMaterial = source => {
   const out = {};
   for (const key of ['opacity', 'roughness', 'metalness']) {
     const value = num(source[key], MATERIAL_DEFAULTS[key]);
@@ -58,6 +58,9 @@ const partMaterial = source => {
   if (source.doubleSide === true) out.doubleSide = true;
   return out;
 };
+
+/** El grup del taller, si en porta un de vàlid. */
+export const partGroup = value => (/^g\d{1,4}$/.test(String(value ?? '')) ? String(value) : undefined);
 
 /** Una peça amb material propi: la que el joc dibuixarà amb transparència. */
 export const hasMaterial = part =>
@@ -71,7 +74,7 @@ export const hasMaterial = part =>
 const partExtras = p => ({
   ...(String(p.name ?? '').trim() ? { name: String(p.name).trim().slice(0, 40) } : {}),
   ...(p.hidden === true ? { hidden: true } : {}),
-  ...(/^g\d{1,4}$/.test(String(p.group ?? '')) ? { group: String(p.group) } : {}),
+  ...(partGroup(p.group) ? { group: partGroup(p.group) } : {}),
 });
 
 export function newMod(patch = {}) {

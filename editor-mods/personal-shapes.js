@@ -7,9 +7,16 @@
 // a l'editor, i code(), que escriu la funció que enganxaràs al joc. Hi ha una
 // prova a check-formes.mjs que compara vèrtex a vèrtex que fan el mateix.
 import { num } from './format.js';
+import { booleanGeometry } from '../solid-geometry.js';
 
 export const SHAPES_KEY = 'vila-mediterrania-shapes-1';
 export const SHAPE_ID_PATTERN = /^[a-z][A-Za-z0-9]{1,39}$/;
+
+/** Un camp de llista: es desa com el número de l'opció triada. */
+const clampPick = (value, count, fallback) => {
+  const n = Math.round(Number(value));
+  return Number.isFinite(n) && n >= 0 && n < count ? n : fallback;
+};
 
 const clampInt = (value, min, max, fallback) =>
   Math.min(Math.max(Math.round(num(value, fallback)), min), max);
@@ -64,16 +71,85 @@ function tileGeometry(THREE, seg, gruix, estret) {
   return geometry;
 }
 
+// El tallador sempre és llarg: així travessa de banda a banda i no deixa cares
+// enganxades, que és el que fa petar les restes booleanes.
+const CUT_AXES = [
+  { label: 'fondària · Z', rotation: [Math.PI / 2, 0, 0], scale: (w, h) => [w, 1, h], at: (x, y) => [x, y, 0] },
+  { label: 'amplada · X', rotation: [0, 0, Math.PI / 2], scale: (w, h) => [h, 1, w], at: (x, y) => [0, y, x] },
+  { label: 'vertical · Y', rotation: [0, 0, 0], scale: (w, h) => [w, 1, h], at: x => [x, .5, 0] },
+];
+
 export const TEMPLATES = {
+  resta: {
+    name: 'Resta · forat en una forma',
+    note: 'Cub o cilindre d’1 × 1 × 1 amb la base a Y=0, foradat de banda a banda. Necessita el joc v97.',
+    imports: ["import {booleanGeometry} from '../solid-geometry.js';"],
+    fields: [
+      { key: 'base', label: 'Forma de base', choices: ['cub', 'cilindre'], value: 0 },
+      { key: 'forat', label: 'Forma del forat', choices: ['cub', 'cilindre'], value: 1 },
+      { key: 'eix', label: 'Per on travessa', choices: CUT_AXES.map(axis => axis.label), value: 0 },
+      { key: 'amplada', label: 'Amplada del forat', min: .05, max: .95, step: .01, value: .5 },
+      { key: 'alcada', label: 'Alçada del forat', min: .05, max: .95, step: .01, value: .5 },
+      { key: 'centre', label: 'Alçada del centre', min: .05, max: .95, step: .01, value: .5 },
+      { key: 'desplacament', label: 'Desplaçament lateral', min: -.45, max: .45, step: .01, value: 0 },
+      { key: 'cares', label: 'Cares de les formes rodones', min: 6, max: 64, step: 1, value: 24 },
+    ],
+    clean: params => ({
+      base: clampPick(params.base, 2, 0),
+      forat: clampPick(params.forat, 2, 1),
+      eix: clampPick(params.eix, CUT_AXES.length, 0),
+      amplada: clampNum(params.amplada, .05, .95, .5),
+      alcada: clampNum(params.alcada, .05, .95, .5),
+      centre: clampNum(params.centre, .05, .95, .5),
+      desplacament: clampNum(params.desplacament, -.45, .45, 0),
+      cares: clampInt(params.cares, 6, 64, 24),
+    }),
+    build(THREE, params) {
+      const p = this.clean(params);
+      const axis = CUT_AXES[p.eix];
+      const base = p.base
+        ? new THREE.CylinderGeometry(.5, .5, 1, p.cares).translate(0, .5, 0)
+        : new THREE.BoxGeometry(1, 1, 1).translate(0, .5, 0);
+      const cutter = p.forat
+        ? new THREE.CylinderGeometry(.5, .5, 2, p.cares)
+        : new THREE.BoxGeometry(1, 2, 1);
+      try {
+        return booleanGeometry(THREE, 'subtract', base, {
+          geometry: cutter,
+          rotation: axis.rotation,
+          scale: axis.scale(p.amplada, p.alcada),
+          position: axis.at(p.desplacament, p.centre),
+        });
+      } finally { base.dispose(); cutter.dispose(); }
+    },
+    code(id, params) {
+      const p = this.clean(params), axis = CUT_AXES[p.eix];
+      const list = values => `[${values.map(value => Math.round(value * 1e5) / 1e5).join(',')}]`;
+      const solid = (long, faces) => (long
+        ? (p.forat ? `new THREE.CylinderGeometry(.5,.5,2,${faces})` : 'new THREE.BoxGeometry(1,2,1)')
+        : (p.base ? `new THREE.CylinderGeometry(.5,.5,1,${faces}).translate(0,.5,0)` : 'new THREE.BoxGeometry(1,1,1).translate(0,.5,0)'));
+      return `  // ${p.base ? 'Cilindre' : 'Cub'} d'1 × 1 × 1 amb la base a Y=0, foradat en ${axis.label}.\n` +
+        `  // El tallador fa 2 de llarg perquè travessi sense deixar cares enganxades.\n` +
+        `  ${id}(THREE){\n` +
+        `    const base=${solid(false, p.cares)};\n` +
+        `    const forat=${solid(true, p.cares)};\n` +
+        `    try{\n` +
+        `      return booleanGeometry(THREE,'subtract',base,{geometry:forat,\n` +
+        `        rotation:${list(axis.rotation)},scale:${list(axis.scale(p.amplada, p.alcada))},position:${list(axis.at(p.desplacament, p.centre))}});\n` +
+        `    }finally{base.dispose();forat.dispose();}\n` +
+        `  },`;
+    },
+  },
+
   tub: {
     name: 'Tub · cilindre buit',
     note: 'Diàmetre exterior 1, alçada 1, centrat. Escala’l amb sx, sy i sz.',
     fields: [
-      { key: 'cares', label: 'Cares', min: 6, max: 64, step: 1, value: 24 },
+      { key: 'cares', label: 'Cares', min: 6, max: 256, step: 1, value: 24 },
       { key: 'gruix', label: 'Gruix de paret', min: .02, max: .45, step: .01, value: .12 },
     ],
     clean: params => ({
-      cares: clampInt(params.cares, 6, 64, 24),
+      cares: clampInt(params.cares, 6, 256, 24),
       gruix: clampNum(params.gruix, .02, .45, .12),
     }),
     build(THREE, params) {
@@ -105,11 +181,11 @@ export const TEMPLATES = {
     name: 'Prisma · piràmide de N cares',
     note: 'Amb el radi superior a 0 surt una piràmide; a 1, un prisma recte.',
     fields: [
-      { key: 'cares', label: 'Cares', min: 3, max: 64, step: 1, value: 6 },
+      { key: 'cares', label: 'Cares', min: 3, max: 256, step: 1, value: 6 },
       { key: 'dalt', label: 'Radi superior', min: 0, max: 1, step: .05, value: 1 },
     ],
     clean: params => ({
-      cares: clampInt(params.cares, 3, 64, 6),
+      cares: clampInt(params.cares, 3, 256, 6),
       dalt: clampNum(params.dalt, 0, 1, 1),
     }),
     build(THREE, params) {
@@ -220,8 +296,11 @@ export const saveDrafts = (storage, drafts) =>
 /** El fitxer mods-personals/geometries.js sencer. */
 export function geometriesFile(drafts) {
   const body = drafts.map(draft => TEMPLATES[draft.template].code(draft.id, draft.params)).join('\n');
+  // Les plantilles que criden ajudants del joc s'emporten el seu import.
+  const imports = [...new Set(drafts.flatMap(draft => TEMPLATES[draft.template].imports ?? []))];
   return `/**\n * Formes personals: id: (THREE) => BufferGeometry.\n` +
     ` * Es creen una sola vegada i es comparteixen entre totes les instàncies.\n` +
     ` * No cridis dispose() ni modifiquis la geometria des dels renderitzadors.\n */\n` +
+    (imports.length ? `${imports.join('\n')}\n\n` : '') +
     `export const PERSONAL_GEOMETRIES={\n${body}\n};\n`;
 }
