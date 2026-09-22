@@ -416,7 +416,7 @@ async function init(){
     }
     world=createWorld();storageWarning='No s’ha pogut llegir el desament del navegador.';
   }
-  const {VillageScene}=await import('./scene.js?v=96');
+  const {VillageScene}=await import('./scene.js?v=97');
   scene=new VillageScene($('#world'),{onClick:applyEdit,onInspect:point=>{if(tool==='navigate')elementInspector.open(world,point);},
     onTerrainStrokeStart:()=>{
       if(tool!=='land'||$$('dialog').some(d=>d.open))return false;

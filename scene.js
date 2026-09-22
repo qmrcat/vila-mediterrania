@@ -1,4 +1,5 @@
 import {createPersonalGeometries} from './personal-geometries.js';
+import {partMaterialKey,normalizePartMaterial,createPartMaterial,createPartMeshes} from './part-materials.js';
 import {createPersonalAnimations} from './personal-animations.js';
 import {renderTerrainRailings} from './terrain-railing-geometry.js';
 import {PERSONAL_TREE_RENDERERS} from './personal-renderers.js';
@@ -42,8 +43,9 @@ export const UNIT=1.3, FLOOR=FLOOR_HEIGHT;
 const UP=new THREE.Vector3(0,1,0);
 const materials=new Map();
 function material(color){
-  if(!materials.has(color)) materials.set(color,new THREE.MeshStandardMaterial({color,...(color==='#ffe9a0'?{emissive:'#ffce72',emissiveIntensity:.8}:{}),roughness:.92,metalness:0,side:['#789456','#607c43','#91a865'].includes(color)?THREE.DoubleSide:THREE.FrontSide}));
-  return materials.get(color);
+  const id=partMaterialKey(color);
+  if(!materials.has(id))materials.set(id,createPartMaterial(THREE,color));
+  return materials.get(id);
 }
 const geometries={
   hotelStar:createHotelStarGeometry(),
@@ -196,8 +198,8 @@ export function createVillageGeometry(world){
   const isBrava=world.region==='brava';
   function add(shape,color,x,y,z,sx=1,sy=1,sz=1,ry=0,rx=0,rz=0){
     if(!Object.hasOwn(geometries,shape))throw new Error(`Forma desconeguda «${shape}». Revisa el nom i el registre PERSONAL_GEOMETRIES de mods-personals/renderers.js.`);
-    const id=`${shape}:${color}`;
-    if(!batches.has(id))batches.set(id,{shape,color,matrices:[]});
+    const id=`${shape}:${partMaterialKey(color)}`;
+    if(!batches.has(id))batches.set(id,{shape,color:typeof color==='string'?color:normalizePartMaterial(color),matrices:[]});
     helper.position.set(x,y,z);helper.rotation.set(rx,ry,rz);helper.scale.set(sx,sy,sz);helper.updateMatrix();
     batches.get(id).matrices.push(helper.matrix.clone());
   }
@@ -640,7 +642,7 @@ export function createVillageGeometry(world){
     const sand=!isBrava&&coast&&groundKind==='land'&&!hasSlope(t);
     const low=terrainBaseY(t),sloping=hasSlope(t),soil=groundKind==='rocky'?ROCKY_SOIL:isBrava?'#a9a18a':'#c9b386';
     const shear=sloping?slopeShearMatrix(t,UNIT):null;
-    const surfaceBox=(color,...args)=>{box(color,...args);if(shear)batches.get(`box:${color}`).matrices.at(-1).premultiply(shear);};
+    const surfaceBox=(color,...args)=>{box(color,...args);if(shear)batches.get(`box:${partMaterialKey(color)}`).matrices.at(-1).premultiply(shear);};
     box(soil,x,low/2-.09,z,UNIT+.008,low+.18,UNIT+.008);
     if(sloping){
       add('ramp',soil,x,low,z,UNIT,.42,UNIT,t.slopeDirection*Math.PI/2);
@@ -887,7 +889,7 @@ export function createVillageGeometry(world){
     if(b.type==='stone'){
       renderStoneBridge(world,b,(shape,color,x,y,z,sx,sy,sz,yaw,slope=0)=>{
         add(shape,color,x,y,z,sx,sy,sz,yaw);
-        if(slope){const shear=new THREE.Matrix4().set(1,0,0,0,slope*sx/sy,1,0,0,0,0,1,0,0,0,0,1);batches.get(`${shape}:${color}`).matrices.at(-1).multiply(shear);}
+        if(slope){const shear=new THREE.Matrix4().set(1,0,0,0,slope*sx/sy,1,0,0,0,0,1,0,0,0,0,1);batches.get(`${shape}:${partMaterialKey(color)}`).matrices.at(-1).multiply(shear);}
       },UNIT);continue;
     }
     const cells=bridgeCells(b),n=cells.length-1,dx=(b.b.x-b.a.x)/n,dz=(b.b.z-b.a.z)/n;
@@ -1067,9 +1069,7 @@ export function createVillageGeometry(world){
   const group=new THREE.Group();group.name='village';group.userData.flags=flags;for(const flag of flags)group.add(flag);
   group.userData.animatedGeometryNames=[...new Set([...batches.values()].map(b=>b.shape).filter(id=>personalAnimations.has(id)))];
   for(const {shape,color,matrices} of batches.values()){
-    const mesh=new THREE.InstancedMesh(geometries[shape],material(color),matrices.length);
-    matrices.forEach((m,i)=>mesh.setMatrixAt(i,m));
-    mesh.instanceMatrix.needsUpdate=true;mesh.castShadow=true;mesh.receiveShadow=true;mesh.computeBoundingSphere();group.add(mesh);
+    for(const mesh of createPartMeshes(THREE,geometries[shape],material(color),matrices))group.add(mesh);
   }
   const goats=createGoatGeometry(world,UNIT,geometries,material);group.userData.goats=goats;if(goats.meshes.length)group.add(...goats.meshes);
   const sheep=createSheepGeometry(world,UNIT,geometries,material);group.userData.sheep=sheep;if(sheep.meshes.length)group.add(...sheep.meshes);

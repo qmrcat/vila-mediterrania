@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ca">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Taller de peces · Vila Mediterrània</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#15343a;color:#f6eddd;font:16px system-ui}main{max-width:1120px;margin:auto;padding:22px}h1{margin:0;font-size:28px}p{line-height:1.5}.controls{display:flex;gap:14px;flex-wrap:wrap;align-items:end;margin:18px 0}label{display:flex;flex-direction:column;gap:5px;font-size:14px}select,input,button{font:inherit;accent-color:#e5bb79}select,button{padding:9px;background:#285158;color:inherit;border:1px solid #779493;border-radius:8px}button{cursor:pointer}.primary{background:#e5bb79;color:#15343a;font-weight:bold}canvas{width:100%;height:min(58vh,550px);display:block;border-radius:14px;background:#9dc4c8;touch-action:none}#status{min-height:26px;color:#ffe1a4}pre{white-space:pre-wrap;overflow-wrap:anywhere;padding:16px;border-radius:10px;background:#0d272c;color:#c9efe5}label.check{flex-direction:row;align-items:center}a{color:#d8d9a4}#zoom{width:120px}
+</style>
+<main><h1>Taller de peces booleanes</h1><p>Combina volums, perfora peces i prova materials transparents. Arrossega la vista per girar el conjunt.</p>
+<div class="controls">
+<label>Peça inicial<select id="base"><option value="box">Cub</option><option value="sphere">Esfera</option><option value="cone">Con</option></select></label>
+<label>Segona peça<select id="tool"><option value="cylinder">Cilindre</option><option value="sphere">Esfera</option><option value="box">Bloc rectangular</option></select></label>
+<label>Operació<select id="operation"><option value="subtract">Resta / buidar</option><option value="union">Unió</option><option value="intersect">Intersecció</option></select></label>
+<label>Desplaçament X<input id="offset" type="range" min="-.9" max=".9" step=".05" value="0"></label>
+<button id="preview">Veure les peces</button><button id="apply" class="primary">Aplica l’operació</button>
+</div>
+<div class="controls">
+<label>Opacitat del resultat<input id="opacity" type="range" min=".1" max="1" step=".05" value="1"></label>
+<label class="check"><input id="show-tool" type="checkbox"> Mostra el volum auxiliar transparent</label>
+<label>Apropa<input id="zoom" type="range" min="2" max="6" step=".1" value="3.5"></label>
+<button id="reset">Restableix la vista</button>
+</div>
+<canvas id="view" aria-label="Vista 3D de les operacions booleanes"></canvas><p id="status" role="status" aria-live="polite"></p>
+<p>El volum auxiliar es mostra en rosa. La transparència en controla l’aspecte; l’operació escollida determina si talla, afegeix o conserva volum.</p>
+<details><summary>Codi de l’exemple actual</summary><pre id="code"></pre></details>
+<p>En acabar, trasllada el codi a una funció de <code>PERSONAL_GEOMETRIES</code>. Aquest taller no modifica la vila.</p>
+</main>
+<script type="module">
+import * as THREE from './vendor/three.module.min.js';
+import {booleanGeometry} from './solid-geometry.js';
+import {createPartMaterial} from './part-materials.js';
+const $=id=>document.getElementById(id);
+try{
+  const renderer=new THREE.WebGLRenderer({canvas:$('view'),antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  const scene=new THREE.Scene();scene.background=new THREE.Color('#9dc4c8');scene.add(new THREE.HemisphereLight('#f0fcff','#64725e',2));
+  const light=new THREE.DirectionalLight('#fff0d9',3);light.position.set(3,5,4);scene.add(light);
+  const camera=new THREE.PerspectiveCamera(35,1,.01,30);camera.position.z=3.5;
+  const pivot=new THREE.Group();scene.add(pivot);let main=null,ghost=null,drag=null;
+  const constructors={box:'new THREE.BoxGeometry(1, 1, 1)',sphere:'new THREE.SphereGeometry(.65, 20, 12)',cone:'new THREE.ConeGeometry(.65, 1.2, 24)'};
+  function operands(){
+    const a=$('base').value==='box'?new THREE.BoxGeometry(1,1,1):$('base').value==='sphere'?new THREE.SphereGeometry(.65,20,12):new THREE.ConeGeometry(.65,1.2,24);
+    const type=$('tool').value,b=type==='cylinder'?new THREE.CylinderGeometry(.25,.25,1.8,24):type==='sphere'?new THREE.SphereGeometry(.48,20,12):new THREE.BoxGeometry(.40,.40,1.8);
+    return {a,b,spec:{geometry:b,rotation:type==='cylinder'?[Math.PI/2,0,0]:[0,0,0],position:[Number($('offset').value),0,0]}};
+  }
+  function remove(mesh){if(mesh){pivot.remove(mesh);mesh.geometry.dispose();mesh.material.dispose();}}
+  function setOpacity(){
+    if(main){main.material.dispose();main.material=createPartMaterial(THREE,{color:'#d9bd8b',opacity:Number($('opacity').value),roughness:.55,doubleSide:true});}
+  }
+  function rebuild(apply){
+    const {a,b,spec}=operands();let result;
+    try{
+      result=apply?booleanGeometry(THREE,$('operation').value,a,spec):a.clone();
+      remove(main);remove(ghost);main=null;ghost=null;
+      main=new THREE.Mesh(result);pivot.add(main);setOpacity();
+      ghost=new THREE.Mesh(b.clone(),createPartMaterial(THREE,{color:'#eb7d99',opacity:.25,roughness:.35,doubleSide:true}));
+      ghost.position.fromArray(spec.position);ghost.rotation.set(...spec.rotation);pivot.add(ghost);
+      ghost.visible=!apply||$('show-tool').checked;
+      const n=result.index?result.index.count/3:result.attributes.position.count/3;
+      $('status').textContent=apply?`Operació aplicada · ${n} triangles. Les cares interiors formen part del resultat.`:'Peces separades: encara no s’ha modificat el volum.';
+      const bCode=$('tool').value==='cylinder'?'new THREE.CylinderGeometry(.25, .25, 1.8, 24)':$('tool').value==='sphere'?'new THREE.SphereGeometry(.48, 20, 12)':'new THREE.BoxGeometry(.40, .40, 1.8)';
+      $('code').textContent=`import {booleanGeometry} from '../solid-geometry.js';\n\n// Dins de PERSONAL_GEOMETRIES:\nlaMevaForma(THREE) {\n  const a = ${constructors[$('base').value]};\n  const b = ${bCode};\n  try {\n    return booleanGeometry(THREE, '${$('operation').value}', a, {\n      geometry: b,\n      position: [${spec.position}],\n      rotation: [${spec.rotation}]\n    });\n  } finally { a.dispose(); b.dispose(); }\n}`;
+    }catch(error){$('status').textContent=error.message+' Es conserva la vista anterior.';}
+    finally{a.dispose();b.dispose();}
+  }
+  function reset(){pivot.rotation.set(.2,-.5,0);$('zoom').value='3.5';camera.position.z=3.5;}
+  $('apply').addEventListener('click',()=>rebuild(true));$('preview').addEventListener('click',()=>rebuild(false));
+  for(const id of ['base','tool','offset','operation'])$(id).addEventListener('change',()=>rebuild(false));
+  $('opacity').addEventListener('input',setOpacity);$('show-tool').addEventListener('change',()=>{if(ghost)ghost.visible=$('show-tool').checked;});
+  $('zoom').addEventListener('input',()=>camera.position.z=Number($('zoom').value));$('reset').addEventListener('click',reset);
+  const canvas=$('view');canvas.addEventListener('pointerdown',e=>{if(drag||e.button!==0)return;drag={id:e.pointerId,x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId);});
+  canvas.addEventListener('pointermove',e=>{if(drag?.id!==e.pointerId)return;pivot.rotation.y+=(e.clientX-drag.x)*.01;pivot.rotation.x+=(e.clientY-drag.y)*.01;drag.x=e.clientX;drag.y=e.clientY;});
+  for(const event of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(event,e=>{if(drag?.id===e.pointerId)drag=null;});
+  new ResizeObserver(()=>{const w=canvas.clientWidth,h=canvas.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}).observe(canvas);
+  reset();rebuild(true);renderer.setAnimationLoop(()=>renderer.render(scene,camera));
+}catch(error){$('status').textContent='No s’ha pogut iniciar la vista 3D: '+error.message;}
+</script>
+</html>
