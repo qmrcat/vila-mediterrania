@@ -7,6 +7,7 @@ import {
 import {
   newMod, newPart, validateMod, reviewMod, footprint, smallestPlot, SIZES,
   loadCollection, saveCollection, uniqueId, num, REQUIRES_MOD_API, setExtraShapes,
+  MATERIAL_DEFAULTS, hasMaterial,
 } from './format.js';
 import { createViewport } from './viewport.js';
 
@@ -324,6 +325,11 @@ function renderInspector() {
     const input = $(`#part-${key}`);
     if (document.activeElement !== input) input.value = deg(part[key]);
   }
+  for (const [key, id] of MATERIAL_FIELDS) {
+    const input = $(id);
+    if (document.activeElement !== input) input.value = part[key] ?? MATERIAL_DEFAULTS[key];
+  }
+  $('#part-double-side').checked = part.doubleSide === true;
   const used = [...new Set(mod.parts.map(p => p.color))];
   $('#palette').replaceChildren(...[...used, ...BASE_PALETTE.filter(c => !used.includes(c))].slice(0, 24).map(color => {
     const button = document.createElement('button');
@@ -387,11 +393,12 @@ function offenders(kind) {
   const { width, depth } = smallestPlot(mod);
   const limitU = width * UNIT / 2, limitV = depth * UNIT / 2, margin = .001;
   return mod.parts.flatMap((part, index) => {
+    if (kind === 'material') return hasMaterial(part) ? [index] : [];
     const box = reach(part);
     const guilty = kind === 'below'
       ? box.h.min < -margin
-      : box.u.max > limitU + margin || box.u.min < -limitU - margin
-        || box.v.max > limitV + margin || box.v.min < -limitV - margin;
+      : kind === 'outside' && (box.u.max > limitU + margin || box.u.min < -limitU - margin
+        || box.v.max > limitV + margin || box.v.min < -limitV - margin);
     return guilty ? [index] : [];
   });
 }
@@ -699,7 +706,31 @@ function move(step) {
 }
 
 // ——— inspector ———
+const MATERIAL_FIELDS = [['opacity', '#part-opacity'], ['roughness', '#part-roughness'], ['metalness', '#part-metalness']];
+
+/**
+ * Els camps de material només es desen quan s'aparten del valor de sèrie: una
+ * peça normal continua exportant-se amb el color sol, com sempre.
+ */
+function paintPicked(key, value) {
+  const list = pickedList();
+  if (!list.length) return;
+  change(() => {
+    for (const index of list) {
+      if (value === MATERIAL_DEFAULTS[key]) delete mod.parts[index][key];
+      else mod.parts[index][key] = value;
+    }
+  });
+}
+
 function bindInspector() {
+  for (const [key, id] of MATERIAL_FIELDS) {
+    $(id).addEventListener('change', event => {
+      const value = Math.min(Math.max(num(event.target.value, MATERIAL_DEFAULTS[key]), 0), 1);
+      paintPicked(key, Math.round(value * 1000) / 1000);
+    });
+  }
+  $('#part-double-side').addEventListener('change', event => paintPicked('doubleSide', event.target.checked || false));
   $('#copy-size').addEventListener('click', copySize);
   $('#paste-size').addEventListener('click', pasteSize);
   $('#part-name').addEventListener('change', event => {

@@ -146,6 +146,12 @@ Paleta mediterrània que lliga amb la resta del poble:
 Si l'edifici de la fotografia té un color propi i característic, fes-lo servir,
 però mantén-lo dins d'aquesta lluminositat: el joc és clar i assolellat.
 
+Al lloc del color hi pots posar un material, i això només val la pena per als
+VIDRES: {"color":"#8bd5ec","opacity":0.3,"roughness":0.12,"doubleSide":true}.
+opacity, roughness i metalness van de 0 a 1. Fes-ho servir amb comptagotes, en
+una o dues peces com a molt: la resta de l'edifici ha d'anar amb el color sol.
+Un vidre NO és un forat: no retalla la paret de sota, només es veu translúcid.
+
 ## Com treballar
 
 1. Mira les fotografies i decideix el VOLUM: quantes plantes, quina planta té

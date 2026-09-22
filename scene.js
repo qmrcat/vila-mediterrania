@@ -1,4 +1,5 @@
 import {createPersonalGeometries} from './personal-geometries.js';
+import {CONFIG} from './config.js';
 import {partMaterialKey,normalizePartMaterial,createPartMaterial,createPartMeshes} from './part-materials.js';
 import {createPersonalAnimations} from './personal-animations.js';
 import {renderTerrainRailings} from './terrain-railing-geometry.js';
@@ -52,7 +53,7 @@ const geometries={
   box:new THREE.BoxGeometry(1,1,1),
   ramp:createSlopeWedge(),
   churchCap:new THREE.ConeGeometry(Math.SQRT1_2,1,4).rotateY(Math.PI/4),
-  cylinder:new THREE.CylinderGeometry(.5,.5,1,12),
+  cylinder:new THREE.CylinderGeometry(.5,.5,1,CONFIG.geometry?.cylinderSegments??32),
   cone:new THREE.ConeGeometry(.5,1,8),
   carrot:new THREE.ConeGeometry(.5,1,8).rotateZ(Math.PI),
   rock:new THREE.DodecahedronGeometry(.5,0),

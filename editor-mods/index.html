@@ -124,6 +124,15 @@
             <input type="text" id="part-color-hex" maxlength="7" spellcheck="false">
           </span></label>
         <div class="palette" id="palette"></div>
+        <h3>Material · joc v97</h3>
+        <div class="triplet">
+          <label><span>Opacitat</span><input type="number" id="part-opacity" step="0.05" min="0" max="1"></label>
+          <label><span>Rugositat</span><input type="number" id="part-roughness" step="0.05" min="0" max="1"></label>
+          <label><span>Metall</span><input type="number" id="part-metalness" step="0.05" min="0" max="1"></label>
+        </div>
+        <label class="check"><input type="checkbox" id="part-double-side"> Dibuixa les dues cares</label>
+        <p class="hint">Amb l’opacitat per sota d’1 la peça es torna vidre. Amb els valors de sèrie
+        —1 · 0,92 · 0— la peça s’exporta amb el color sol i val per a qualsevol versió del joc.</p>
         <h3>Posició dins la cel·la</h3>
         <div class="triplet">
           <label><span>u · est</span><input type="number" id="part-u" step="0.01"></label>

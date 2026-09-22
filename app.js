@@ -6,7 +6,7 @@ import {RAILING_SIDES} from './terrain-railings.js';
 import {AGRICULTURAL_TERRAINS} from './agricultural-types.js';
 import {PERSONAL_BUSINESSES,PERSONAL_LANDMARKS} from './personal-content.js';
 import {captureClone,pasteClone,cloneBounds,clonePlacement,captureAppearance,pasteAppearance,houseToDesign} from './cloning.js';
-import {CONFIG} from './config.js?v=95';
+import {CONFIG} from './config.js';
 import {initControlDrawers} from './control-drawers.js';
 import {initVersionNotice} from './version-notice.js';
 import {TerrainStroke} from './terrain-stroke.js';
@@ -416,7 +416,7 @@ async function init(){
     }
     world=createWorld();storageWarning='No s’ha pogut llegir el desament del navegador.';
   }
-  const {VillageScene}=await import('./scene.js?v=97');
+  const {VillageScene}=await import('./scene.js?v=98');
   scene=new VillageScene($('#world'),{onClick:applyEdit,onInspect:point=>{if(tool==='navigate')elementInspector.open(world,point);},
     onTerrainStrokeStart:()=>{
       if(tool!=='land'||$$('dialog').some(d=>d.open))return false;

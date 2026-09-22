@@ -1,6 +1,6 @@
 // Genera el codi que va a mods-personals/. Dos camins: un renderitzador escrit
 // (camí A) o el JSON llegit per un renderitzador genèric (camí B).
-import { footprint } from './format.js';
+import { footprint, hasMaterial } from './format.js';
 import { SHAPES } from './constants.js';
 
 const round = (n, places = 3) => {
@@ -34,8 +34,18 @@ const shapeSnippet = mod => {
 };
 const quote = text => String(text).replace(/'/g, "\\'");
 
+/** El color sol, o l'objecte de material de la v97 si la peça en té. */
+function paintArg(part) {
+  if (!hasMaterial(part)) return `'${part.color}'`;
+  const fields = ['opacity', 'roughness', 'metalness']
+    .filter(key => part[key] !== undefined)
+    .map(key => `${key}:${round(part[key], 3)}`);
+  if (part.doubleSide) fields.push('doubleSide:true');
+  return `{color:'${part.color}',${fields.join(',')}}`;
+}
+
 function callLine(part, fn) {
-  const args = [`'${part.shape}'`, `'${part.color}'`, round(part.u), round(part.h), round(part.v), round(part.sx), round(part.sy), round(part.sz)];
+  const args = [`'${part.shape}'`, paintArg(part), round(part.u), round(part.h), round(part.v), round(part.sx), round(part.sy), round(part.sz)];
   const spin = [part.ry, part.rx, part.rz].map(value => round(value, 5));
   while (spin.length && spin[spin.length - 1] === '0') spin.pop();
   // El nom que li hagis posat al taller acaba com a comentari, que és on és útil.

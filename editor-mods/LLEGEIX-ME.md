@@ -81,6 +81,11 @@ altra: de 2 × 2 a 3 × 3 multiplica peces i alçada per 1,50.
 Al panell de la peça, **Copia les mides** i **Enganxa les mides** igualen les
 tres mides d'una peça a una altra, o a tota la selecció.
 
+Al panell de la peça, els camps **Opacitat · Rugositat · Metall** i la casella
+**Dues cares** fan servir els materials del joc v97: amb l'opacitat per sota
+d'1, la peça surt de vidre. Mentre no els toquis, el mod s'exporta amb el color
+sol i val per a qualsevol versió.
+
 Dreceres: fletxes mouen la selecció en `u` i `v`, Re Pàg i Av Pàg en `h`
 (amb Majúscules, passos de 0,005), Q i E giren 15° al voltant de l’eix vertical
 (amb Majúscules, 1°; un grup gira sencer al voltant del seu centre), Supr

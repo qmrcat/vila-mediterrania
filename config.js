@@ -7,6 +7,9 @@ export const CONFIG = {
   inspection: {
     allowJsonCopy: true,   // Navega: mostra el botó per copiar el JSON de l’element.
   },
+  geometry: {
+    cylinderSegments: 32,  // Cares dels cilindres: enter de 3 a 256. Més cares, més detall.
+  },
   houses: {
     maxFloors: 9,           // Plantes totals, inclosa la planta baixa.
     maxPatioFloors: 3,      // Cases amb pati; no pot superar maxFloors.
@@ -37,6 +40,8 @@ export const CONFIG = {
 // Comprovació de coherència. No cal modificar el codi d'aquí sota.
 const invalid=field=>{throw new Error(`config.js: revisa el valor de ${field}.`);};
 const integer=(value,min,field)=>{if(!Number.isSafeInteger(value)||value<min)invalid(field);};
+integer(CONFIG.geometry.cylinderSegments,3,'geometry.cylinderSegments (3–256)');
+if(CONFIG.geometry.cylinderSegments>256)invalid('geometry.cylinderSegments (3–256)');
 if(typeof CONFIG.inspection.allowJsonCopy!=='boolean')invalid('inspection.allowJsonCopy (true o false)');
 integer(CONFIG.houses.maxFloors,1,'houses.maxFloors');
 integer(CONFIG.houses.maxPatioFloors,1,'houses.maxPatioFloors');

@@ -38,10 +38,10 @@ export const SHAPE_NAMES = {
 // Pistes curtes per al desplegable: què és cada forma i com s'orienta.
 export const SHAPE_HINTS = {
   box: 'Cub d’1 × 1 × 1, centrat. La base de gairebé tot.',
-  cylinder: 'Cilindre vertical; sy és l’alçada, sx i sz el diàmetre.',
-  cone: 'Con vertical amb la punta amunt.',
+  cylinder: 'Cilindre vertical de 12 cares fixes; sy és l’alçada, sx i sz el diàmetre. Per a més cares, fes-te’n un de personal amb la plantilla Prisma.',
+  cone: 'Con vertical amb la punta amunt, de 8 cares fixes. Amb la plantilla Prisma i el radi superior a 0 en pots fer un de les cares que vulguis.',
   carrot: 'Con amb la punta avall.',
-  sphere: 'Esfera de poca resolució.',
+  sphere: 'Esfera de poca resolució, 10 × 6, fixa: és així a posta perquè el poble sembli fet de la mateixa pasta.',
   rock: 'Dodecàedre. Escalat i girat a l’atzar fa fullatge i pedra.',
   ring: 'Tor prim: anelles, cèrcols, baranes rodones.',
   ramp: 'Falca del pendent del terreny.',

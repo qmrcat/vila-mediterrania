@@ -753,11 +753,27 @@ suposar res: «Forma personal instal·lada · 1,00 × 1,00 × 1,00 abans d'escal
 és a la base».</p>
 
 <div class="note">
+  <p><b>Les formes es poden fer amb operacions booleanes.</b> Des del joc v97, un mod personal pot
+  unir, restar i intersecar geometries amb <code>booleanGeometry</code> i <code>composeGeometry</code>
+  de <code>solid-geometry.js</code>: un cub amb un túnel, un mur amb tres forats de debò. El taller
+  no s'ha de tocar per això, perquè el resultat es registra com qualsevol altra forma personal i surt
+  al desplegable amb la seva mida mesurada. Consulta <code>GUIA-BOOLEANS-I-MATERIALS.md</code>.</p>
+</div>
+
+<div class="note">
   <p><b>El punt d'inserció no sempre és al centre.</b> Les formes oficials van de −0,5 a 0,5 en els
   tres eixos, i per això <code>h</code> n'és el centre. Una forma personal pot estar col·locada com
   vulgui: les <i>peces buides</i> dels mods personals, per exemple, van de 0 a 1 en alçada, de manera
   que <code>h</code> és la <b>base</b> i la peça creix cap amunt. El taller ho té en compte a l'hora
   de mesurar el mod, d'alinear, de repartir i de posar les nanses.</p>
+</div>
+
+<div class="note">
+  <p><b>Les formes del joc no es poden afinar.</b> El <code>cylinder</code> té 12 cares, el
+  <code>cone</code> 8 i la <code>sphere</code> 10 × 6, i no hi ha cap camp per canviar-ho: el joc les
+  crea una sola vegada i les comparteix entre tots els edificis del poble, que és el que fa que tot
+  sembli de la mateixa pasta. Si necessites un cilindre de 24 cares, fes-te'l com a forma personal
+  amb la plantilla <b>Prisma</b> i el radi superior a 1; amb el radi superior a 0 en surt un con.</p>
 </div>
 
 <h3>El generador del taller</h3>
@@ -985,6 +1001,37 @@ en comptes de triar un to nou gairebé igual. Els tons que combinen bé amb el p
 <tr><td>Obertures i mar</td><td><code>#41595e</code> <code>#45636a</code> <code>#1c565b</code></td></tr>
 <tr><td>Vegetació</td><td><code>#567043</code> <code>#4f6b3f</code> <code>#6f8a5a</code></td></tr>
 </table>
+
+<h3>Materials · a partir del joc v97</h3>
+
+<p>Sota la paleta, al panell de la peça, hi ha tres números i una casella que canvien com es
+<b>dibuixa</b> el color, no quin és:</p>
+
+<table>
+<tr><th>Camp</th><th>De sèrie</th><th>Què fa</th></tr>
+<tr><td><b>Opacitat</b></td><td>1</td><td>Per sota d'1, la peça es torna translúcida. 0,25–0,35 fa vidre; 0 la fa invisible</td></tr>
+<tr><td><b>Rugositat</b></td><td>0,92</td><td>Com de mat és. Abaixa-la a 0,10–0,20 per a vidres i ceràmica vidriada</td></tr>
+<tr><td><b>Metall</b></td><td>0</td><td>Puja-la per a ferro, aram o daurats</td></tr>
+<tr><td><b>Dues cares</b></td><td>No</td><td>Dibuixa també l'interior. Cal per a vidres i làmines primes vistes per darrere</td></tr>
+</table>
+
+<p>Mentre els deixis com vénen, la peça s'exporta <b>amb el color sol</b>, com s'ha fet sempre, i el
+mod funciona amb qualsevol versió del joc. En canviar-ne un, el taller exporta l'objecte de material
+que la v97 entén:</p>
+
+<pre><code>part('box','#e6d7bd',0,.5,0,1,1,.2);
+part('box',{color:'#8bd5ec',opacity:.3,roughness:.12,doubleSide:true},0,.5,.11,.45,.45,.025);</code></pre>
+
+<p>Als avisos de sota la vista hi surt un recordatori verd amb quantes peces porten material propi,
+amb el botó <b>Selecciona-les</b> per trobar-les. El camí B, el del JSON, també ho porta: el runtime
+munta l'objecte només per a les peces que en tenen.</p>
+
+<div class="note tip">
+  <p><b>Un vidre no és un forat.</b> La transparència només canvia com es veu la peça; no retalla el
+  que hi ha a sota. Per a una finestra de debò, fes servir una forma amb el forat ja fet —una peça
+  buida, o una de feta amb la resta booleana de la v97— i després posa-hi el vidre com una peça a
+  part, amb el seu material. Així el mur i el vidre conserven acabats diferents.</p>
+</div>
 
 <h2 id="exportar">12 · Exportar i instal·lar</h2>
 

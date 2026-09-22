@@ -42,6 +42,28 @@ export function newPart(patch = {}) {
 }
 
 /**
+ * El material d'una peça, tal com l'entén part() des de la v97. Els valors per
+ * defecte són els de sempre: mentre no els toquis, la peça s'exporta amb el
+ * color sol i el mod continua valent per a les versions anteriors del joc.
+ */
+export const MATERIAL_DEFAULTS = { opacity: 1, roughness: .92, metalness: 0, doubleSide: false };
+
+const partMaterial = source => {
+  const out = {};
+  for (const key of ['opacity', 'roughness', 'metalness']) {
+    const value = num(source[key], MATERIAL_DEFAULTS[key]);
+    if (!(value >= 0 && value <= 1)) throw new Error(`El camp ${key} d'una peça ha de ser entre 0 i 1.`);
+    if (value !== MATERIAL_DEFAULTS[key]) out[key] = value;
+  }
+  if (source.doubleSide === true) out.doubleSide = true;
+  return out;
+};
+
+/** Una peça amb material propi: la que el joc dibuixarà amb transparència. */
+export const hasMaterial = part =>
+  ['opacity', 'roughness', 'metalness', 'doubleSide'].some(key => part[key] !== undefined);
+
+/**
  * name, hidden i group són del taller, no del joc: el renderitzador només llegeix la
  * forma, el color, la posició, la mida i els girs. El nom surt com a comentari
  * al codi generat; amagar una peça només afecta la vista, i s'exporta igualment.
@@ -74,9 +96,13 @@ export function validateMod(input) {
   if (input.parts.length > 2000) throw new Error('Un mod no pot passar de 2000 peces.');
   const parts = input.parts.map(p => {
     if (!isKnownShape(p?.shape)) throw new Error(`La forma «${p?.shape}» no existeix ni al joc ni al taller.`);
-    if (!/^#[0-9a-fA-F]{6}$/.test(String(p.color))) throw new Error('Els colors han de ser hexadecimals de sis xifres.');
+    // Des de la v97, part() accepta un objecte de material on abans hi anava el
+    // color. El taller el desa pla, camp a camp, i el torna a muntar en exportar.
+    const paint = p.color && typeof p.color === 'object' ? p.color : { color: p.color };
+    if (!/^#[0-9a-fA-F]{6}$/.test(String(paint.color))) throw new Error('Els colors han de ser hexadecimals de sis xifres.');
     return newPart({
-      shape: p.shape, color: String(p.color).toLowerCase(),
+      shape: p.shape, color: String(paint.color).toLowerCase(),
+      ...partMaterial({ ...paint, ...p }),
       u: num(p.u), h: num(p.h), v: num(p.v),
       sx: num(p.sx, 1), sy: num(p.sy, 1), sz: num(p.sz, 1),
       ry: num(p.ry), rx: num(p.rx), rz: num(p.rz),
@@ -116,6 +142,9 @@ export function reviewMod(mod, bounds, taken = [], pending = []) {
     if (!mod.autoHeight && Math.abs(mod.height - bounds.maxH) > .05)
       notes.push({ level: 'warn', text: `L’alçada declarada (${mod.height.toFixed(2)}) no coincideix amb la real (${bounds.maxH.toFixed(2)}). El volum de clic no encaixarà.` });
   }
+  const painted = mod.parts.filter(hasMaterial).length;
+  if (painted) notes.push({ level: 'info', find: 'material',
+    text: `${painted} peç${painted === 1 ? 'a té material propi' : 'es tenen material propi'} (transparència o acabat): cal el joc v97 o posterior.` });
   if (mod.sizes.length > 1)
     notes.push({ level: 'info', text: 'Amb més d’una mida, el renderitzador rep landmark.size: fes-hi créixer la geometria o deixa-la centrada a propòsit.' });
   const missing = [...new Set(mod.parts.map(p => p.shape))].filter(shape => pending.includes(shape));

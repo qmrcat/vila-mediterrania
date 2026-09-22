@@ -163,11 +163,18 @@ sun.shadow.camera.updateProjectionMatrix();
   const selection = new THREE.Box3Helper(new THREE.Box3(), 0xa8802f);
   selection.visible = false; scene.add(selection);
 
+  // Els materials de part(), tal com els fa el joc a part-materials.js: una
+  // peça amb opacitat per sota d'1 es dibuixa transparent i no escriu fondària.
   const materials = new Map();
-  const material = (color, shape) => {
-    const id = `${color}:${shape === 'fan'}`;
+  const material = (part, shape) => {
+    const opacity = part.opacity ?? 1, roughness = part.roughness ?? .92;
+    const metalness = part.metalness ?? 0;
+    const twoSided = part.doubleSide === true || shape === 'fan';
+    const id = `${part.color}:${opacity}:${roughness}:${metalness}:${twoSided}`;
     if (!materials.has(id)) materials.set(id, new THREE.MeshStandardMaterial({
-      color, roughness: .92, metalness: 0, side: shape === 'fan' ? THREE.DoubleSide : THREE.FrontSide,
+      color: part.color, opacity, roughness, metalness,
+      transparent: opacity < 1, depthWrite: !(opacity < 1),
+      side: twoSided ? THREE.DoubleSide : THREE.FrontSide,
     }));
     return materials.get(id);
   };
@@ -423,7 +430,7 @@ sun.shadow.camera.updateProjectionMatrix();
   function buildParts(mod, chosen) {
     parts.clear();
     mod.parts.forEach((part, index) => {
-      const mesh = new THREE.Mesh(geometries[part.shape] ?? geometries.box, material(part.color, part.shape));
+      const mesh = new THREE.Mesh(geometries[part.shape] ?? geometries.box, material(part, part.shape));
       mesh.position.set(part.u, part.h, part.v);
       mesh.rotation.set(part.rx, part.ry, part.rz);
       mesh.scale.set(part.sx || .001, part.sy || .001, part.sz || .001);
