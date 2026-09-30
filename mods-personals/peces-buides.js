@@ -9,7 +9,7 @@ function rectangle(THREE,x0,y0,x1,y1,Path=THREE.Shape){
   return polygon(THREE,[[x0,y0],[x1,y0],[x1,y1],[x0,y1]],Path);
 }
 function extrude(THREE,shape){
-  return new THREE.ExtrudeGeometry(shape,{depth:1,bevelEnabled:false,curveSegments:32,steps:1}).translate(0,0,-.5);
+  return new THREE.ExtrudeGeometry(shape,{depth:1,bevelEnabled:false,curveSegments:32,steps:1}).translate(0,0,-.5); 
 }
 function wall(THREE,centres,width){
   // Retícula compartida: evita unions en T entre finestres amb ampits alineats.
