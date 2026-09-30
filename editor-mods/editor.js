@@ -78,6 +78,7 @@ async function start() {
   bindShapes();
   bindFolds();
   bindAi(aiBridge());
+  loadAutoSave();
   refreshCollection();
   renderLibrary();
   renderShapes();
@@ -147,6 +148,56 @@ const rememberMod = id => {
   try { localStorage.setItem(LAST_MOD_KEY, id ?? ''); }
   catch { /* sense recordar-ho: no és res greu */ }
 };
+
+// ——— desat automàtic ———
+const AUTO_SAVE_KEY = 'vila-mediterrania-autosave-1';
+const AUTO_SAVE_WAIT = 1500;
+
+let autoSaveOn = false, autoSaveTimer = 0;
+
+const setAutoSave = on => {
+  autoSaveOn = !!on;
+  try { localStorage.setItem(AUTO_SAVE_KEY, autoSaveOn ? '1' : ''); } catch { /* sense recordar-ho */ }
+  $('#auto-save').checked = autoSaveOn;
+  if (!autoSaveOn) { clearTimeout(autoSaveTimer); $('#auto-save-state').textContent = ''; }
+  else scheduleAutoSave();
+};
+
+function loadAutoSave() {
+  try { setAutoSave(localStorage.getItem(AUTO_SAVE_KEY) === '1'); }
+  catch { setAutoSave(false); }
+}
+
+/** Es torna a comptar a cada canvi: es desa quan pares un moment. */
+function scheduleAutoSave() {
+  if (!autoSaveOn || !dirty) return;
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(autoSave, AUTO_SAVE_WAIT);
+}
+
+/**
+ * Només desa mods que ja són a la col·lecció: un mod nou o una peça de
+ * biblioteca oberta al taller no hi entren fins que tu ho demanes. I si el mod
+ * encara no és vàlid —l'identificador a mig escriure, posem— espera.
+ */
+function autoSave() {
+  if (!autoSaveOn || !dirty) return;
+  const index = mods.findIndex(item => item.id === mod.id);
+  if (index < 0) { $('#auto-save-state').textContent = 'per desar sol, desa’l una vegada'; return; }
+  let candidate;
+  try { candidate = validateMod(mod); }
+  catch { return; }
+  mods[index] = candidate;
+  try { saveCollection(localStorage, mods); }
+  catch { $('#auto-save-state').textContent = 'el navegador no ha pogut desar'; return; }
+  mod = structuredClone(candidate);
+  dirty = false;
+  rememberMod(mod.id);
+  const now = new Date();
+  $('#auto-save-state').textContent = `desat sol a les ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+  refreshCollection();
+  render();
+}
 
 let toastTimer = 0;
 function toast(message) {
@@ -241,6 +292,7 @@ function render() {
   renderNotes();
   renderOutput();
   document.title = `${mod.name}${dirty ? ' •' : ''} · Taller de mods`;
+  scheduleAutoSave();
 }
 
 function renderParts() {
@@ -467,6 +519,19 @@ function bindMeta() {
   });
   $('#import-mod').addEventListener('click', () => $('#file').click());
   $('#file').addEventListener('change', importFile);
+  $('#export-mod').addEventListener('click', () => {
+    let candidate;
+    try { candidate = validateMod(mod); }
+    catch (error) { toast(error.message); return; }
+    download(`${candidate.id}.mod.json`, JSON.stringify(candidate, null, 2));
+    toast(`«${candidate.name}» exportat amb ${candidate.parts.length} peces.`);
+  });
+  $('#auto-save').addEventListener('change', event => {
+    setAutoSave(event.target.checked);
+    toast(event.target.checked
+      ? 'Desat automàtic activat: el mod es desarà sol mentre el treballes.'
+      : 'Desat automàtic aturat.');
+  });
   $('#export-all').addEventListener('click', () => {
     if (!mods.length) { toast('La col·lecció és buida.'); return; }
     download('vila-mods.json', JSON.stringify(mods, null, 2));
@@ -490,6 +555,7 @@ function save(asCopy) {
   catch { toast('El navegador no ha pogut desar. Exporta el JSON per no perdre la feina.'); return; }
   mod = structuredClone(candidate); dirty = false;
   rememberMod(mod.id);
+  $('#auto-save-state').textContent = '';
   refreshCollection(); render();
   toast(asCopy ? 'Còpia desada al navegador.' : 'Mod desat al navegador.');
 }

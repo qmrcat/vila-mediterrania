@@ -69,6 +69,10 @@ una peça la mou pel pla de terra; mentre prems Majúscules, a mig arrossegament
 la puja i la baixa. Ctrl+C copia la selecció i Ctrl+V l'enganxa, també en
 un altre mod o en una altra pestanya.
 
+**Exporta aquest mod** baixa un fitxer amb el mod obert i prou, i la casella
+**Desa sol** el va desant a la col·lecció mentre el treballes, un cop l'hi has
+desat una primera vegada.
+
 El taller recorda quin mod tenies obert i te'l torna a obrir la vegada
 següent. Si l'has esborrat de la col·lecció, obre el primer de la llista.
 

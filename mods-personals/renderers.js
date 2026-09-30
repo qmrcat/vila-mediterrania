@@ -5,6 +5,8 @@ export {ISRAEL_FLAG_ANIMATIONS as PERSONAL_GEOMETRY_ANIMATIONS} from './israel-f
  * Renderitzadors personals. Les claus han de coincidir amb catalog.js.
  * No modifiquis les signatures: formen part de MOD_API_VERSION 1.
  */
+import {JSON_LANDMARK_RENDERERS} from './json-mods.js';
+
 import {renderWindmill} from './windmill-geometry.js';
 import {renderGrassland} from './prat-herbes.js';
 import {renderIsraelFlag} from './israel-flag.js';
@@ -20,6 +22,7 @@ export const PERSONAL_LANDMARK_RENDERERS={
     casaMercadalReus2:renderCasaMercadalReus2,
     ajuntamentAmbRellotge:renderAjuntamentAmbRellotge,
     casaTomasBarbera:renderCasaTomasBarbera,
+    ...JSON_LANDMARK_RENDERERS,
 };
 
 /** renderer(tile, {add,surfaceBox,unit,exclude,branch,root,emit,row,soil,ox,oz}) */

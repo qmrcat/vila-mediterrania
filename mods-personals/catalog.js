@@ -7,6 +7,7 @@
 export const REQUIRES_MOD_API=1;
 
 import {ISRAEL_FLAG_DEFINITION} from './israel-flag-definition.js';
+import {JSON_LANDMARKS} from './json-mods-data.js';
 
 /**
  * id: {name, sizes:[1|2|4|6|9|16], height, help, category?:'monument'}
@@ -37,6 +38,7 @@ export const PERSONAL_LANDMARKS={
     height:3.92,
     help:'Col·loca-la en terreny pla, amb els porxos al sud, un carrer lateral a l\'esquerra i la mitgera a la dreta.',
   },
+  ...JSON_LANDMARKS,
 };
 
 /**
