@@ -13,7 +13,7 @@ import {TerrainStroke} from './terrain-stroke.js';
 import {SPECIAL_SHOPS} from './special-shops.js';
 import {checkBeachBar,checkLandmark,LANDMARK_TYPES} from './model.js';
 import {saveDesign,loadDesigns,DESIGN_KEY,customAt,customCells,customFloors} from './designs.js';
-import {initMusic} from './music.js';
+import {initMusic} from './music.js?v=99';
 import {updateCompass} from './compass.js';
 import {createWorld,validateWorld,editWorld,History,COLORS,worldLimit,expandWorld,GRID_SIZES,floorCount,TREE_SPECIES,bridgeEndpoint,checkBridge,addBridge,checkMarket,checkPatioHouse,checkChurch,checkTownHall,checkCustomBuilding} from './model.js';
 
