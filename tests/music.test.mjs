@@ -70,8 +70,8 @@ test('turning shuffle off restores list order from the current track and persist
   const {player,saved}=setup();const current=player.index;
   player.setShuffle(false);assert.equal(player.index,current);player.next();assert.equal(player.index,(current+1)%5);
   assert.equal(musicPreferences(saved).shuffle,false);
-  assert.equal(musicPreferences(storage({enabled:false,paused:true,volume:.7})).shuffle,false);
-  assert.deepEqual(musicPreferences({getItem:()=>'{broken'}),{enabled:true,paused:false,shuffle:false,volume:.3});
+  assert.equal(musicPreferences(storage({enabled:false,paused:true,volume:.7})).shuffle,true);
+  assert.deepEqual(musicPreferences({getItem:()=>'{broken'}),{enabled:true,paused:false,shuffle:true,volume:.3});
 });
 
 test('empty and single-track lists work in both modes',()=>{

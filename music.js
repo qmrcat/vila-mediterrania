@@ -2,8 +2,8 @@
 export const MUSIC_KEY='vila-mediterrania:music:v1';
 export const AUDIO_FILE=/\.(mp3|ogg|oga|wav|m4a|aac|flac|opus|webm)$/i;
 export function musicPreferences(storage){
-  try{const p=JSON.parse(storage?.getItem(MUSIC_KEY)||'{}');return {enabled:p.enabled!==false,paused:p.paused===true,shuffle:p.shuffle===true,volume:Number.isFinite(p.volume)?Math.max(0,Math.min(1,p.volume)):.3};}
-  catch{return {enabled:true,paused:false,shuffle:false,volume:.3};}
+  try{const p=JSON.parse(storage?.getItem(MUSIC_KEY)||'{}');return {enabled:p.enabled!==false,paused:p.paused===true,shuffle:p.shuffle!==false,volume:Number.isFinite(p.volume)?Math.max(0,Math.min(1,p.volume)):.3};}
+  catch{return {enabled:true,paused:false,shuffle:true,volume:.3};}
 }
 export function manifestTracks(entries){
   if(!Array.isArray(entries))return [];
