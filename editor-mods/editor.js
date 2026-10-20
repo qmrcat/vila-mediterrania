@@ -119,8 +119,8 @@ async function probeGame() {
   const badge = $('#api-note');
   try {
     const [{ LANDMARK_TYPES, TREE_SPECIES }, content, version] = await Promise.all([
-      import('../model.js'),
-      import('../personal-content.js'),
+      import('../js/model.js'),
+      import('../js/personal-content.js'),
       fetch('../version.json').then(r => r.json()).catch(() => null),
     ]);
     takenIds = [...Object.keys(LANDMARK_TYPES), ...TREE_SPECIES.map(t => t.id)];

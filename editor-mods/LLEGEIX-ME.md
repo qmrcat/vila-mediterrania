@@ -186,7 +186,7 @@ quedi dins de la mida i l'alçada declarades.
 | `viewport.js` | Vista 3D, guies de parcel·la i selecció |
 | `format.js` | Format del mod, validació i col·lecció |
 | `library.js` | Biblioteca de peces reutilitzables i girs de grup |
-| `ai-*.js`, `../ai-proxy.mjs` | Generador de mods des de fotografies · vegeu `LLEGEIX-ME-IA.md` |
+| `ai-*.js`, `../eines/ai-proxy.mjs` | Generador de mods des de fotografies · vegeu `LLEGEIX-ME-IA.md` |
 | `personal-shapes.js` | Plantilles de formes personals i generació de `geometries.js` |
 | `check-formes.mjs` | Comprova que el codi generat i la vista 3D coincideixen |
 | `exporters.js` | Generació del renderitzador, del JSON i dels registres |

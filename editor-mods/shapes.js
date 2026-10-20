@@ -51,13 +51,13 @@ geometries.fan.computeVertexNormals();
 // Aquestes quatre viuen en mòduls del joc. Si algun canvia de nom en una versió
 // futura, l'editor continua obrint-se i la forma cau al cub.
 const external = [
-  ['ramp', '../slope-geometry.js', m => m.createSlopeWedge()],
-  ['hotelStar', '../lodging-geometry.js', m => m.createHotelStarGeometry()],
-  ['stoneBridgeArch', '../stone-bridge.js', m => m.createStoneArchGeometry()],
-  ['wallGate', '../wall-geometry.js', m => m.createWallGateGeometry()],
-  ['wallGateTrim', '../wall-geometry.js', m => m.createWallGateGeometry(true)],
-  ['barberPoleRed', '../barber-pole.js', m => m.createBarberStripeGeometry(0)],
-  ['barberPoleBlue', '../barber-pole.js', m => m.createBarberStripeGeometry(Math.PI)],
+  ['ramp', '../js/slope-geometry.js', m => m.createSlopeWedge()],
+  ['hotelStar', '../js/lodging-geometry.js', m => m.createHotelStarGeometry()],
+  ['stoneBridgeArch', '../js/stone-bridge.js', m => m.createStoneArchGeometry()],
+  ['wallGate', '../js/wall-geometry.js', m => m.createWallGateGeometry()],
+  ['wallGateTrim', '../js/wall-geometry.js', m => m.createWallGateGeometry(true)],
+  ['barberPoleRed', '../js/barber-pole.js', m => m.createBarberStripeGeometry(0)],
+  ['barberPoleBlue', '../js/barber-pole.js', m => m.createBarberStripeGeometry(Math.PI)],
 ];
 
 export const missingShapes = [];
@@ -108,7 +108,7 @@ const draftShapes = new Set();
  */
 export async function loadPersonalShapes() {
   try {
-    const { createPersonalGeometries } = await import('../personal-geometries.js');
+    const { createPersonalGeometries } = await import('../js/personal-geometries.js');
     const extra = createPersonalGeometries(THREE, geometries);
     Object.assign(geometries, extra);
     personalShapes.length = 0;

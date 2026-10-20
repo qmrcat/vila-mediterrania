@@ -4,7 +4,67 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Taller de mods · Vila Mediterrània</title>
-<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./style.css?v=5e781b359f">
+<!-- versions:inici · generat per actualitza-versio.mjs; no l’editis a mà -->
+<script type="importmap">
+{"imports":{
+  "../config.js":"../config.js?v=56f77d9e42",
+  "./ai-contract.js":"./ai-contract.js?v=d505564678",
+  "./ai-generate.js":"./ai-generate.js?v=cb332247f0",
+  "./ai-panel.js":"./ai-panel.js?v=c010c8911a",
+  "./ai-providers.js":"./ai-providers.js?v=21cd3c1300",
+  "./constants.js":"./constants.js?v=ad225baaca",
+  "./editor.js":"./editor.js?v=dd198f31e7",
+  "./exporters.js":"./exporters.js?v=0234cdebb3",
+  "./format.js":"./format.js?v=514ed4da0b",
+  "./json-mods-data.js":"./json-mods-data.js?v=49f1f4cccf",
+  "./json-mods.js":"./json-mods.js?v=21070fef0b",
+  "./library.js":"./library.js?v=73a44e1038",
+  "./personal-shapes.js":"./personal-shapes.js?v=e066fd14d3",
+  "./shapes.js":"./shapes.js?v=5df82f3eae",
+  "./starters.js":"./starters.js?v=8a5c71b747",
+  "./viewport.js":"./viewport.js?v=91a48f3906",
+  "../js/agricultural-types.js":"../js/agricultural-types.js?v=c027d8757d",
+  "../js/balcony-facades.js":"../js/balcony-facades.js?v=4b81ed96c5",
+  "../js/barber-pole.js":"../js/barber-pole.js?v=ad8b34c26b",
+  "../js/building-signs.js":"../js/building-signs.js?v=cc3a0e4e30",
+  "../js/business-signs.js":"../js/business-signs.js?v=4702972fe3",
+  "../js/designs.js":"../js/designs.js?v=848e21a18a",
+  "../js/entrances.js":"../js/entrances.js?v=b0cbcdf906",
+  "../js/lodging-geometry.js":"../js/lodging-geometry.js?v=6cec1e2f7a",
+  "../js/menu-order.js":"../js/menu-order.js?v=cfd90672e1",
+  "../js/model.js":"../js/model.js?v=4df2fa0fa3",
+  "../js/personal-content.js":"../js/personal-content.js?v=f0e1299206",
+  "../js/personal-geometries.js":"../js/personal-geometries.js?v=1126e53da2",
+  "../js/slope-geometry.js":"../js/slope-geometry.js?v=f0fbcf7287",
+  "../js/solid-geometry.js":"../js/solid-geometry.js?v=d78201e17a",
+  "../js/stone-bridge.js":"../js/stone-bridge.js?v=878246ef3d",
+  "../js/terrain-railings.js":"../js/terrain-railings.js?v=fbab55668d",
+  "../js/wall-geometry.js":"../js/wall-geometry.js?v=681ef3bcd9",
+  "../mods-personals/catalog.js":"../mods-personals/catalog.js?v=3439a62450",
+  "../mods-personals/geometries.js":"../mods-personals/geometries.js?v=21f64bf8c8",
+  "../mods-personals/israel-flag-animation.js":"../mods-personals/israel-flag-animation.js?v=24ebd9ca9b",
+  "../mods-personals/israel-flag-definition.js":"../mods-personals/israel-flag-definition.js?v=b8ccaed48d",
+  "../mods-personals/israel-flag-geometries.js":"../mods-personals/israel-flag-geometries.js?v=10a1d828b1",
+  "../mods-personals/israel-flag.js":"../mods-personals/israel-flag.js?v=709752a7ac",
+  "../mods-personals/json-mod-extra/json-casa-navas.js":"../mods-personals/json-mod-extra/json-casa-navas.js?v=c39839d995",
+  "../mods-personals/json-mod-extra/json-fita-de-terma.js":"../mods-personals/json-mod-extra/json-fita-de-terma.js?v=fa97de70a7",
+  "../mods-personals/json-mods-data.js":"../mods-personals/json-mods-data.js?v=bb760f1a38",
+  "../mods-personals/json-mods.js":"../mods-personals/json-mods.js?v=1dfa152afe",
+  "../mods-personals/mods-geometry/ajuntament-amb-rellotge-geometry.js":"../mods-personals/mods-geometry/ajuntament-amb-rellotge-geometry.js?v=f1e8429b47",
+  "../mods-personals/mods-geometry/casa-mercadal-reus2-geometry.js":"../mods-personals/mods-geometry/casa-mercadal-reus2-geometry.js?v=a0e88e1888",
+  "../mods-personals/mods-geometry/casa-tomas-barbera-geometry.js":"../mods-personals/mods-geometry/casa-tomas-barbera-geometry.js?v=581566e5d7",
+  "../mods-personals/peces-buides.js":"../mods-personals/peces-buides.js?v=7bd214da1b",
+  "../mods-personals/prat-herbes.js":"../mods-personals/prat-herbes.js?v=5107d8a7d5",
+  "../mods-personals/renderers.js":"../mods-personals/renderers.js?v=a5d08954be",
+  "../mods-personals/windmill-geometry.js":"../mods-personals/windmill-geometry.js?v=6e56c8ea99",
+  "../solid-geometry.js":"../solid-geometry.js?v=ecd58a41e1",
+  "../vendor/csg.module.js":"../vendor/csg.module.js?v=bb101a9ba4",
+  "../vendor/three.core.min.js":"../vendor/three.core.min.js?v=61ba0df005",
+  "../vendor/three.module.min.js":"../vendor/three.module.min.js?v=e2b5ee6bcc"
+}}
+</script>
+<!-- versions:final -->
 </head>
 <body>
 <header class="bar">
@@ -357,6 +417,6 @@
 </dialog>
 
 <p class="toast" id="toast" hidden></p>
-<script type="module" src="./editor.js"></script>
+<script type="module" src="./editor.js?v=dd198f31e7"></script>
 </body>
 </html>

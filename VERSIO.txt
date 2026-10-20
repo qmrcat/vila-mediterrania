@@ -1,4 +1,4 @@
-Vila Mediterrània — versió 91
-Geometries pròpies per als mods, amb cúpula d’exemple i validació.
-Inclou totes les funcions de la versió 90.
+Vila Mediterrània — versió 100
+Música aleatòria per defecte; versions dels fitxers automàtiques amb actualitza-versio.mjs.
+Inclou totes les funcions de la versió 99.
 API dels mods 1; format de vila 66; dissenys de l’editor 4.

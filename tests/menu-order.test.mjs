@@ -4,9 +4,9 @@ import {mkdtemp,mkdir,readFile,writeFile,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {pathToFileURL} from 'node:url';
-import {menuMetadata,validateMenuOrder,orderMenuEntries} from '../menu-order.js';
-import {groupBuildings} from '../building-categories.js';
-import {orderSelect,initPersonalMenus,MENU_RULES} from '../personal-menus.js';
+import {menuMetadata,validateMenuOrder,orderMenuEntries} from '../js/menu-order.js';
+import {groupBuildings} from '../js/building-categories.js';
+import {orderSelect,initPersonalMenus,MENU_RULES} from '../js/personal-menus.js';
 
 const entries=(...ids)=>ids.map(id=>({id,group:'base'}));
 const ids=items=>items.map(e=>e.id);
@@ -69,15 +69,15 @@ test('validació de la propietat i de les regles per qualsevol selector',()=>{
 });
 test('els quatre registres conserven menuAfter i el catàleg antic segueix sent vàlid',async t=>{
   const dir=await mkdtemp(join(tmpdir(),'vila-menu-'));t.after(()=>rm(dir,{recursive:true,force:true}));
-  await mkdir(join(dir,'mods-personals'));
-  for(const file of ['personal-content.js','menu-order.js'])await writeFile(join(dir,file),await readFile(new URL('../'+file,import.meta.url)));
+  await mkdir(join(dir,'mods-personals'));await mkdir(join(dir,'js'));
+  for(const file of ['js/personal-content.js','js/menu-order.js'])await writeFile(join(dir,file),await readFile(new URL('../'+file,import.meta.url)));
   const catalog=`export const REQUIRES_MOD_API=1;
 export const PERSONAL_LANDMARKS={sala:{name:'Sala',sizes:[1],height:1,help:'Ajuda',menuAfter:'theatre'},torre:{name:'Torre',sizes:[1],height:1,help:'Ajuda',category:'monument',menuAfter:'castle'}};
 export const PERSONAL_TERRAINS={herbes:{name:'Herbes',color:'#ffffff',height:1,description:'Herba',menuAfter:'meadow'}};
 export const PERSONAL_TREES=[{id:'arbre',name:'Arbre',height:1,description:'Fulles',menuAfter:'pine'}];
 export const PERSONAL_BUSINESSES={botiga:{name:'Botiga',accent:'#ffffff',frame:'#ffffff',awning:'#ffffff',description:'Botiga',menuAfter:'bar'}};`;
   await writeFile(join(dir,'mods-personals/catalog.js'),catalog);
-  const m=await import(pathToFileURL(join(dir,'personal-content.js')));
+  const m=await import(pathToFileURL(join(dir,'js/personal-content.js')));
   assert.equal(m.PERSONAL_LANDMARKS.sala.menuAfter,'theatre');assert.equal(m.PERSONAL_LANDMARKS.torre.menuAfter,'castle');
   assert.equal(m.PERSONAL_TERRAINS.herbes.menuAfter,'meadow');assert.equal(m.PERSONAL_TREES[0].menuAfter,'pine');
   assert.equal(m.PERSONAL_BUSINESSES.botiga.menuAfter,'bar');assert.equal(Object.keys(m.PERSONAL_MENU_ORDER).length,0);

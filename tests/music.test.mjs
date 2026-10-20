@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {MusicPlayer,musicPreferences,MUSIC_KEY} from '../music.js';
+import {MusicPlayer,musicPreferences,MUSIC_KEY} from '../js/music.js';
 
 class FakeAudio extends EventTarget{
   constructor(){super();this.src='';this.currentTime=0;this.playCalls=0;this.paused=true;}

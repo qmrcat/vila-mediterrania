@@ -7,6 +7,18 @@
 - Les funcionalitats del nucli han de continuar funcionant amb els registres personals buits o plens.
 - Abans d'editar un fitxer que ja té canvis de l'usuari, revisa `git diff` i conserva qualsevol canvi no relacionat.
 
+## Estructura
+
+- El codi del joc és a `js/`; els fitxers citats en aquestes instruccions sense carpeta hi són. Els estils són a `css/`, les guies a `docs/` i els scripts de Node a `eines/`.
+- `config.js` es queda a l’arrel: l’edita l’usuari.
+- `scene.js`, `solid-geometry.js`, `personal-content.js` i `personal-renderers.js` de l’arrel són reexportacions de `js/` per als mods (API 1): no les esborris ni hi afegeixis codi. El nucli ha d’importar directament de `js/`.
+- `check-mods.mjs` es queda a l’arrel perquè les guies dels mods el criden així.
+
+## Versions de publicació
+
+- No posis `?v=` als imports ni als `<script>`/`<link>` a mà: els genera `node eines/actualitza-versio.mjs` a l’import map de `index.html`, `editor.html` i `editor-mods/index.html`.
+- Després de canviar qualsevol `.js` o `.css`, executa `node eines/actualitza-versio.mjs`; per a una versió nova, `node eines/actualitza-versio.mjs <número>`. `tests/versions.test.mjs` falla si no està al dia.
+
 ## Contracte estable de mods
 
 - La versió pública actual és `MOD_API_VERSION = 1`, definida a `personal-content.js`.
@@ -25,7 +37,7 @@
 - `app.js`: genera ajuda per als edificis personals i afegeix els negocis personals al selector.
 - `landmark-geometry.js`, `agricultural-terrain.js`, `scene.js` i `retail-displays.js`: deleguen primer als renderitzadors personals corresponents.
 
-Consulta `MODIFICACIONS-PER-A-LA-IA.md` abans d'una refactorització que afecti aquests fitxers.
+Consulta `docs/MODIFICACIONS-PER-A-LA-IA.md` abans d'una refactorització que afecti aquests fitxers.
 
 ## Geometries opcionals — API 1, v91
 

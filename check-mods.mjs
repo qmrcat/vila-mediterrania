@@ -1,8 +1,8 @@
 // Extended integration check. User-owned files are read, never modified.
 try{
-  const content=await import('./personal-content.js');
-  await import('./personal-renderers.js');
-  const m=await import('./model.js'),{createVillageGeometry,GEOMETRY_NAMES}=await import('./scene.js');
+  const content=await import('./js/personal-content.js');
+  await import('./js/personal-renderers.js');
+  const m=await import('./js/model.js'),{createVillageGeometry,GEOMETRY_NAMES}=await import('./js/scene.js');
   const verify=(world,label)=>{
     m.validateWorld(JSON.parse(JSON.stringify(world)));
     try{

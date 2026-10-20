@@ -22,7 +22,7 @@ d'1,3— que s'assembla més a escriure codi que a esculpir.
 Tres fitxers nous a l'arrel del joc i quatre a `editor-mods/`. Ja hi són si has
 descomprimit el ZIP sencer.
 
-A `server.mjs` hi ha dues línies noves: l'`import` de `ai-proxy.mjs` i
+A `server.mjs` hi ha dues línies noves: l'`import` de `eines/ai-proxy.mjs` i
 l'embolcall `withAiProxy(...)` del gestor.
 
 ## La clau de l'API
@@ -173,7 +173,7 @@ barats (Sonnet 5, GPT-5.6 Terra) per a les proves i el bo per a la definitiva.
 
 | Què veus | Què passa |
 | --- | --- |
-| «La passarel·la no respon» | El joc no corre amb `node server.mjs`, o falta `ai-proxy.mjs`. |
+| «La passarel·la no respon» | El joc no corre amb `node server.mjs`, o falta `eines/ai-proxy.mjs`. |
 | «Sense clau al servidor» | No has posat la variable d'entorn abans d'arrencar. |
 | «La clau no és vàlida» | Clau mal copiada o caducada. |
 | «La resposta s'ha tallat» | L'edifici és massa complex. Demana'n un de més senzill. |
@@ -191,7 +191,7 @@ barats (Sonnet 5, GPT-5.6 Terra) per a les proves i el bo per a la definitiva.
 | `ai-providers.js` | Adaptadors de Claude i OpenAI, i el lector del JSON |
 | `ai-generate.js` | El cicle: crida, valida, renderitza, corregeix |
 | `ai-panel.js` | El panell del taller |
-| `../ai-proxy.mjs` | La passarel·la del servidor |
+| `../eines/ai-proxy.mjs` | La passarel·la del servidor |
 
 El contracte es construeix a partir de `constants.js` i `format.js`, de manera
 que si el joc guanya una forma o una mida nova, el prompt es posa al dia tot

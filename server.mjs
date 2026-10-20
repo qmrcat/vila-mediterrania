@@ -2,11 +2,11 @@
 import {createServer} from 'node:http';
 import {fileURLToPath} from 'node:url';
 import {dirname} from 'node:path';
-import {localHandler} from './local-server.mjs';
-import {withAiProxy,availableProviders} from './ai-proxy.mjs';
+import {localHandler,localOnly} from './eines/local-server.mjs';
+import {withAiProxy,availableProviders} from './eines/ai-proxy.mjs';
 import {spawn} from 'node:child_process';
 const root=dirname(fileURLToPath(import.meta.url));
-const server=createServer(withAiProxy(localHandler(root)));
+const server=createServer(localOnly(withAiProxy(localHandler(root))));
 let port=3000;
 server.on('error',e=>{
   if(e.code==='EADDRINUSE'&&port<3020){port++;server.listen(port,'127.0.0.1');return;}

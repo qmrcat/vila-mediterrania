@@ -7,8 +7,101 @@
   <meta name="theme-color" content="#1c565b">
   <meta name="description" content="Construeix una vila vora el mar, inspirada en la Costa Brava i la Costa Daurada. Un joc creatiu i tranquil.">
   <title>Vila Mediterrània · Un poble al teu ritme</title>
-  <link rel="stylesheet" href="./style.css?v=95">
-  <link rel="stylesheet" href="./controls-layout.css?v=91">
+  <link rel="stylesheet" href="./css/style.css?v=48641222b4">
+  <link rel="stylesheet" href="./css/controls-layout.css?v=0aee56fc03">
+<!-- versions:inici · generat per actualitza-versio.mjs; no l’editis a mà -->
+<script type="importmap">
+{"imports":{
+  "./config.js":"./config.js?v=56f77d9e42",
+  "./js/agricultural-terrain.js":"./js/agricultural-terrain.js?v=4ce2e6ee10",
+  "./js/agricultural-types.js":"./js/agricultural-types.js?v=c027d8757d",
+  "./js/app.js":"./js/app.js?v=697fcca1fb",
+  "./js/attic-roof.js":"./js/attic-roof.js?v=0e41f9eedf",
+  "./js/balcony-facades.js":"./js/balcony-facades.js?v=4b81ed96c5",
+  "./js/barber-pole.js":"./js/barber-pole.js?v=ad8b34c26b",
+  "./js/beach-bar.js":"./js/beach-bar.js?v=47a56cc0cf",
+  "./js/beach.js":"./js/beach.js?v=4da9010f1b",
+  "./js/building-categories.js":"./js/building-categories.js?v=9d98eb4c9f",
+  "./js/building-signs.js":"./js/building-signs.js?v=cc3a0e4e30",
+  "./js/business-signs.js":"./js/business-signs.js?v=4702972fe3",
+  "./js/castle-geometry.js":"./js/castle-geometry.js?v=3a7610b739",
+  "./js/cemetery-geometry.js":"./js/cemetery-geometry.js?v=0f3b13dbe1",
+  "./js/civic-geometry.js":"./js/civic-geometry.js?v=fdf9d08830",
+  "./js/cloning.js":"./js/cloning.js?v=c63d7b14c4",
+  "./js/community-geometry.js":"./js/community-geometry.js?v=7b5ef97862",
+  "./js/compass.js":"./js/compass.js?v=51e4ba9edd",
+  "./js/control-drawers.js":"./js/control-drawers.js?v=bb597c12b3",
+  "./js/cow-geometry.js":"./js/cow-geometry.js?v=c3f48d8065",
+  "./js/cultural-geometry.js":"./js/cultural-geometry.js?v=cc55c3127f",
+  "./js/custom-geometry.js":"./js/custom-geometry.js?v=16bbdab2f0",
+  "./js/designs.js":"./js/designs.js?v=848e21a18a",
+  "./js/element-info.js":"./js/element-info.js?v=b3411a711c",
+  "./js/element-inspector.js":"./js/element-inspector.js?v=37752f03a4",
+  "./js/entrance-access.js":"./js/entrance-access.js?v=744d5be334",
+  "./js/entrances.js":"./js/entrances.js?v=b0cbcdf906",
+  "./js/farmhouse-geometry.js":"./js/farmhouse-geometry.js?v=c283d3e1ce",
+  "./js/festive-flags.js":"./js/festive-flags.js?v=a9845a9684",
+  "./js/flagpole-ground.js":"./js/flagpole-ground.js?v=977ab9caa8",
+  "./js/flagpoles.js":"./js/flagpoles.js?v=759f19ebb7",
+  "./js/goat-geometry.js":"./js/goat-geometry.js?v=ee63e18d5b",
+  "./js/goat-pasture.js":"./js/goat-pasture.js?v=0ea309ce10",
+  "./js/hermitage-geometry.js":"./js/hermitage-geometry.js?v=eb5b9bc3a8",
+  "./js/institutional-geometry.js":"./js/institutional-geometry.js?v=b278e02f1e",
+  "./js/landmark-geometry.js":"./js/landmark-geometry.js?v=af80b9541f",
+  "./js/lodging-geometry.js":"./js/lodging-geometry.js?v=6cec1e2f7a",
+  "./js/meadow.js":"./js/meadow.js?v=59962e4abc",
+  "./js/mediterranean-trees.js":"./js/mediterranean-trees.js?v=120180bb0a",
+  "./js/menu-order.js":"./js/menu-order.js?v=cfd90672e1",
+  "./js/model.js":"./js/model.js?v=4df2fa0fa3",
+  "./js/music.js":"./js/music.js?v=b1e47ab176",
+  "./js/new-mediterranean-trees.js":"./js/new-mediterranean-trees.js?v=ce2cfb652f",
+  "./js/parliament-geometry.js":"./js/parliament-geometry.js?v=a6cf473893",
+  "./js/part-materials.js":"./js/part-materials.js?v=9f329e704f",
+  "./js/personal-animations.js":"./js/personal-animations.js?v=ddadabb341",
+  "./js/personal-content.js":"./js/personal-content.js?v=f0e1299206",
+  "./js/personal-geometries.js":"./js/personal-geometries.js?v=1126e53da2",
+  "./js/personal-menus.js":"./js/personal-menus.js?v=045f5899a9",
+  "./js/personal-renderers.js":"./js/personal-renderers.js?v=1ea28556c8",
+  "./js/poultry-geometry.js":"./js/poultry-geometry.js?v=ce5e360484",
+  "./js/retail-displays.js":"./js/retail-displays.js?v=aeeb06118a",
+  "./js/road-surfaces.js":"./js/road-surfaces.js?v=dad4c455ea",
+  "./js/rocky-terrain.js":"./js/rocky-terrain.js?v=639257912a",
+  "./js/scene.js":"./js/scene.js?v=7cc1e9e79f",
+  "./js/senyera.js":"./js/senyera.js?v=fa13d83eea",
+  "./js/service-buildings.js":"./js/service-buildings.js?v=243b87416c",
+  "./js/shared-designs.js":"./js/shared-designs.js?v=6573c1b316",
+  "./js/sheep-geometry.js":"./js/sheep-geometry.js?v=36cd2a80bc",
+  "./js/slope-geometry.js":"./js/slope-geometry.js?v=f0fbcf7287",
+  "./js/special-shops.js":"./js/special-shops.js?v=524da9541f",
+  "./js/stone-bridge.js":"./js/stone-bridge.js?v=878246ef3d",
+  "./js/terrain-railing-geometry.js":"./js/terrain-railing-geometry.js?v=df97c642b3",
+  "./js/terrain-railings.js":"./js/terrain-railings.js?v=fbab55668d",
+  "./js/terrain-stroke.js":"./js/terrain-stroke.js?v=f19538aa3e",
+  "./js/tree-planters.js":"./js/tree-planters.js?v=992c0377ba",
+  "./js/version-notice.js":"./js/version-notice.js?v=d26c3ab807",
+  "./js/wall-geometry.js":"./js/wall-geometry.js?v=681ef3bcd9",
+  "./mods-personals/catalog.js":"./mods-personals/catalog.js?v=3439a62450",
+  "./mods-personals/geometries.js":"./mods-personals/geometries.js?v=21f64bf8c8",
+  "./mods-personals/israel-flag-animation.js":"./mods-personals/israel-flag-animation.js?v=24ebd9ca9b",
+  "./mods-personals/israel-flag-definition.js":"./mods-personals/israel-flag-definition.js?v=b8ccaed48d",
+  "./mods-personals/israel-flag-geometries.js":"./mods-personals/israel-flag-geometries.js?v=10a1d828b1",
+  "./mods-personals/israel-flag.js":"./mods-personals/israel-flag.js?v=709752a7ac",
+  "./mods-personals/json-mod-extra/json-casa-navas.js":"./mods-personals/json-mod-extra/json-casa-navas.js?v=c39839d995",
+  "./mods-personals/json-mod-extra/json-fita-de-terma.js":"./mods-personals/json-mod-extra/json-fita-de-terma.js?v=fa97de70a7",
+  "./mods-personals/json-mods-data.js":"./mods-personals/json-mods-data.js?v=bb760f1a38",
+  "./mods-personals/json-mods.js":"./mods-personals/json-mods.js?v=1dfa152afe",
+  "./mods-personals/mods-geometry/ajuntament-amb-rellotge-geometry.js":"./mods-personals/mods-geometry/ajuntament-amb-rellotge-geometry.js?v=f1e8429b47",
+  "./mods-personals/mods-geometry/casa-mercadal-reus2-geometry.js":"./mods-personals/mods-geometry/casa-mercadal-reus2-geometry.js?v=a0e88e1888",
+  "./mods-personals/mods-geometry/casa-tomas-barbera-geometry.js":"./mods-personals/mods-geometry/casa-tomas-barbera-geometry.js?v=581566e5d7",
+  "./mods-personals/peces-buides.js":"./mods-personals/peces-buides.js?v=7bd214da1b",
+  "./mods-personals/prat-herbes.js":"./mods-personals/prat-herbes.js?v=5107d8a7d5",
+  "./mods-personals/renderers.js":"./mods-personals/renderers.js?v=a5d08954be",
+  "./mods-personals/windmill-geometry.js":"./mods-personals/windmill-geometry.js?v=6e56c8ea99",
+  "./vendor/three.core.min.js":"./vendor/three.core.min.js?v=61ba0df005",
+  "./vendor/three.module.min.js":"./vendor/three.module.min.js?v=e2b5ee6bcc"
+}}
+</script>
+<!-- versions:final -->
 </head>
 <body>
   <main id="game" aria-label="Constructor de pobles mediterranis">
@@ -290,7 +383,7 @@
   </dialog>
   <dialog id="new-dialog"><button class="close-dialog" aria-label="Cancel·la">×</button><div class="eyebrow">UN NOU COMENÇAMENT</div><h2>Com vols començar?</h2><p>Pots desar la vila actual abans de substituir-la. També podràs recuperar-la amb Desfés.</p><label class="dialog-label" for="new-grid-size">Mida de la quadrícula</label><select id="new-grid-size"><option value="33">33 × 33 · Estàndard</option><option value="49">49 × 49 · Gran</option><option value="65">65 × 65 · Molt gran</option></select><p class="grid-dialog-note">La costa 80/20 s’adapta a tota la quadrícula. El poble i l’illa inicial mantenen la seva mida.</p><div class="new-options"><button data-preset="village"><strong>Un petit poble</strong><span>Cases, una plaça i un passeig vora el mar.</span></button><button data-preset="island"><strong>Una illa per construir</strong><span>Només terreny. La resta, a les teves mans.</span></button><button data-preset="coast80"><strong>Costa · 80% terra i 20% mar</strong><span>Terra a l’oest, platja i mar a l’est. Tot el terreny lliure per construir.</span></button><button data-preset="empty"><strong>Mar obert</strong><span>Una pàgina en blau, per començar de zero.</span></button></div><button id="save-before-new" class="quiet-button">Desa primer la vila actual</button></dialog>
   <dialog id="expand-grid-dialog"><button class="close-dialog" aria-label="Cancel·la">×</button><h2>Més espai per a la vila</h2><p id="expand-grid-current"></p><label class="dialog-label" for="expand-grid-size">Nova mida</label><select id="expand-grid-size"><option value="33">33 × 33</option><option value="49">49 × 49</option><option value="65">65 × 65</option></select><p class="grid-dialog-note">S’afegeix mar als quatre costats. Es conserven totes les construccions i les seves posicions. Pots desfer l’ampliació.</p><button id="apply-grid-expansion" class="primary-button">Amplia i conserva la vila</button></dialog>
-  <script type="module">import('./app.js?v=100').catch(error=>{document.getElementById('loading').hidden=true;document.getElementById('failure').hidden=false;document.getElementById('failure-message').textContent=`No s’ha pogut iniciar el joc: ${error.message} Revisa config.js i recarrega la pàgina.`;});</script>
+  <script type="module">import('./js/app.js').catch(error=>{document.getElementById('loading').hidden=true;document.getElementById('failure').hidden=false;document.getElementById('failure-message').textContent=`No s’ha pogut iniciar el joc: ${error.message} Revisa config.js i recarrega la pàgina.`;});</script>
   <script>window.addEventListener('error',function(e){if(e.target&&e.target.tagName==='SCRIPT'){document.getElementById('loading').hidden=true;document.getElementById('failure').hidden=false;document.getElementById('failure-message').textContent='No s’han pogut carregar els fitxers. Si has descarregat el joc, obre Inicia-Windows.bat o utilitza un servidor local.'}},true)</script>
 </body>
 </html>

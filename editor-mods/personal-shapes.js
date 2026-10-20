@@ -7,7 +7,7 @@
 // a l'editor, i code(), que escriu la funció que enganxaràs al joc. Hi ha una
 // prova a check-formes.mjs que compara vèrtex a vèrtex que fan el mateix.
 import { num } from './format.js';
-import { booleanGeometry } from '../solid-geometry.js';
+import { booleanGeometry } from '../js/solid-geometry.js';
 
 export const SHAPES_KEY = 'vila-mediterrania-shapes-1';
 export const SHAPE_ID_PATTERN = /^[a-z][A-Za-z0-9]{1,39}$/;

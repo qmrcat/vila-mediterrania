@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from '../vendor/three.module.min.js';
-import {booleanGeometry,composeGeometry} from '../solid-geometry.js';
-import {createPersonalGeometries} from '../personal-geometries.js';
+import {booleanGeometry,composeGeometry} from '../js/solid-geometry.js';
+import {createPersonalGeometries} from '../js/personal-geometries.js';
 import {BOOLEAN_EXAMPLES} from '../mods-personals/exemples-booleans.js';
-import {partMaterialKey,createPartMaterial,createPartMeshes} from '../part-materials.js';
+import {partMaterialKey,createPartMaterial,createPartMeshes} from '../js/part-materials.js';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -87,7 +87,7 @@ test('full game integration works with empty registries and with a CSG landmark 
   const root=fileURLToPath(new URL('../',import.meta.url)),temp=fs.mkdtempSync(path.join(os.tmpdir(),'vila-csg-test-'));
   try{
     for(const name of fs.readdirSync(root))if(name.endsWith('.js'))fs.copyFileSync(path.join(root,name),path.join(temp,name));
-    fs.cpSync(path.join(root,'vendor'),path.join(temp,'vendor'),{recursive:true});
+    for(const folder of ['js','vendor'])fs.cpSync(path.join(root,folder),path.join(temp,folder),{recursive:true});
     fs.mkdirSync(path.join(temp,'mods-personals'));fs.writeFileSync(path.join(temp,'package.json'),'{"type":"module"}');
     fs.copyFileSync(path.join(root,'mods-personals/exemples-booleans.js'),path.join(temp,'mods-personals/exemples-booleans.js'));
     for(const enabled of [false,true]){
@@ -100,8 +100,8 @@ test('full game integration works with empty registries and with a CSG landmark 
           part('box',{color:'#88ddff',opacity:.7},.4,.5,0,.1,.3,.02);
         }}`:'{}'},PERSONAL_TERRAIN_RENDERERS={},PERSONAL_TREE_RENDERERS={},PERSONAL_RETAIL_RENDERERS={};`);
       const script=`import assert from 'node:assert/strict';
-        import {createVillageGeometry} from './scene.js';
-        import {createWorld,editWorld,validateWorld} from './model.js';
+        import {createVillageGeometry} from './js/scene.js';
+        import {createWorld,editWorld,validateWorld} from './js/model.js';
         const world=createWorld('brava','empty');
         for(const x of [0,2]){editWorld(world,x,0,'land');if(${enabled})assert(editWorld(world,x,0,'csgTest',{landmarkDirection:x?1:0}).changed);}
         const original=JSON.stringify(world),group=createVillageGeometry(world),panes=group.children.filter(m=>m.material?.transparent&&[.3,.7].includes(m.material.opacity));

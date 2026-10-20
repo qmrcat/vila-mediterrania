@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {createServer} from 'node:http';
 import {once} from 'node:events';
-import {newDesign,catalogFile,saveDesign,loadDesigns,DESIGN_KEY} from '../designs.js';
-import {createWorld,editWorld,validateWorld} from '../model.js';
-import {SHARED_CATALOG_URL,MAX_CATALOG_BYTES,parseSharedCatalog,loadSharedDesigns,mergePublishedDesign,copySharedDesign} from '../shared-designs.js';
+import {newDesign,catalogFile,saveDesign,loadDesigns,DESIGN_KEY} from '../js/designs.js';
+import {createWorld,editWorld,validateWorld} from '../js/model.js';
+import {SHARED_CATALOG_URL,MAX_CATALOG_BYTES,parseSharedCatalog,loadSharedDesigns,mergePublishedDesign,copySharedDesign} from '../js/shared-designs.js';
 
 const blueprint=(id,name=id)=>({...newDesign(),id,name});
 const response=(data,options)=>new Response(typeof data==='string'?data:JSON.stringify(data),options);

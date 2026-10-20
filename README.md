@@ -36,13 +36,20 @@ Els botons de costa canvien els materials del paisatge i el color inicial de les
 
 ## Fitxers i arquitectura
 
-- `index.html`: interfície i ajuda en català.
-- `style.css`: disseny adaptable a ordinador, tauleta i mòbil.
-- `model.js`: estat, generació del paisatge, regles, validació del JSON i historial.
-- `scene.js`: escena Three.js, geometria procedural instanciada, mar, llum, càmera i controls de punter.
-- `app.js`: interacció de la interfície, importació/exportació i desament local.
-- `vendor/`: Three.js inclòs localment; no hi ha CDN en temps d’execució.
-- `server.mjs`: servidor HTTP local opcional, fet només amb mòduls estàndard de Node.js.
+- `index.html`: interfície i ajuda en català. `editor.html`: editor d’edificis.
+- `config.js`: configuració del joc (vegeu `docs/CONFIGURACIO.md`).
+- `js/`: tot el codi del joc. Els principals:
+  - `js/model.js`: estat, generació del paisatge, regles, validació del JSON i historial.
+  - `js/scene.js`: escena Three.js, geometria procedural instanciada, mar, llum, càmera i controls de punter.
+  - `js/app.js`: interacció de la interfície, importació/exportació i desament local.
+- `css/`: disseny adaptable a ordinador, tauleta i mòbil.
+- `scene.js`, `solid-geometry.js`, `personal-content.js` i `personal-renderers.js` a l’arrel: una línia cadascun que reenvia a `js/`. Els mods els importen amb aquests camins (API 1); no els esborris.
+- `server.mjs`: servidor HTTP local opcional, fet només amb mòduls estàndard de Node.js. `Inicia-Windows.bat` l’engega; `Inicia-Vila.exe` és l’alternativa sense Node.
+- `check-mods.mjs`: comprovació completa dels mods (`node check-mods.mjs`).
+- `eines/`: `actualitza-versio.mjs` (versions de publicació), `genera-playlist.mjs` (llista de música per a GitHub Pages), `local-server.mjs` i `ai-proxy.mjs` (peces de `server.mjs`) i `servidor.cs` (codi de `Inicia-Vila.exe`).
+- `docs/`: guies, configuració, manuals i demostracions. `docs/versions/`: notes de versions anteriors.
+- `editor-mods/`: taller de mods. `mods-personals/`: els teus mods. `biblioteca/`: catàleg compartit d’edificis.
+- `vendor/`: Three.js inclòs localment; no hi ha CDN en temps d’execució. `music/`: música de fons. `tests/`: proves (`node --test tests/*.mjs`).
 
 ## Abast d’aquesta primera versió
 
@@ -815,7 +822,7 @@ El joc comprova la versió en obrir-lo, cada minut mentre és visible i en torna
 
 Cal carregar aquesta versió una primera vegada per rebre els avisos futurs. Una còpia local comprova el seu servidor local: només detecta novetats quan s’hi substitueixen els fitxers; no consulta la publicació d’Internet.
 
-Per publicar una actualització, incrementa el número de `version.json` i el valor de la metaetiqueta `game-version` a `index.html` al mateix número, i actualitza el paràmetre `v` dels recursos d’entrada. Publica tots els fitxers conjuntament. `_headers` demana revalidar els recursos al servidor Sites; el servidor local ja ho fa. El format de vila continua sent el 53 i es conserven totes les funcions de la v70.
+Per publicar una actualització, executa `node eines/actualitza-versio.mjs 101` (amb el número nou). Canvia `version.json`, la metaetiqueta `game-version`, l’etiqueta de «La meva vila» i la primera línia de `VERSIO.txt`, i recalcula els `?v=` de tots els mòduls i fulls d’estil a l’import map de `index.html`, `editor.html` i `editor-mods/index.html`. Sense número, només recalcula els `?v=`: cal fer-ho després de qualsevol canvi en un fitxer `.js` o `.css`, també als mods personals. Els imports del codi no porten mai `?v=`. `node eines/actualitza-versio.mjs --comprova` i les proves avisen si t’has oblidat d’executar-lo. Publica tots els fitxers conjuntament. `_headers` demana revalidar els recursos al servidor Sites; el servidor local ja ho fa. El format de vila continua sent el 53 i es conserven totes les funcions de la v70.
 
 ## v72 · Ordre de les eines
 

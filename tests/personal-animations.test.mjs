@@ -1,11 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from '../vendor/three.module.min.js';
-import {createPersonalAnimations} from '../personal-animations.js';
+import {createPersonalAnimations} from '../js/personal-animations.js';
 import {ISRAEL_FLAG_GEOMETRIES} from '../mods-personals/israel-flag-geometries.js';
 import {ISRAEL_FLAG_ANIMATIONS} from '../mods-personals/israel-flag-animation.js';
-import {createWorld,editWorld} from '../model.js';
-import {createVillageGeometry,VillageScene} from '../scene.js';
+import {createWorld,editWorld} from '../js/model.js';
+import {createVillageGeometry,VillageScene} from '../js/scene.js';
 
 test('optional animation registry keeps old mods valid and rejects invalid definitions',()=>{
   assert.doesNotThrow(()=>createPersonalAnimations(THREE,{},[],{}).update(1,[]));

@@ -5,7 +5,7 @@
 //
 // Ús:  node editor-mods/check-formes.mjs
 import * as THREE from '../vendor/three.module.min.js';
-import { createPersonalGeometries } from '../personal-geometries.js';
+import { createPersonalGeometries } from '../js/personal-geometries.js';
 import { TEMPLATES, defaultParams, geometriesFile } from './personal-shapes.js';
 import { writeFileSync, unlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';

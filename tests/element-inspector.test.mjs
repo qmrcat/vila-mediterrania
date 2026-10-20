@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createWorld,editWorld,TREE_SPECIES,landmarkCells,patioCell} from '../model.js';
-import {newDesign,resizeDesign} from '../designs.js';
-import {inspectElement} from '../element-info.js';
-import {createElementInspector} from '../element-inspector.js';
-import {createPickingGeometry,VillageScene} from '../scene.js';
+import {createWorld,editWorld,TREE_SPECIES,landmarkCells,patioCell} from '../js/model.js';
+import {newDesign,resizeDesign} from '../js/designs.js';
+import {inspectElement} from '../js/element-info.js';
+import {createElementInspector} from '../js/element-inspector.js';
+import {createPickingGeometry,VillageScene} from '../js/scene.js';
 import {MeshBasicMaterial} from '../vendor/three.module.min.js';
 
 const empty=()=>createWorld('brava','empty');

@@ -6,7 +6,7 @@ Es reprodueixen per ordre de nom i la llista es repeteix. Pots prefixar 01-, 02-
 Prem ♫ i Carpeta del joc per actualitzar la llista després d’afegir fitxers.
 
 Amb Live Server o un allotjament estàtic (Apache, GitHub Pages), el joc llegeix playlist.json.
-Regenera’l amb: node genera-playlist.mjs (des de la carpeta del joc).
+Regenera’l amb: node eines/genera-playlist.mjs (des de la carpeta del joc).
 Si l’edites a mà, vigila les comes: un JSON invàlid deixa la música muda.
 ["01-mar.mp3", "02-vespre.ogg", "ambient/03-passeig.mp3"]
 
