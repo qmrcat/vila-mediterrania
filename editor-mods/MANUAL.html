@@ -830,6 +830,28 @@ hi surt el camp <b>Cares</b> amb un botó:</p>
 <code>mods-personals/geometries.js</code>, dins del teu <code>PERSONAL_GEOMETRIES</code>, i ja la
 tindràs també al joc.</p>
 
+<h3>Un cilindre buit amb el gruix de paret que vulguis</h3>
+
+<p>Amb un <code>cylinder</code> seleccionat —o un cilindre propi de la plantilla Prisma— hi surt
+també el camp <b>Paret</b>. El gruix s'hi escriu en mides reals, les mateixes de <code>sx</code> i
+<code>sz</code>: per a una columna de 0,60 de diàmetre, una paret de 0,06 deixa un forat de 0,48.</p>
+
+<ol class="steps">
+  <li>Escriu-hi el gruix i prem <b>Fes-lo buit</b> (o Retorn).</li>
+  <li>El taller crea un tub amb la plantilla <b>Tub</b> —<code>tub100c32</code> vol dir paret del
+  10 % del diàmetre i 32 cares— i el posa a tota la selecció. El tub té el mateix contorn i les
+  mateixes cares que el cilindre, és obert per dalt i per baix i la peça no es mou de lloc.</li>
+  <li>Amb el tub seleccionat, el botó passa a dir <b>Canvia-la</b> i ajusta el gruix del tub
+  mateix, a totes les peces que el fan servir. El nom no canvia: recorda el gruix amb què va
+  néixer, i si vols el pots canviar al panell Formes personals. El camp <b>Cares</b> també hi
+  funciona.</li>
+</ol>
+
+<p>El gruix del tub es desa com a fracció del diàmetre, de manera que creix si estires la peça. Si
+vols el mateix gruix real en dues peces de mides diferents, aplica-l'hi a cadascuna: en sortiran
+dos tubs. Si <code>sx</code> i <code>sz</code> no són iguals, el taller compta sobre el costat
+estret. Com qualsevol forma del taller, s'ha d'instal·lar al joc.</p>
+
 <h3>El generador del taller</h3>
 
 <p>El panell <b>Formes personals</b> et diu quantes formes té registrades la teva còpia del joc i

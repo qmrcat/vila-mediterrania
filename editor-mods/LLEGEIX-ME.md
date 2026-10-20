@@ -93,7 +93,10 @@ sol i val per a qualsevol versió.
 Les cares del `cylinder` són globals i surten de `geometry.cylinderSegments`
 de `config.js` (32 de sèrie); el taller les llegeix d'allà. Si en vols unes de
 diferents només per a una peça, el camp **Cares** del panell de la peça et
-crea un cilindre personal amb les cares que li diguis.
+crea un cilindre personal amb les cares que li diguis. El camp **Paret** el
+converteix en un tub buit: hi escrius el gruix de la paret en mides reals, com
+`sx` i `sz`, i el taller crea la forma amb la plantilla **Tub** i la posa a la
+selecció sense moure-la.
 
 Les peces de la biblioteca conserven el nom de cada element, els grups i els
 materials; en inserir-les, els grups es refan amb identificadors nous. Amb

@@ -14,13 +14,13 @@
   "./ai-panel.js":"./ai-panel.js?v=c010c8911a",
   "./ai-providers.js":"./ai-providers.js?v=21cd3c1300",
   "./constants.js":"./constants.js?v=ad225baaca",
-  "./editor.js":"./editor.js?v=dd198f31e7",
+  "./editor.js":"./editor.js?v=682a0a8ffc",
   "./exporters.js":"./exporters.js?v=0234cdebb3",
   "./format.js":"./format.js?v=514ed4da0b",
   "./json-mods-data.js":"./json-mods-data.js?v=49f1f4cccf",
   "./json-mods.js":"./json-mods.js?v=21070fef0b",
   "./library.js":"./library.js?v=73a44e1038",
-  "./personal-shapes.js":"./personal-shapes.js?v=e066fd14d3",
+  "./personal-shapes.js":"./personal-shapes.js?v=8b0376da20",
   "./shapes.js":"./shapes.js?v=5df82f3eae",
   "./starters.js":"./starters.js?v=8a5c71b747",
   "./viewport.js":"./viewport.js?v=91a48f3906",
@@ -188,6 +188,12 @@
           <input type="number" id="part-faces" min="3" max="256" step="1">
           <button type="button" id="part-faces-apply" title="Crea una forma personal amb aquestes cares i posa-la a la selecció">Fes-la pròpia</button>
         </div>
+        <div class="faces-row" id="wall-row" hidden>
+          <span>Paret</span>
+          <input type="number" id="part-wall" min="0.005" step="0.01">
+          <button type="button" id="part-wall-apply" title="Converteix el cilindre en un tub amb aquest gruix de paret, en les mateixes unitats que sx i sz">Fes-lo buit</button>
+        </div>
+        <p class="hint" id="wall-hint" hidden></p>
         <label class="field"><span>Color</span>
           <span class="color-row">
             <input type="color" id="part-color">
@@ -417,6 +423,6 @@
 </dialog>
 
 <p class="toast" id="toast" hidden></p>
-<script type="module" src="./editor.js?v=dd198f31e7"></script>
+<script type="module" src="./editor.js?v=682a0a8ffc"></script>
 </body>
 </html>

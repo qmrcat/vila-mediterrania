@@ -369,6 +369,7 @@ function renderInspector() {
   $('#part-shape').value = part.shape;
   $('#shape-hint').textContent = shapeHint(part.shape);
   renderFaces(part);
+  renderWall(part);
   $('#part-color').value = part.color;
   if (document.activeElement !== $('#part-color-hex')) $('#part-color-hex').value = part.color;
   for (const key of ['u', 'h', 'v', 'sx', 'sy', 'sz']) {
@@ -864,8 +865,86 @@ function applyFaces() {
   toast(`«${id}» creada al taller i posada a la selecció. Instal·la-la al joc quan et vagi bé.`);
 }
 
+// El gruix d'un tub del taller es compta sobre el diàmetre 1 i creix amb la
+// peça. Aquest camp el deixa escriure en mides reals, les mateixes de sx i sz:
+// el taller fa la divisió amb la mida de la peça seleccionada.
+const TUBE_LIMITS = [.02, .45];
+
+/** D'on surt el tub: un tub del taller, o un cilindre que encara és massís. */
+function wallSource(part) {
+  const draft = drafts.find(item => item.id === part.shape);
+  if (draft?.template === 'tub') return { draft, faces: draft.params.cares };
+  if (part.shape === 'cylinder') return { faces: cylinderFaces() };
+  if (draft?.template === 'prisma' && draft.params.dalt === 1) return { faces: draft.params.cares };
+  return null;
+}
+
+/** El diàmetre on la paret queda més prima, si la peça és ovalada. */
+const wallDiameter = part => Math.min(Math.abs(part.sx), Math.abs(part.sz));
+const wallText = value => (Math.round(value * 1000) / 1000).toString().replace('.', ',');
+
+function renderWall(part) {
+  const source = wallSource(part);
+  $('#wall-row').hidden = $('#wall-hint').hidden = !source;
+  if (!source) return;
+  const diameter = wallDiameter(part);
+  const gruix = source.draft?.params.gruix ?? .12;
+  const input = $('#part-wall');
+  if (document.activeElement !== input) input.value = Math.round(gruix * diameter * 1000) / 1000;
+  input.min = String(Math.round(TUBE_LIMITS[0] * diameter * 1000) / 1000);
+  input.max = String(Math.round(TUBE_LIMITS[1] * diameter * 1000) / 1000);
+  $('#part-wall-apply').textContent = source.draft ? 'Canvia-la' : 'Fes-lo buit';
+  $('#wall-hint').textContent = (source.draft
+    ? `Paret de ${wallText(gruix * diameter)} en aquesta peça. Canviar-la canvia «${source.draft.id}» a totes les peces que el fan servir.`
+    : 'Escriu el gruix de la paret i el cilindre passa a ser un tub obert per dalt i per baix, amb les mateixes cares.')
+    + ` Entre ${wallText(TUBE_LIMITS[0] * diameter)} i ${wallText(TUBE_LIMITS[1] * diameter)} per a aquest diàmetre.`
+    + (Math.abs(Math.abs(part.sx) - Math.abs(part.sz)) > 1e-6 ? ' Com que sx i sz no són iguals, la paret és més gruixuda pel costat ample.' : '');
+}
+
+/**
+ * Amb un tub del taller, canvia el gruix del tub mateix. Amb un cilindre, en
+ * crea un de nou —o en reaprofita un d'igual— i el posa a la selecció.
+ */
+function applyWall() {
+  const part = current();
+  const source = part && wallSource(part);
+  if (!source) return;
+  const diameter = wallDiameter(part);
+  if (!(diameter > 0)) { toast('Amb sx o sz a zero el cilindre no té diàmetre.'); return; }
+  const wanted = num($('#part-wall').value, 0);
+  if (!(wanted > 0)) { toast('El gruix de la paret ha de ser més gran que 0.'); return; }
+  const raw = wanted / diameter;
+  const gruix = Math.round(Math.min(Math.max(raw, TUBE_LIMITS[0]), TUBE_LIMITS[1]) * 1000) / 1000;
+  const clipped = Math.abs(raw - gruix) > .0005
+    ? ` (${raw > gruix ? 'el màxim' : 'el mínim'} per a aquest diàmetre)` : '';
+  const real = wallText(gruix * diameter);
+  if (source.draft) {
+    if (source.draft.params.gruix === gruix) { toast('Ja tenia aquest gruix.'); return; }
+    source.draft.params = TEMPLATES.tub.clean({ ...source.draft.params, gruix });
+    persistDrafts(); refreshShapes(); renderShapes(); render();
+    toast(`«${source.draft.id}» passa a una paret de ${real}${clipped}.`);
+    return;
+  }
+  const params = TEMPLATES.tub.clean({ cares: source.faces, gruix });
+  let draft = drafts.find(item => item.template === 'tub'
+    && item.params.cares === params.cares && item.params.gruix === params.gruix);
+  if (!draft) {
+    const id = `tub${Math.round(gruix * 1000)}c${params.cares}`;
+    if (personalShapes.includes(id) || SHAPES.includes(id) || drafts.some(item => item.id === id)) {
+      toast(`Ja hi ha una forma que es diu «${id}».`); return;
+    }
+    draft = validateDraft({ id, template: 'tub', params });
+    drafts.push(draft);
+    persistDrafts(); refreshShapes(); renderShapes();
+  }
+  change(() => { for (const index of pickedList()) mod.parts[index].shape = draft.id; });
+  toast(`«${draft.id}»: tub amb una paret de ${real}${clipped}, posat a la selecció. Instal·la’l al joc quan et vagi bé.`);
+}
+
 function bindInspector() {
   $('#part-faces-apply').addEventListener('click', applyFaces);
+  $('#part-wall-apply').addEventListener('click', applyWall);
+  $('#part-wall').addEventListener('keydown', event => { if (event.key === 'Enter') applyWall(); });
   for (const [key, id] of MATERIAL_FIELDS) {
     $(id).addEventListener('change', event => {
       const value = Math.min(Math.max(num(event.target.value, MATERIAL_DEFAULTS[key]), 0), 1);

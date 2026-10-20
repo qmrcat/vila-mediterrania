@@ -71,6 +71,51 @@ function tileGeometry(THREE, seg, gruix, estret) {
   return geometry;
 }
 
+// El tub, escrit dues vegades com la teula. Té exactament les cares que diu i
+// les normals llises, com el cilindre del joc: un cilindre i un tub de les
+// mateixes cares, l'un al costat de l'altre, es veuen igual de rodons.
+const TUBE_BODY = `    const r=.5-gruix,pos=[],nor=[];
+    const at=(i,radius,y)=>{const a=2*Math.PI*i/seg;return [Math.sin(a)*radius,y,Math.cos(a)*radius];};
+    const out=(i,sign)=>{const a=2*Math.PI*i/seg;return [Math.sin(a)*sign,0,Math.cos(a)*sign];};
+    const quad=(a,b,c,d,na,nb,nc,nd)=>{pos.push(...a,...b,...c,...a,...c,...d);nor.push(...na,...nb,...nc,...na,...nc,...nd);};
+    const up=[0,1,0],down=[0,-1,0];
+    for(let i=0;i<seg;i++){
+      const j=i+1;
+      // paret de fora i paret de dins
+      quad(at(i,.5,-.5),at(j,.5,-.5),at(j,.5,.5),at(i,.5,.5),out(i,1),out(j,1),out(j,1),out(i,1));
+      quad(at(i,r,-.5),at(i,r,.5),at(j,r,.5),at(j,r,-.5),out(i,-1),out(i,-1),out(j,-1),out(j,-1));
+      // les dues vores
+      quad(at(i,.5,.5),at(j,.5,.5),at(j,r,.5),at(i,r,.5),up,up,up,up);
+      quad(at(i,.5,-.5),at(i,r,-.5),at(j,r,-.5),at(j,.5,-.5),down,down,down,down);
+    }
+    const geometry=new THREE.BufferGeometry();
+    geometry.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
+    geometry.setAttribute('normal',new THREE.Float32BufferAttribute(nor,3));
+    return geometry;
+`;
+
+function tubeGeometry(THREE, seg, gruix) {
+  const r = .5 - gruix, pos = [], nor = [];
+  const at = (i, radius, y) => { const a = 2 * Math.PI * i / seg; return [Math.sin(a) * radius, y, Math.cos(a) * radius]; };
+  const out = (i, sign) => { const a = 2 * Math.PI * i / seg; return [Math.sin(a) * sign, 0, Math.cos(a) * sign]; };
+  const quad = (a, b, c, d, na, nb, nc, nd) => {
+    pos.push(...a, ...b, ...c, ...a, ...c, ...d);
+    nor.push(...na, ...nb, ...nc, ...na, ...nc, ...nd);
+  };
+  const up = [0, 1, 0], down = [0, -1, 0];
+  for (let i = 0; i < seg; i++) {
+    const j = i + 1;
+    quad(at(i, .5, -.5), at(j, .5, -.5), at(j, .5, .5), at(i, .5, .5), out(i, 1), out(j, 1), out(j, 1), out(i, 1));
+    quad(at(i, r, -.5), at(i, r, .5), at(j, r, .5), at(j, r, -.5), out(i, -1), out(i, -1), out(j, -1), out(j, -1));
+    quad(at(i, .5, .5), at(j, .5, .5), at(j, r, .5), at(i, r, .5), up, up, up, up);
+    quad(at(i, .5, -.5), at(i, r, -.5), at(j, r, -.5), at(j, .5, -.5), down, down, down, down);
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geometry.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+  return geometry;
+}
+
 // El tallador sempre és llarg: així travessa de banda a banda i no deixa cares
 // enganxades, que és el que fa petar les restes booleanes.
 const CUT_AXES = [
@@ -143,36 +188,26 @@ export const TEMPLATES = {
 
   tub: {
     name: 'Tub · cilindre buit',
-    note: 'Diàmetre exterior 1, alçada 1, centrat. Escala’l amb sx, sy i sz.',
+    note: 'Diàmetre exterior 1, alçada 1 i centrat, com el cilindre del joc: si canvies una peça cylinder per aquest tub, no es mou. '
+      + 'El gruix es compta sobre el diàmetre 1 i creix amb sx i sz; a la peça seleccionada, el camp Paret el posa en mides reals.',
     fields: [
-      { key: 'cares', label: 'Cares', min: 6, max: 256, step: 1, value: 24 },
-      { key: 'gruix', label: 'Gruix de paret', min: .02, max: .45, step: .01, value: .12 },
+      { key: 'cares', label: 'Cares', min: 6, max: 256, step: 1, value: 32 },
+      { key: 'gruix', label: 'Gruix de paret', min: .02, max: .45, step: .005, value: .12 },
     ],
     clean: params => ({
-      cares: clampInt(params.cares, 6, 256, 24),
+      cares: clampInt(params.cares, 6, 256, 32),
       gruix: clampNum(params.gruix, .02, .45, .12),
     }),
     build(THREE, params) {
       const { cares, gruix } = this.clean(params);
-      const shape = new THREE.Shape();
-      shape.absarc(0, 0, .5, 0, Math.PI * 2, false);
-      const hole = new THREE.Path();
-      hole.absarc(0, 0, .5 - gruix, 0, Math.PI * 2, true);
-      shape.holes.push(hole);
-      return new THREE.ExtrudeGeometry(shape, { depth: 1, bevelEnabled: false, curveSegments: cares })
-        .translate(0, 0, -.5).rotateX(-Math.PI / 2);
+      return tubeGeometry(THREE, cares, gruix);
     },
     code(id, params) {
       const { cares, gruix } = this.clean(params);
       return `  // Tub de ${cares} cares, paret de ${gruix}. Diàmetre 1, alçada 1, centrat.\n` +
         `  ${id}(THREE){\n` +
-        `    const shape=new THREE.Shape();\n` +
-        `    shape.absarc(0,0,.5,0,Math.PI*2,false);\n` +
-        `    const hole=new THREE.Path();\n` +
-        `    hole.absarc(0,0,${.5 - gruix},0,Math.PI*2,true);\n` +
-        `    shape.holes.push(hole);\n` +
-        `    return new THREE.ExtrudeGeometry(shape,{depth:1,bevelEnabled:false,curveSegments:${cares}})\n` +
-        `      .translate(0,0,-.5).rotateX(-Math.PI/2);\n` +
+        `    const seg=${cares},gruix=${gruix};\n` +
+        `${TUBE_BODY}` +
         `  },`;
     },
   },
